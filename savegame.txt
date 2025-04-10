@@ -1,0 +1,10 @@
+499,180,down
+178,319,down
+373,192,down
+195,229,down
+247,174,down
+395,130,down
+485,234,down
+456,316,down
+586,490,downRight
+274,125,down
