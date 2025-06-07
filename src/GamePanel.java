@@ -50,6 +50,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private Baracks selectedBaracks;
     private Factory selectedFactories;
 
+    private JLabel countdownLabel; // to jest do tego by odliczalo budowe pojazdow
+
     private Soldier soldier; // to jest do zapisywania do calego Soldier w savegame i load
 
     private Timer movementTimer;
@@ -68,6 +70,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JButton btnHarvester;
     private JButton btnBattleVehicle;
     private JButton btnArtylery;
+
+    //do przesowania myszka
+    private final int SCROLL_EDGE_SIZE = 20; // ile pikseli od krawędzi reaguje
+    private final int SCROLL_SPEED = 20;     // ile pikseli przewija co tick
+    private Timer scrollTimer;
+    private Point mousePosition;
+    private JFrame mainFrame;
 
     private ArrayList<Hive> hives;
     private BufferedImage backgroundImage;
@@ -108,6 +117,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         return false; // Pozycja jest wolna
     }
+    
 
 
 
@@ -122,6 +132,29 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
     public GamePanel(JFrame frame) {
+
+        // to do przesuwania myszka po mapie - by dal osie zamiast strzalkami przesowac mapa
+        this.mainFrame = frame;
+
+        // Timer sprawdzający pozycję myszy
+        scrollTimer = new Timer(20, e -> checkEdgeScrolling());
+        scrollTimer.start();
+
+        // Aktualizuj pozycję myszy
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                mousePosition = e.getPoint();
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                mousePosition = e.getPoint();
+            }
+        });
+
+
+
 // tu jest okenko glowne gry oraz okienko ktore jest po nacisnieciu ecape
         {this.frame = frame;
             this.setPreferredSize(new Dimension(3000, 3000)); // Duża mapa
@@ -197,6 +230,14 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         timer = new Timer(1000 / 60, this); // Wywołanie actionPerformed co ~16 ms
         timer.start();
 
+        Timer productionUpdateTimer = new Timer(1000, e -> {
+            for (Factory factory : factories) {
+                factory.updateProduction();
+            }
+            repaint();
+        });
+        productionUpdateTimer.start();
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // tu masz przyciski gdy zaznaczysz Buldiera
@@ -244,10 +285,16 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             btnArtylery.setVisible(false);
             add(btnArtylery);
 
-        btnBattleVehicle= new JButton("Armored Vehicle");
+        btnBattleVehicle = new JButton("Armored Vehicle");
         btnBattleVehicle.setBounds(10, 130, 120, 30); // Pozycja i rozmiar
         btnBattleVehicle.setVisible(false);
         add(btnBattleVehicle);
+
+        // to sluzy do odliczania czasu budowy i wyswietlania
+        countdownLabel = new JLabel("");
+        countdownLabel.setBounds(140, 130, 60, 30); // Po prawej stronie przycisku
+        countdownLabel.setVisible(false);
+        add(countdownLabel);
 
 
         btnHarvester.addActionListener(e -> {
@@ -304,22 +351,34 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnBattleVehicle.addActionListener(e -> {
             if (selectedFactories != null) {
                 if (collectedSteel >= 2000) {
-                    // Oblicz pozycję jednostki obok Factory
                     int battleVehicleX = selectedFactories.getX() + 50;
                     int battleVehicleY = selectedFactories.getY();
 
-                    // Dodaj jednostkę battlevehicle
-                    battleVehicles.add(new BattleVehicle(battleVehicleX, battleVehicleY));
-                    // Zmniejsz stal o 2000 jednostek
                     collectedSteel -= 2000;
-                    System.out.println("Dodano Armored Vehicle.");
-                    // Ukryj menu factory
-                    showFactorysMenu = false;
+                    System.out.println("Produkcja pojazdu opancerzonego... (10 sekund)");
+                    selectedFactories.startProduction(10); // nowa metoda fabryki
                     updateFactorysMenu();
-                    repaint(); // Odśwież panel
-                }
-                else {
-                    // Poinformuj gracza, że nie ma wystarczającej ilości stali
+                    repaint();
+
+                    Timer countdownTimer = new Timer(1000, new ActionListener() {
+                        int secondsLeft = 10;
+
+                        @Override
+                        public void actionPerformed(ActionEvent event) {
+                            secondsLeft--;
+                            if (secondsLeft <= 0) {
+                                ((Timer) event.getSource()).stop();
+                                battleVehicles.add(new BattleVehicle(battleVehicleX, battleVehicleY));
+                                System.out.println("Dodano Armored Vehicle po 10 sekundach.");
+                                showFactorysMenu = false;
+                                updateFactorysMenu();
+                                repaint();
+                            }
+                        }
+                    });
+                    countdownTimer.start();
+
+                } else {
                     System.out.println("Nie masz wystarczającej ilości stali! Potrzebujesz 2000 Steel.");
                 }
             }
@@ -710,6 +769,45 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 //        Timer projectileUpdateTimer = new Timer(25, e -> updateProjectiles());
 //        projectileUpdateTimer.start();
 
+    }
+
+    private void checkEdgeScrolling() {
+        if (mousePosition == null || getParent() == null || !(getParent() instanceof JViewport viewport)) return;
+
+        Point viewPos = viewport.getViewPosition();
+        int newX = viewPos.x;
+        int newY = viewPos.y;
+
+        // Pobierz pozycję myszy względem okna aplikacji
+        PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+        if (pointerInfo == null) return;
+
+        Point mouseLoc = pointerInfo.getLocation(); // pozycja myszy na ekranie
+        Point frameLoc = mainFrame.getLocationOnScreen(); // pozycja okna gry na ekranie
+
+        int mouseX = mouseLoc.x - frameLoc.x;
+        int mouseY = mouseLoc.y - frameLoc.y;
+        int frameWidth = mainFrame.getWidth();
+        int frameHeight = mainFrame.getHeight();
+
+        // Teraz sprawdzamy odległość od krawędzi okna gry
+        if (mouseX <= SCROLL_EDGE_SIZE) {
+            newX -= SCROLL_SPEED;
+        } else if (mouseX >= frameWidth - SCROLL_EDGE_SIZE) {
+            newX += SCROLL_SPEED;
+        }
+
+        if (mouseY <= SCROLL_EDGE_SIZE) {
+            newY -= SCROLL_SPEED;
+        } else if (mouseY >= frameHeight - SCROLL_EDGE_SIZE) {
+            newY += SCROLL_SPEED;
+        }
+
+        // Ograniczenie, żeby nie wyjść poza planszę
+        newX = Math.max(0, Math.min(newX, getWidth() - viewport.getWidth()));
+        newY = Math.max(0, Math.min(newY, getHeight() - viewport.getHeight()));
+
+        viewport.setViewPosition(new Point(newX, newY));
     }
     ///////////// to sa koordynaty postajacach cryopitow
     private void spawnRandomCryopit() {
@@ -1250,8 +1348,8 @@ private void updateBuilderMenu() {
             for (ResourcesSteel resource : resources) { // Iteracja po zasobach
                 if (!resource.isDepleted() && harvester.getBounds().intersects(resource.getBounds())) {
                     // Harvester wydobywa zasoby
-                    resource.mineResource(1); // Zmniejsz ilość zasobów o 3 na sekundę
-                    collectedSteel += 1;     // Zwiększ liczbę zebranych zasobów
+                    resource.mineResource(2); // Zmniejsz ilość zasobów o 2 na sekundę
+                    collectedSteel += 2;     // Zwiększ liczbę zebranych zasobów
                 }
             }
         }
@@ -1715,17 +1813,12 @@ protected void paintComponent(Graphics g) {
             }
         }
     }
+
     for (ResourcesSteel resource : resources) {
         resource.draw(g);
-
-        // Ustawianie większej czcionki
-        Font largeFont = new Font("Arial", Font.BOLD, 15); // Czcionka Arial, pogrubiona, rozmiar 15
-        g.setFont(largeFont);
-
-        g.setColor(Color.WHITE);
-        g.drawString("Steel Collected: " + collectedSteel, getWidth() - 300, 20); // Zwiększono przesunięcie X, aby tekst się zmieścił
-        g.drawString("Power: " + totalPower, getWidth() - 200, 50); // Przesunięcie Y zwiększone, by uniknąć nachodzenia tekstu
     }
+
+
     for (Baracks b : baracks) {
         b.draw(g);
     }
@@ -1849,6 +1942,23 @@ protected void paintComponent(Graphics g) {
     }
 
 
+
+// Wyświetlanie zasobów niezależnie od przewijania mapy
+    Graphics2D g2dOverlay = (Graphics2D) g;
+    Font largeFont = new Font("Arial", Font.BOLD, 15); // Czcionka Arial, pogrubiona, rozmiar 15
+    g2dOverlay.setFont(largeFont);
+    g2dOverlay.setColor(Color.WHITE);
+
+// Oblicz przesunięcie widoku z JScrollPane (czyli przesunięcie mapy)
+    if (getParent() instanceof JViewport viewport) {
+        Point viewPos = viewport.getViewPosition();
+        int screenX = viewPos.x;
+        int screenY = viewPos.y;
+
+        // Tekst zawsze przyklejony do lewego górnego rogu widoku
+        g2dOverlay.drawString("Steel Collected: " + collectedSteel, screenX + 20, screenY + 30);
+        g2dOverlay.drawString("Power: " + totalPower, screenX + 20, screenY + 60);
+    }
 
 }
 }
