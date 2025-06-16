@@ -322,6 +322,7 @@ public class EnemyToo {
 
         if (closestPowerPlant != null && getBounds().intersects(closestPowerPlant.getBounds())) {
             powerPlants.remove(closestPowerPlant);
+
             System.out.println("EnemyToo zaatakował Harvester i usunął go z gry!");
 
         }

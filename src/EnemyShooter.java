@@ -46,14 +46,20 @@ public class EnemyShooter {
         int dy = battleVehicle.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    public boolean isInRange(PowerPlant powerPlant){
+        int dx = powerPlant.getX() - x;
+        int dy = powerPlant.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
 
-    private void chooseTarget(ArrayList<Soldier> soldiers, ArrayList<BattleVehicle> battleVehicles
+
+    private void chooseTarget(ArrayList<Soldier> soldiers, ArrayList<BattleVehicle> battleVehicles, ArrayList<PowerPlant> powerPlants
 //            , ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives
     )
     {
         currentTarget = null;
 
-        // Szukaj najbliższego Enemy w zasięgu
+        // Szukaj najbliższego do zaatakowania w zasięgu
         for (Soldier soldier : soldiers) {
             if (isInRange(soldier)) {
                 currentTarget = soldier;
@@ -66,9 +72,15 @@ public class EnemyShooter {
                 return; // Znaleziono cel
             }
         }
+        for (PowerPlant powerPlant : powerPlants) {
+            if (isInRange(powerPlant)){
+                currentTarget = powerPlant;
+                return;
+            }
+        }
     }
 
-    public void shoot(Graphics g, ArrayList<Projectile> projectiles, ArrayList<Soldier> soldiers, ArrayList<BattleVehicle> battleVehicles
+    public void shoot(Graphics g, ArrayList<Projectile> projectiles, ArrayList<Soldier> soldiers, ArrayList<BattleVehicle> battleVehicles,ArrayList<PowerPlant> powerPlants
 //            , ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives
     ) {
         long currentTime = System.currentTimeMillis();
@@ -77,13 +89,16 @@ public class EnemyShooter {
         if (currentTarget == null ||
                 (currentTarget instanceof Soldier && !soldiers.contains(currentTarget)) ||
                (currentTarget instanceof BattleVehicle && !battleVehicles.contains(currentTarget)) ||
+                (currentTarget instanceof PowerPlant && !powerPlants.contains(currentTarget)) ||
 
 //                (currentTarget instanceof Hive && !hives.contains(currentTarget)) ||
                 !(currentTarget instanceof Soldier soldier && isInRange(soldier)) &&
-                        !(currentTarget instanceof BattleVehicle battleVehicle && isInRange(battleVehicle))
+                        !(currentTarget instanceof BattleVehicle battleVehicle && isInRange(battleVehicle)) &&
+        !(currentTarget instanceof PowerPlant powerPlant && isInRange(powerPlant))
+
         )
         {
-            chooseTarget(soldiers, battleVehicles); // Wybierz nowy cel
+            chooseTarget(soldiers, battleVehicles, powerPlants); // Wybierz nowy cel
         }
 
         // Jeśli mamy ważny cel, strzelaj
@@ -93,7 +108,14 @@ public class EnemyShooter {
                     projectiles.add(new Projectile(x + 15, y + 15, soldier.getX() + 15, soldier.getY() + 15));
                     lastShotTime = currentTime;
                 }
-            } else if (currentTarget instanceof BattleVehicle battleVehicle) {
+            }
+            if (currentTarget instanceof PowerPlant powerPlant){
+                if (isInRange(powerPlant)) {
+                    projectiles.add(new Projectile(x + 15, y + 15, powerPlant.getX() + 15, powerPlant.getY() + 15));
+                    lastShotTime = currentTime;
+                }
+            }
+            else if (currentTarget instanceof BattleVehicle battleVehicle) {
                 if (isInRange(battleVehicle)) {
                     projectiles.add(new Projectile(x + 15, y + 15, battleVehicle.getX() + 15, battleVehicle.getY() + 15));
                     lastShotTime = currentTime;
@@ -112,7 +134,7 @@ public class EnemyShooter {
         moveTowardsSoldier(soldiers);
         moveTowardsBattleVehicle(battleVehicles);
 //        moveTowardsArtylery(artylerys);
-//        moveTowardsPowerPlant(powerPlants);
+        moveTowardsPowerPlant(powerPlants);
 //        attackClosestSoldier(soldiers);
 //        attackClosestBattleVehicle(battleVehicles);
 //        moveTowardsHarvester(harvesters);
@@ -139,6 +161,19 @@ public class EnemyShooter {
         }
         return closest;
     }
+    private PowerPlant getClosestPowerPlant(java.util.List<PowerPlant> powerPlants) {
+        PowerPlant closest = null;
+        double minDistance = Double.MAX_VALUE;
+
+        for (PowerPlant powerPlant : powerPlants) {
+            double distance =powerPlant.getPosition().distance(x, y);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closest = powerPlant;
+            }
+        }
+        return closest;
+    }
     private BattleVehicle getClosestBattleVehicle(java.util.List<BattleVehicle> battleVehicles) {
         BattleVehicle closest = null;
         double minDistance = Double.MAX_VALUE;
@@ -151,6 +186,19 @@ public class EnemyShooter {
             }
         }
         return closest;
+    }
+
+    public void  moveTowardsPowerPlant(List<PowerPlant> powerPlants){
+        PowerPlant closestPowerPlant = getClosestPowerPlant(powerPlants);
+        if (closestPowerPlant != null) {
+            int dx = closestPowerPlant.getX() - x;
+            int dy = closestPowerPlant.getY() - y;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance > 110) {
+                x += (int) (speed * dx / distance);
+                y += (int) (speed * dy / distance);
+            }
+        }
     }
 
     public void moveTowardsSoldier(List<Soldier> soldiers) {

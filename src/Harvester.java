@@ -9,7 +9,6 @@ public class Harvester {
     private int x, y; // Pozycja
     private int width = 30, height = 30; // Rozmiar
     private int speed = 1; // Prędkość poruszania
-    private int collectedResources = 0; // Ilość zebranych zasobów
     private boolean selected;
     private Point target;
 
@@ -56,11 +55,6 @@ public class Harvester {
         this.target = target;
     }
 
-    public int getCollectedResources() {
-        return collectedResources;
-    }
-
-
 
 
     // Rysowanie Harvestera
@@ -74,11 +68,6 @@ public class Harvester {
     }
 
 
-
-    // Symulacja zbierania zasobów
-    public void collectResource() {
-        collectedResources++;
-    }
 
 
 }

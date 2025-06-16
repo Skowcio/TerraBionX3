@@ -6,7 +6,7 @@ import javax.imageio.ImageIO;
 
 public class ResourcesSteel {
     private int x, y; // Pozycja na mapie
-    private int width = 60, height = 60; // Rozmiar
+    private int width = 80, height = 80; // Rozmiar
     private int resourceAmount; // Ilość zasobów
     private BufferedImage image; // Obraz zasobu
 
@@ -20,7 +20,7 @@ public class ResourcesSteel {
 
         // Wczytanie grafiki zasobu
         try {
-            image = ImageIO.read(getClass().getResource("/steel/steel.png")); // Ścieżka do obrazu
+            image = ImageIO.read(getClass().getResource("/steel/steel2.png")); // Ścieżka do obrazu
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Nie udało się załadować obrazu dla ResourcesSteel.");

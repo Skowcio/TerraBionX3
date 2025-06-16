@@ -47,15 +47,24 @@ public class Projectile {
         Rectangle soldierRect = new Rectangle(soldier.getX(), soldier.getY(), 20, 20);
         return projectileRect.intersects(soldierRect);
     }
+
     public boolean checkCollision(BattleVehicle battleVehicle) {
         Rectangle projectileRect = new Rectangle(x, y, 8, 8);
         Rectangle artyleryRect = new Rectangle(battleVehicle.getX(), battleVehicle.getY(), 20, 20);
         return projectileRect.intersects(artyleryRect);
     }
+
+
     public boolean checkCollision(Artylery artylery) {
         Rectangle projectileRect = new Rectangle(x, y, 8, 8);
         Rectangle artyleryRect = new Rectangle(artylery.getX(), artylery.getY(), 20, 20);
         return projectileRect.intersects(artyleryRect);
+    }
+
+    public boolean checkCollision(PowerPlant powerPlant) {
+        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
+        Rectangle powerPlantRect = new Rectangle(powerPlant.getX(), powerPlant.getY(), 20, 20);
+        return projectileRect.intersects(powerPlantRect);
     }
 
     public boolean checkCollision(BuilderVehicle builderVehicle) {

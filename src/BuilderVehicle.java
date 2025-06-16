@@ -9,7 +9,13 @@ public class BuilderVehicle {
     private int width = 25, height = 25;
     private int speed = 2;
     private boolean selected;
+    private int health = 5;
     private Point target;
+
+    public boolean takeDamage() {
+        health--;
+        return health <= 0; // Zwraca true, jeśli Hive zostało zniszczone
+    }
 
     public BuilderVehicle(int x, int y) {
         this.x = x;
@@ -58,6 +64,15 @@ public class BuilderVehicle {
             g.setColor(Color.GRAY);
             g.drawRect(x - 2, y - 2, 35, 35);
         }
-    }
 
+
+
+        // Pasek zdrowia
+        int maxHealth = 5; // Maksymalne zdrowie
+        int healthBarWidth = 25; // Stała długość paska zdrowia
+        int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
+
+        g.setColor(Color.GREEN);
+        g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
+    }
 }

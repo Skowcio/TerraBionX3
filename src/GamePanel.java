@@ -41,6 +41,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Baracks> baracks;
     private ArrayList<Factory> factories;
     private ArrayList<Bulding> buldings;
+    private ArrayList<SteelMine> steelMines;
     private Soldier selectedSoldier;
     private Minigunner selectedMinigunner;
     private BattleVehicle selectedBattleVehicle;
@@ -48,6 +49,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private Harvester selectedHarvester;
     private BuilderVehicle selectedBuilderVehicle;
     private Baracks selectedBaracks;
+    private SteelMine selectedSteelMines;
     private Factory selectedFactories;
 
     private JLabel countdownLabel; // to jest do tego by odliczalo budowe pojazdow
@@ -62,14 +64,25 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<ResourcesSteel> resources;
     private ArrayList<PowerPlant> powerPlants;
     private int collectedSteel = 10000; // Przechowuje zebraną ilość stali
-    private int totalPower = 0; // Całkowity dostępny power
+    private int totalPower = 0;
+    private final int MAX_POWER = 200;
+
+
     private JButton btnPowerPlant;
+    private JButton btnSteelMine;
     private JButton btnBaracks;
     private JButton btnFactory;
+
     private JButton btnSoldier;
+
     private JButton btnHarvester;
     private JButton btnBattleVehicle;
     private JButton btnArtylery;
+    private JButton btnBuilderVehicle;
+
+
+    // to do wskazywania miejsca gdzie budowac np powerplant itp na przyszlosc
+    private Rectangle placementCursor;
 
     //do przesowania myszka
     private final int SCROLL_EDGE_SIZE = 20; // ile pikseli od krawędzi reaguje
@@ -91,6 +104,23 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private boolean showBuilderMenu = false;
     private boolean showBaracksMenu = false;
     private boolean showFactorysMenu = false;
+
+
+    //do budowania elektrowni
+    private enum BuildingType {
+        POWER_PLANT, STEEL_MINE, BARRACKS, FACTORY
+    }
+
+    private boolean isPlacingBuilding = false;
+    private BuildingType buildingToPlace = null;
+
+    private boolean isPlacingPowerPlant = false;
+    private boolean isPlacingFactory = false;
+    private boolean isPlacingSteelMine = false;
+    private boolean isPlacingBarracks = false;
+    private Point currentMousePosition = null;
+    private final int BUILD_RANGE = 170;
+    private static final int BUILD_SIZE = 80;
 
     // to jest odpowiedzalne za to by nie pojawila sie jakas jednostka na sobie
 
@@ -117,11 +147,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         return false; // Pozycja jest wolna
     }
-    
 
 
 
-   /////////// do zaznaczania grupowego
+
+    /////////// do zaznaczania grupowego
     private Rectangle selectionRectangle = null; // Prostokąt zaznaczenia
     private Point startPoint = null; // Punkt początkowy zaznaczenia
 
@@ -129,6 +159,27 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private int waveNumber = 1; // Zaczynamy od fali nr 1
     private int baseEnemyCount = 2; // Początkowa liczba wrogów, tu musisz ustawic ile ich na poczatek sie pojawia podczas respa
 
+    public int getCollectedSteel() {
+        return collectedSteel;
+    }
+
+    public int getTotalPower() {
+        return totalPower;
+    }
+
+    private HUDPanel hudPanel; // dodaj pole
+
+    public void setHUDPanel(HUDPanel hudPanel) {
+        this.hudPanel = hudPanel;
+    }
+
+    // gdy zmieniasz zasoby:
+    public void addSteel(int amount) {
+        collectedSteel += amount;
+        if (hudPanel != null) {
+            hudPanel.repaint();
+        }
+    }
 
 
     public GamePanel(JFrame frame) {
@@ -145,6 +196,15 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             @Override
             public void mouseMoved(MouseEvent e) {
                 mousePosition = e.getPoint();
+
+                if (isPlacingBuilding && selectedBuilderVehicle != null) {
+                    int x = e.getX();
+                    int y = e.getY();
+
+                    // Płynna pozycja — bez wyrównania do siatki
+                    placementCursor = new Rectangle(x, y, BUILD_SIZE, BUILD_SIZE);
+                    repaint();
+                }
             }
 
             @Override
@@ -152,6 +212,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 mousePosition = e.getPoint();
             }
         });
+
 
 
 
@@ -173,8 +234,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             });
         }
 
-
-
         {
             // Ustawiamy większy rozmiar mapy
             this.setPreferredSize(new Dimension(3000, 3000));  // Zwiększamy rozmiar mapy
@@ -194,6 +253,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.hives = new ArrayList<>();
         this.cryopits = new ArrayList<>();
         this.powerPlants = new ArrayList<>();
+        this.steelMines = new ArrayList<>();
         this.soldiers = new ArrayList<>();
         this.minigunners = new ArrayList<>();
         this.battleVehicles = new ArrayList<>();
@@ -216,6 +276,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.selectedHarvester = null;
         this.selectedBuilderVehicle = null;
         this.selectedBaracks = null;
+        this.selectedSteelMines = null;
         this.selectedFactories = null;
         this.explosions = new ArrayList<>();
 
@@ -224,6 +285,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.projectiles = new ArrayList<>();
         this.baracks = new ArrayList<>();
         this.factories = new ArrayList<>();
+        this.steelMines = new ArrayList<>();
         this.buldings = new ArrayList<>();
 
 
@@ -267,28 +329,35 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     repaint(); // Odśwież panel
                 }
                 else {
-                        // Poinformuj gracza, że nie ma wystarczającej ilości stali
-                        System.out.println("Nie masz wystarczającej ilości stali! Potrzebujesz 1000 Steel.");
-                    }
+                    // Poinformuj gracza, że nie ma wystarczającej ilości stali
+                    System.out.println("Nie masz wystarczającej ilości stali! Potrzebujesz 1000 Steel.");
+                }
             }
         });
 
         setLayout(null);
 
         btnHarvester = new JButton("Harvester");
-                btnHarvester.setBounds(10, 50, 120, 30); // Pozycja i rozmiar
+        btnHarvester.setBounds(10, 90, 120, 30); // Pozycja i rozmiar
         btnHarvester.setVisible(false);
         add(btnHarvester);
 
         btnArtylery = new JButton("Artylery");
-            btnArtylery.setBounds(10, 90, 120, 30);
-            btnArtylery.setVisible(false);
-            add(btnArtylery);
+        btnArtylery.setBounds(10, 130, 120, 30);
+        btnArtylery.setVisible(false);
+        add(btnArtylery);
+
 
         btnBattleVehicle = new JButton("Armored Vehicle");
-        btnBattleVehicle.setBounds(10, 130, 120, 30); // Pozycja i rozmiar
+        btnBattleVehicle.setBounds(10, 170, 120, 30); // Pozycja i rozmiar
         btnBattleVehicle.setVisible(false);
         add(btnBattleVehicle);
+
+
+        btnBuilderVehicle = new JButton( "FENIX Drone");
+        btnBuilderVehicle.setBounds(10, 210, 120, 30);
+        btnBuilderVehicle.setVisible(false);
+        add(btnBuilderVehicle);
 
         // to sluzy do odliczania czasu budowy i wyswietlania
         countdownLabel = new JLabel("");
@@ -301,7 +370,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             if (selectedFactories != null) {
                 if (collectedSteel >= 2000) {
                     // Oblicz pozycję jednostki obok Baracks
-                    int harvesterX = selectedFactories.getX() + 50;
+                    int harvesterX = selectedFactories.getX() + 120;
                     int harvesterY = selectedFactories.getY();
 
                     // Dodaj jednostkę herv
@@ -327,7 +396,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             if (selectedFactories != null) {
                 if (collectedSteel >= 2000) {
                     // Oblicz pozycję jednostki obok Factory
-                    int artyleryX = selectedFactories.getX() + 50;
+                    int artyleryX = selectedFactories.getX() + 120;
                     int artyleryY = selectedFactories.getY();
 
                     // Dodaj jednostkę arty
@@ -346,12 +415,58 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 }
             }
         });
+
+        setLayout(null);
+        btnBuilderVehicle.addActionListener(e -> {
+            if (selectedFactories != null) {
+                if (collectedSteel >= 2000) {
+                    if (builderVehicles.size() >= 5) {
+                        System.out.println("Limit FENIX Drone osiągnięty (max 5).");
+                        return; // Nie buduj więcej
+                    }
+
+                    int builderVehicleX = selectedFactories.getX() + 120;
+                    int builderVehicleY = selectedFactories.getY();
+
+                    collectedSteel -= 2000;
+
+                    selectedFactories.startProduction(10); // nowa metoda fabryki
+                    updateFactorysMenu();
+                    repaint();
+
+                    Timer countdownTimer = new Timer(1000, new ActionListener() {
+                        int secondsLeft = 10;
+
+                        @Override
+                        public void actionPerformed(ActionEvent event) {
+                            secondsLeft--;
+                            if (secondsLeft <= 0) {
+                                ((Timer) event.getSource()).stop();
+
+                                // Sprawdzenie ponownie (jeśli coś zmieniło się przez te 10 sekund)
+                                if (builderVehicles.size() < 5) {
+                                    builderVehicles.add(new BuilderVehicle(builderVehicleX, builderVehicleY));
+                                    System.out.println("Dodano Armored Vehicle po 10 sekundach.");
+                                } else {
+                                    System.out.println("Produkcja anulowana - osiągnięto limit 5 FENIX.");
+                                }
+
+                                showFactorysMenu = false;
+                                updateFactorysMenu();
+                                repaint();
+                            }
+                        }
+                    });
+                    countdownTimer.start();
+                }
+            }
+        });
         setLayout(null);
 
         btnBattleVehicle.addActionListener(e -> {
             if (selectedFactories != null) {
                 if (collectedSteel >= 2000) {
-                    int battleVehicleX = selectedFactories.getX() + 50;
+                    int battleVehicleX = selectedFactories.getX() + 120;
                     int battleVehicleY = selectedFactories.getY();
 
                     collectedSteel -= 2000;
@@ -391,138 +506,62 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 //            }
 //        });
 //////////////////////////////////////////// przyciski do budowania budynkow u buldiera //////////////
-
+        setLayout(null); // Ustawienie ręcznego układu dla dodania przycisków
+        // Tworzenie przycisków
         btnPowerPlant = new JButton("Power Plant");
-        btnPowerPlant.setBounds(10, 50, 120, 30); // Pozycja i rozmiar
-        btnPowerPlant.setVisible(false); // Ukryj przycisk na starcie
+        btnPowerPlant.setBounds(10, 90, 120, 30);
+        btnPowerPlant.setVisible(false);
         add(btnPowerPlant);
 
+        btnSteelMine = new JButton("Steel Mine");
+        btnSteelMine.setBounds(10,130,120,30);
+        btnSteelMine.setVisible(false);
+        btnSteelMine.setEnabled(false);
+        add(btnSteelMine);
+
         btnBaracks = new JButton("Barracks");
-        btnBaracks.setBounds(10, 90, 120, 30);
-        btnBaracks.setVisible(false);
+        btnBaracks.setBounds(10, 170, 120, 30);
+        btnBaracks.setVisible(false);    // Ukryj na starcie
+        btnBaracks.setEnabled(false);    // Zablokuj kliknięcie na starcie
         add(btnBaracks);
 
         btnFactory = new JButton("Factory");
-        btnFactory.setBounds(10, 130, 120, 30);
+        btnFactory.setBounds(10, 210, 120, 30);
         btnFactory.setVisible(false);
+        btnFactory.setEnabled(false);
         add(btnFactory);
 
-        // Dodaj logikę dla każdego przycisku
+// Logika dla Power Plant
+
         btnPowerPlant.addActionListener(e -> {
-            if (selectedBuilderVehicle != null) {
-                if (collectedSteel >= 1000) {
-                    // Oblicz pozycję elektrowni obok BuilderVehicle
-                    int plantX = selectedBuilderVehicle.getX() + 50;
-                    int plantY = selectedBuilderVehicle.getY();
-
-                    // Utwórz prostokąt dla nowego budynku
-                    Rectangle newBuilding = new Rectangle(plantX, plantY, 50, 50);
-
-                    // Sprawdź kolizję z innymi budynkami
-                    boolean collision = false;
-                    for (PowerPlant plant : powerPlants) {
-                        if (plant.getBounds().intersects(newBuilding)) {
-                            collision = true;
-                            break;
-                        }
-                    }
-                    for (Baracks barack : baracks) {
-                        if (barack.getBounds().intersects(newBuilding)) {
-                            collision = true;
-                            break;
-                        }
-                    }
-                    // Jeśli nie ma kolizji, dodaj nowy budynek
-                    if (!collision) {
-                        powerPlants.add(new PowerPlant(plantX, plantY));
-                        collectedSteel -= 1000;
-                        totalPower += PowerPlant.getPowerGenerated();
-                        System.out.println("Dodano Power Plant. Prąd: " + totalPower + ", Stal: " + collectedSteel);
-                        repaint();
-                    } else {
-                        System.out.println("Nie można postawić budynku tutaj! Miejsce zajęte.");
-                    }
-                } else {
-                    System.out.println("Nie masz wystarczającej ilości stali! Potrzebujesz 1000 Steel.");
-                }
+            if (selectedBuilderVehicle != null && collectedSteel >= 1000) {
+                isPlacingBuilding = true;
+                buildingToPlace = BuildingType.POWER_PLANT;
+                System.out.println("Wybierz miejsce budowy Power Plant.");
             }
         });
-        //przycisk w menu jak zrobisz baraki
+
+        btnSteelMine.addActionListener(e -> {
+            if (selectedBuilderVehicle != null && collectedSteel >= 1500 && totalPower >= 150) {
+                isPlacingBuilding = true;
+                buildingToPlace = BuildingType.STEEL_MINE;
+                System.out.println("Wybierz miejsce budowy Steel Mine.");
+            }
+        });
+
         btnBaracks.addActionListener(e -> {
-            if (selectedBuilderVehicle != null) {
-                // Sprawdź, czy gracz ma wystarczającą ilość stali i prądu
-                if (collectedSteel >= 1500 && totalPower >= 100) {
-                    // Oblicz pozycję koszar obok BuilderVehicle
-                    int baracksX = selectedBuilderVehicle.getX() + 50; // 50 pikseli na prawo
-                    int baracksY = selectedBuilderVehicle.getY();
-
-                    // Utwórz prostokąt dla nowych koszar
-                    Rectangle newBuilding = new Rectangle(baracksX, baracksY, 50, 50);
-
-                    // Sprawdź kolizję z innymi budynkami
-                    boolean collision = false;
-                    for (PowerPlant plant : powerPlants) {
-                        if (plant.getBounds().intersects(newBuilding)) {
-                            collision = true;
-                            break;
-                        }
-                    }
-                    for (Baracks barack : baracks) {
-                        if (barack.getBounds().intersects(newBuilding)) {
-                            collision = true;
-                            break;
-                        }
-                    }
-
-                    // Jeśli nie ma kolizji, dodaj nowe koszary
-                    if (!collision) {
-                        baracks.add(new Baracks(baracksX, baracksY));
-
-                        // Odejmij zasoby
-                        collectedSteel -= 1500;
-                        totalPower -= 100;
-
-                        System.out.println("Dodano Baracks. Stal: " + collectedSteel + ", Prąd: " + totalPower);
-
-                        // Ukryj menu budowy i odśwież panel
-                        showBuilderMenu = false;
-                        updateBuilderMenu();
-                        repaint(); // Odśwież panel
-                    } else {
-                        System.out.println("Nie można postawić koszar tutaj! Miejsce zajęte.");
-                    }
-                } else {
-                    // Poinformuj gracza, że nie ma wystarczających zasobów
-                    System.out.println("Nie masz wystarczających zasobów! Potrzebujesz 1500 Steel i 100 Power.");
-                }
+            if (selectedBuilderVehicle != null && collectedSteel >= 1500 && totalPower >= 150) {
+                isPlacingBuilding = true;
+                buildingToPlace = BuildingType.BARRACKS;
+                System.out.println("Wybierz miejsce budowy Baracks.");
             }
         });
-        //przycisk do robienia Factory/
+
         btnFactory.addActionListener(e -> {
-            if (selectedBuilderVehicle != null) {
-                // Sprawdź, czy gracz ma wystarczającą ilość stali i prądu
-                if (collectedSteel >= 2500 && totalPower >= 100) {
-                    // Oblicz pozycję koszar obok BuilderVehicle
-                    int factoriesX = selectedBuilderVehicle.getX() + 50; // 50 pikseli na prawo
-                    int factoriesY = selectedBuilderVehicle.getY();
-
-                    // Dodaj koszary do listy
-                    factories.add(new Factory(factoriesX, factoriesY));
-
-                    // Odejmij zasoby
-                    collectedSteel -= 2500;
-                    totalPower -= 100;
-
-                    System.out.println("Dodano Factory Stal: " + collectedSteel + ", Prąd: " + totalPower);
-
-                    // Ukryj menu budowy i odśwież panel
-                    showBuilderMenu = false;
-                    updateBuilderMenu();
-                    repaint(); // Odśwież panel
-                } else {
-                    // Poinformuj gracza, że nie ma wystarczających zasobów
-                    System.out.println("Nie masz wystarczających zasobów! Potrzebujesz 1500 Steel i 100 Power.");
-                }
+            if (selectedBuilderVehicle != null && collectedSteel >= 3000 && totalPower >= 150) {
+                isPlacingBuilding = true;
+                buildingToPlace = BuildingType.FACTORY;
+                System.out.println("Wybierz miejsce budowy Factory.");
             }
         });
 
@@ -531,14 +570,14 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         // Dodajemy 4 losowe pola Stalil Resources Steel
         Random rand = new Random();
         for (int i = 0; i < 13; i++) {
-            int x = rand.nextInt(1800); // Losowa pozycja X na mapie
-            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
+            int x = rand.nextInt(3000); // Losowa pozycja X na mapie
+            int y = rand.nextInt(3000); // Losowa pozycja Y na mapie
             resources.add(new ResourcesSteel(x, y));
         }
         /////////////////////////////////// tu dodaje hives//// od prawej strony
-        for (int i = 0; i < 3; i++) {
-            int x = 920 + rand.nextInt(811); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
+        for (int i = 0; i < 11; i++) {
+            int x = 920 + rand.nextInt(3000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+            int y = rand.nextInt(3000); // Losowa pozycja Y na mapie
             hives.add(new Hive(x, y));
 //                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
 //                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
@@ -620,7 +659,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             }
             //tu masz resp czołgi
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 8; i++) {
             int maxAttempts = 100; // Ograniczenie prób, by uniknąć nieskończonej pętli
             int attempts = 0;
             int x, y;
@@ -705,15 +744,15 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 //                x = rand.nextInt(1400);  // Losowa pozycja na osi X w granicach szerokości planszy
 //                y = -20;  // Pozycja na górze poza mapą
 //            }
-           ////// tu poniżej musi być else if/////////////////////
-             if (side == 1) {  // Dolna część
+            ////// tu poniżej musi być else if/////////////////////
+            if (side == 1) {  // Dolna część
                 x = rand.nextInt(1400);  // Losowa pozycja na osi X w granicach szerokości planszy
                 y = 520;  // Pozycja na dole poza mapą
             } else if (side == 2) {  // Lewa część
                 x = -20;  // Pozycja na lewej krawędzi poza mapą
                 y = rand.nextInt(800);  // Losowa pozycja na osi Y w granicach wysokości planszy
             }
-              if (side == 3) {  // Prawa część
+            if (side == 3) {  // Prawa część
                 x = 720;  // Pozycja na prawej krawędzi poza mapą
                 y = rand.nextInt(800);  // Losowa pozycja na osi Y w granicach wysokości planszy
             }
@@ -746,6 +785,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 // Timer dla strzelania wrogów
         enemyShootingTimer = new Timer(700, e -> enemyShoot());
         enemyShootingTimer.start();
+
+        Timer resourcesTimer = new Timer(100, e -> {
+            updateGameresources();
+        });
+        resourcesTimer.start();
 
 //        movementTimer = new Timer(20, e -> moveSoldiers());
 //        movementTimer.start();
@@ -832,12 +876,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
     // menu buldiera
-private void updateBuilderMenu() {
-    btnPowerPlant.setVisible(showBuilderMenu);
-    btnBaracks.setVisible(showBuilderMenu);
-    btnFactory.setVisible(showBuilderMenu);
-    repaint(); // Odśwież panel
-}
+    private void updateBuilderMenu() {
+        btnPowerPlant.setVisible(showBuilderMenu);
+        btnSteelMine.setVisible(showBuilderMenu);
+        btnBaracks.setVisible(showBuilderMenu);
+        btnFactory.setVisible(showBuilderMenu);
+        repaint(); // Odśwież panel
+    }
 
 
     private void updateBaracksMenu() {
@@ -855,6 +900,7 @@ private void updateBuilderMenu() {
         btnHarvester.setVisible((showFactorysMenu));
         btnArtylery.setVisible((showFactorysMenu));
         btnBattleVehicle.setVisible((showFactorysMenu));
+        btnBuilderVehicle.setVisible((showFactorysMenu));
         repaint();
     }
     private void showPauseMenu() {
@@ -900,7 +946,7 @@ private void updateBuilderMenu() {
     }
 
 
-//
+    //
     private void enemyShoot() {
         for (Enemy enemy : enemies) {
             Projectile projectile = enemy.shootAtNearestSoldier(soldiers);
@@ -949,7 +995,7 @@ private void updateBuilderMenu() {
         }
     }
 
-// tu jest gdy Enemy strzela w twoje jednostki
+    // tu jest gdy Enemy strzela w twoje jednostki
     private void updateProjectiles() {
         ArrayList<Projectile> toRemove = new ArrayList<>();
         for (Projectile projectile : projectiles) {
@@ -960,6 +1006,17 @@ private void updateBuilderMenu() {
                 if (projectile.checkCollision(soldier)) {
                     toRemove.add(projectile);
                     soldiers.remove(soldier); // Usuń żołnierza po trafieniu
+                    break;
+                }
+            }
+            for (PowerPlant powerPlant : powerPlants) {
+                if (projectile.checkCollision(powerPlant)) {
+                    toRemove.add(projectile);
+
+                    // Dodaj eksplozję w miejscu trafienia
+                    explosions.add(new Explosion(powerPlant.getX(), powerPlant.getY()));
+
+                    powerPlants.remove(powerPlant);
                     break;
                 }
             }
@@ -1253,7 +1310,7 @@ private void updateBuilderMenu() {
 
         repaint();
     }
-//////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
     private void shootEnemies() { // to do strzelania w wrogow za pomoca bullet
         ArrayList<Bullet> bulletsToRemove = new ArrayList<>();
 
@@ -1268,7 +1325,7 @@ private void updateBuilderMenu() {
                     if (bullet.checkCollision(enemy)) {
                         bulletsToRemove.add(bullet);
                         if (enemy.takeDamage2()){
-                        enemies.remove(enemy);
+                            enemies.remove(enemy);
                         }
                         break;
                     }
@@ -1311,7 +1368,7 @@ private void updateBuilderMenu() {
                     if (bullet.checkCollision(enemyToo)) {
                         bulletsToRemove.add(bullet);
                         if (enemyToo.takeDamage2()){
-                        enemiesToo.remove(enemyToo);
+                            enemiesToo.remove(enemyToo);
                         }
                         break;
                     }
@@ -1324,7 +1381,38 @@ private void updateBuilderMenu() {
 
         repaint();
     }
-//update co się dzieje w grze
+
+    private void updateGameresources(){
+        for (Harvester harvester : harvesters) { // Iteracja po liście harvesterów
+            for (ResourcesSteel resource : resources) { // Iteracja po zasobach
+                if (!resource.isDepleted() && harvester.getBounds().intersects(resource.getBounds())) {
+                    // Harvester wydobywa zasoby
+                    resource.mineResource(2); // Zmniejsz ilość zasobów o 2 na sekundę
+                    collectedSteel += 2;     // Zwiększ liczbę zebranych zasobów
+                }
+            }
+        }
+        for (SteelMine steelMine : steelMines) {
+            for (ResourcesSteel resource : resources) { // Iteracja po zasobach
+                if (!resource.isDepleted() && steelMine.getBounds().intersects(resource.getBounds())) {
+                    // Harvester wydobywa zasoby
+                    resource.mineResource(2); // Zmniejsz ilość zasobów o 2 na sekundę
+                    collectedSteel += 2;     // Zwiększ liczbę zebranych zasobów
+                }
+            }
+        }
+        // tu zrob by poporstu gdy jest powerplant to dodaje co 1 s 1 produ
+        for (PowerPlant powerPlant : powerPlants) {
+            if (totalPower < MAX_POWER) {
+                totalPower += 1; // każda elektrownia dodaje 1
+                if (totalPower > MAX_POWER) {
+                    totalPower = MAX_POWER;
+                }
+            }
+        }
+        repaint();
+    }
+    //update co się dzieje w grze gdy trafi w cos dany pocisk ?
     private void updateGame() {
 
         bullets.removeIf(bullet -> bullet.isOutOfBounds(getWidth(), getHeight()) || bullet.isExpired());
@@ -1344,20 +1432,14 @@ private void updateBuilderMenu() {
         for (Enemy enemy : enemies) {
             enemy.move();
         }
-        for (Harvester harvester : harvesters) { // Iteracja po liście harvesterów
-            for (ResourcesSteel resource : resources) { // Iteracja po zasobach
-                if (!resource.isDepleted() && harvester.getBounds().intersects(resource.getBounds())) {
-                    // Harvester wydobywa zasoby
-                    resource.mineResource(2); // Zmniejsz ilość zasobów o 2 na sekundę
-                    collectedSteel += 2;     // Zwiększ liczbę zebranych zasobów
-                }
-            }
-        }
-        repaint();
+        // do zbierania zasobow
+
+
+                repaint();
     }
 
 
-/////////////////////////// to jest ten, no, spawn wrogow co jakis czas na mapie losowo
+    /////////////////////////// to jest ten, no, spawn wrogow co jakis czas na mapie losowo
     @Override
     public void actionPerformed(ActionEvent e) {
         long currentTime = System.currentTimeMillis();
@@ -1421,13 +1503,25 @@ private void updateBuilderMenu() {
 ////                y = rand.nextInt(800);  // Losowa pozycja na osi Y w granicach wysokości planszy
 ////            }
 //
-////            enemiesToo.add(new EnemyToo(rand.nextInt(1700), rand.nextInt(750)));
+    ////            enemiesToo.add(new EnemyToo(rand.nextInt(1700), rand.nextInt(750)));
 //            enemiesToo.add(new EnemyToo(x, y));
 //
 //        }
 //        }
 //
 //
+    private void cancelBuildingPlacement() {
+        isPlacingBuilding = false;
+        isPlacingPowerPlant = false;
+        isPlacingFactory = false;
+        isPlacingBarracks = false;
+        isPlacingSteelMine = false;
+        placementCursor = null;
+        showBuilderMenu = false;     // <-- dodaj to
+        selectedBuilderVehicle = null; // <-- ważne, inaczej builder nadal zaznaczony
+        updateBuilderMenu();         // <-- i to, żeby zniknął interfejs
+        repaint();
+    }
 
 
     @Override
@@ -1448,7 +1542,74 @@ private void updateBuilderMenu() {
 
     @Override
     public void mousePressed(MouseEvent e) {
+        if (isPlacingBuilding && selectedBuilderVehicle != null && SwingUtilities.isLeftMouseButton(e)) {
+            int mouseX = e.getX();
+            int mouseY = e.getY();
 
+            Point builderPos = selectedBuilderVehicle.getPosition();
+            double distance = builderPos.distance(mouseX, mouseY);
+
+            if (distance <= BUILD_RANGE) {
+                Rectangle newBuilding = new Rectangle(mouseX, mouseY, BUILD_SIZE, BUILD_SIZE);
+
+                boolean collision = false;
+                for (PowerPlant plant : powerPlants)
+                    if (plant.getBounds().intersects(newBuilding)) collision = true;
+
+                for (SteelMine mine : steelMines)
+                    if (mine.getBounds().intersects(newBuilding)) collision = true;
+
+                for (Baracks barack : baracks)
+                    if (barack.getBounds().intersects(newBuilding)) collision = true;
+
+                for (Factory factory : factories)
+                    if (factory.getBounds().intersects(newBuilding)) collision = true;
+
+                if (!collision) {
+                    switch (buildingToPlace) {
+                        case POWER_PLANT:
+                            powerPlants.add(new PowerPlant(mouseX, mouseY));
+                            collectedSteel -= 1000;
+                            totalPower += PowerPlant.getPowerGenerated();
+                            btnSteelMine.setVisible(true);
+                            btnSteelMine.setEnabled(true);
+                            btnBaracks.setVisible(true);
+                            btnBaracks.setEnabled(true);
+                            btnFactory.setVisible(true);
+                            btnFactory.setEnabled(true);
+                            break;
+                        case STEEL_MINE:
+                            steelMines.add(new SteelMine(mouseX, mouseY));
+                            collectedSteel -= 1500;
+                            totalPower -= 100;
+                            break;
+                        case BARRACKS:
+                            baracks.add(new Baracks(mouseX, mouseY));
+                            collectedSteel -= 1500;
+                            totalPower -= 100;
+                            break;
+                        case FACTORY:
+                            factories.add(new Factory(mouseX, mouseY));
+                            collectedSteel -= 2500;
+                            totalPower -= 100;
+                            break;
+                    }
+
+                    isPlacingBuilding = false;
+                    buildingToPlace = null;
+                    placementCursor = null;
+                    showBuilderMenu = false;
+                    updateBuilderMenu();
+                    repaint();
+                } else {
+                    System.out.println("Kolizja! Nie można budować w tym miejscu.");
+                }
+            } else {
+                System.out.println("Za daleko od buildera.");
+            }
+
+            return;
+        }
         if (SwingUtilities.isLeftMouseButton(e)) {
             startPoint = e.getPoint(); // Zapisanie punktu początkowego zaznaczenia
             selectionRectangle = new Rectangle(); // Inicjalizacja prostokąta zaznaczenia
@@ -1539,7 +1700,7 @@ private void updateBuilderMenu() {
             for (Factory factory : factories){
                 factory.setSelected(false);
 
-                if (new Rectangle(factory.getX(), factory.getY(),55, 55).contains(e.getPoint())){
+                if (new Rectangle(factory.getX(), factory.getY(),115, 115).contains(e.getPoint())){
                     selectedFactories = factory;
                     factory.setSelected(true);
                     System.out.println("Zaznaczono Factory.");
@@ -1581,32 +1742,6 @@ private void updateBuilderMenu() {
         }
 
 
-//        int mouseX = e.getX();
-//        int mouseY = e.getY();
-//
-//        // Sprawdź, czy kliknięto na koszary
-//        for (Baracks b : baracks) {
-//            if (b.contains(mouseX, mouseY)) {
-//                // Zaznacz koszary
-//                for (Baracks other : baracks) {
-//                    other.setSelected(false); // Odznacz pozostałe
-//                }
-//                b.setSelected(true);
-//                showBaracksMenu = true; // Wyświetl menu koszar
-//                updateBaracksMenu();
-//                repaint();
-//                return;
-//            }
-//        }
-//
-//        // Jeśli kliknięto poza koszarami, odznacz wszystkie
-//        for (Baracks b : baracks) {
-//            b.setSelected(false);
-//        }
-//        showBaracksMenu = false;
-//        updateBaracksMenu();
-
-
         else if (SwingUtilities.isRightMouseButton(e)) {
             // Odznacz żołnierza
             if (selectedSoldier != null) {
@@ -1628,23 +1763,22 @@ private void updateBuilderMenu() {
                 selectedBattleVehicle = null;
             }
             // kliknieciem prawym odznaczy zaznaczone jednostki
-             if (selectedHarvester != null) {
+            if (selectedHarvester != null) {
                 selectedHarvester.setSelected(false);
                 selectedHarvester = null;
             }
 
-             if (selectedBuilderVehicle != null){
-                 selectedBuilderVehicle.setSelected(false);
-                 showBuilderMenu = false;
-                 updateBuilderMenu();
-                 selectedBuilderVehicle = null;
-             }
-             if (selectedBaracks != null) {
-                 selectedBaracks.setSelected(false);
-                 showBaracksMenu = false;
-                 updateBaracksMenu();
-                 selectedBaracks = null;
-             }
+            if (selectedBuilderVehicle != null) {
+                cancelBuildingPlacement(); // wyłącza tryb budowy i menu
+            }
+
+            if (selectedBaracks != null) {
+                selectedBaracks.setSelected(false);
+                showBaracksMenu = false;
+                updateBaracksMenu();
+                selectedBaracks = null;
+            }
+
             if (selectedFactories != null) {
                 selectedFactories.setSelected(false);
                 showFactorysMenu = false;
@@ -1703,7 +1837,7 @@ private void updateBuilderMenu() {
         }
     }
 
-////////////// zazanczanie wielu jednostek - na razie ttylko soldier
+    ////////////// zazanczanie wielu jednostek - na razie ttylko soldier
     @Override
     public void mouseReleased(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e) && selectionRectangle != null) {
@@ -1779,8 +1913,17 @@ private void updateBuilderMenu() {
     @Override
     public void mouseExited(MouseEvent e) {}
 
+
     @Override
-    public void mouseMoved(MouseEvent e) {}
+    public void mouseMoved(MouseEvent e) {
+        if (isPlacingPowerPlant && selectedBuilderVehicle != null) {
+            int x = (e.getX() / BUILD_SIZE) * BUILD_SIZE;
+            int y = (e.getY() / BUILD_SIZE) * BUILD_SIZE;
+
+            placementCursor = new Rectangle(e.getX(), e.getY(), BUILD_SIZE, BUILD_SIZE);
+            repaint();
+        }
+    }
 
 //    @Override
 //    public void mouseDragged(MouseEvent e) {}
@@ -1790,95 +1933,102 @@ private void updateBuilderMenu() {
 //        // Logika reakcji na zdarzenia
 //    }
 
-@Override
-protected void paintComponent(Graphics g) {
-    super.paintComponent(g);
-    // Rysowanie mapy (w tym przypadku tylko prostokąt)
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        // Rysowanie mapy (w tym przypadku tylko prostokąt)
 
-    g.fillRect(0, 0, 3000, 3000); // Rysowanie mapy 3000x3000
+        g.fillRect(0, 0, 3000, 3000); // Rysowanie mapy 3000x3000
 
-    long currentTime = System.currentTimeMillis();
-    long deltaTime = currentTime - previousTime;
-    previousTime = currentTime;
+        long currentTime = System.currentTimeMillis();
+        long deltaTime = currentTime - previousTime;
+        previousTime = currentTime;
 
 //        setBackground(Color.WHITE);
-    // Rysowanie tła
-    if (backgroundImage != null) {
-        int imgWidth = backgroundImage.getWidth(null);
-        int imgHeight = backgroundImage.getHeight(null);
+        // Rysowanie tła
+        if (backgroundImage != null) {
+            int imgWidth = backgroundImage.getWidth(null);
+            int imgHeight = backgroundImage.getHeight(null);
 
-        for (int x = 0; x < getWidth(); x += imgWidth) {
-            for (int y = 0; y < getHeight(); y += imgHeight) {
-                g.drawImage(backgroundImage, x, y, this);
+            for (int x = 0; x < getWidth(); x += imgWidth) {
+                for (int y = 0; y < getHeight(); y += imgHeight) {
+                    g.drawImage(backgroundImage, x, y, this);
+                }
             }
         }
-    }
 
-    for (ResourcesSteel resource : resources) {
-        resource.draw(g);
-    }
+        // Usunięcie wyczerpanych złóż
+        resources.removeIf(ResourcesSteel::isDepleted);
 
 
-    for (Baracks b : baracks) {
-        b.draw(g);
-    }
-
-    for (int i = explosions.size() - 1; i >= 0; i--) {
-        Explosion explosion = explosions.get(i);
-        explosion.draw(g);
-        explosion.checkEnemyCollision(enemiesToo, enemies, hives, enemyHunters, enemyShooters); // Sprawdza kolizję z wrogami
-
-        if (explosion.isExpired()) {
-            explosions.remove(i); // Usunięcie eksplozji, gdy animacja się kończy
+        for (ResourcesSteel resource : resources) {
+            resource.draw(g);
         }
-    }
 
-    if (selectionRectangle != null) {
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(new Color(0, 0, 255, 50)); // Półprzezroczysty niebieski
-        g2d.fill(selectionRectangle);
-        g2d.setColor(Color.BLUE); // Krawędź prostokąta
-        g2d.draw(selectionRectangle);
-    }
 
-    // Rysowanie elektrowni
-    for (PowerPlant powerPlant : powerPlants) {
-        powerPlant.draw(g);
-    }
-    for (Factory factory : factories) {
-        factory.draw(g);
-    }
+        for (Baracks b : baracks) {
+            b.draw(g);
+        }
 
-    for (Harvester harvester : harvesters) {
-        harvester.draw(g);
-    }
-    for (Cryopit cryopit : cryopits){
-        cryopit.drawAll(g);
-    }
-    // Rysowanie żołnierzy
-    for (Soldier soldier : soldiers) {
-        soldier.draw(g);
-        soldier.shoot(g, bullets, enemies, enemiesToo, hives, enemyShooters, enemyHunters); // Żołnierz strzela
-    }
-    for (Minigunner minigunner : minigunners) {
-        minigunner.draw(g);
-        minigunner.shoot(g, minigunnerBullets, enemies, enemiesToo, hives, enemyShooters, enemyHunters); // Żołnierz strzela
-    }
+        for (int i = explosions.size() - 1; i >= 0; i--) {
+            Explosion explosion = explosions.get(i);
+            explosion.draw(g);
+            explosion.checkEnemyCollision(enemiesToo, enemies, hives, enemyHunters, enemyShooters); // Sprawdza kolizję z wrogami
 
-    for (BattleVehicle battleVehicle : battleVehicles){
-        battleVehicle.draw(g);
-        battleVehicle.update(deltaTime);
-        battleVehicle.shoot(g, bullets, enemies, enemiesToo, hives, enemyShooters);
-    }
-    for (Artylery artylery : artylerys){
-        artylery.draw(g);
-        artylery.shoot(g, artBullets, enemies, enemiesToo, hives, enemyShooters);
-    }
+            if (explosion.isExpired()) {
+                explosions.remove(i); // Usunięcie eksplozji, gdy animacja się kończy
+            }
+        }
 
-    for (Hive hive : hives) {
-        hive.draw(g);
-        hive.spawnEnemiesToo(g, enemiesToo, enemyShooters, enemyHunters); // Aktualizuje Hive i spawnuje EnemyToo
-    }
+        if (selectionRectangle != null) {
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setColor(new Color(0, 0, 255, 50)); // Półprzezroczysty niebieski
+            g2d.fill(selectionRectangle);
+            g2d.setColor(Color.BLUE); // Krawędź prostokąta
+            g2d.draw(selectionRectangle);
+        }
+
+        // Rysowanie elektrowni
+        for (PowerPlant powerPlant : powerPlants) {
+            powerPlant.draw(g);
+        }
+        for (SteelMine steelMine : steelMines) {
+            steelMine.draw(g);
+        }
+        for (Factory factory : factories) {
+            factory.draw(g);
+        }
+
+        for (Harvester harvester : harvesters) {
+            harvester.draw(g);
+        }
+        for (Cryopit cryopit : cryopits){
+            cryopit.drawAll(g);
+        }
+        // Rysowanie żołnierzy
+        for (Soldier soldier : soldiers) {
+            soldier.draw(g);
+            soldier.shoot(g, bullets, enemies, enemiesToo, hives, enemyShooters, enemyHunters); // Żołnierz strzela
+        }
+        for (Minigunner minigunner : minigunners) {
+            minigunner.draw(g);
+            minigunner.shoot(g, minigunnerBullets, enemies, enemiesToo, hives, enemyShooters, enemyHunters); // Żołnierz strzela
+        }
+
+        for (BattleVehicle battleVehicle : battleVehicles){
+            battleVehicle.draw(g);
+            battleVehicle.update(deltaTime);
+            battleVehicle.shoot(g, bullets, enemies, enemiesToo, hives, enemyShooters);
+        }
+        for (Artylery artylery : artylerys){
+            artylery.draw(g);
+            artylery.shoot(g, artBullets, enemies, enemiesToo, hives, enemyShooters);
+        }
+
+        for (Hive hive : hives) {
+            hive.draw(g);
+            hive.spawnEnemiesToo(g, enemiesToo, enemyShooters, enemyHunters); // Aktualizuje Hive i spawnuje EnemyToo
+        }
 
         for (EnemyHunter enemyHunter : enemyHunters){
             enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, enemyHunters);
@@ -1886,79 +2036,109 @@ protected void paintComponent(Graphics g) {
         }
 
 
-    // Rysowanie wrogów
-    for (Enemy enemy : enemies) {
-        enemy.draw(g);
-    }
-    for (EnemyShooter enemyShooter : enemyShooters){
-        enemyShooter.draw(g);
-        enemyShooter.shoot(g, projectiles, soldiers, battleVehicles);
-    }
-    //budowniczy
-    for (BuilderVehicle builderVehicle :builderVehicles) {
-        builderVehicle.draw(g);
-    }
+        // Rysowanie wrogów
+        for (Enemy enemy : enemies) {
+            enemy.draw(g);
+        }
+        for (EnemyShooter enemyShooter : enemyShooters){
+            enemyShooter.draw(g);
+            enemyShooter.shoot(g, projectiles, soldiers, battleVehicles, powerPlants);
+        }
+        //budowniczy
+        for (BuilderVehicle builderVehicle :builderVehicles) {
+            builderVehicle.draw(g);
+        }
 
 
-    // Rysowanie wrogów EnemyToo
-    for (EnemyToo enemyToo : enemiesToo) {
-        enemyToo.draw(g);
-    }
+        // Rysowanie wrogów EnemyToo
+        for (EnemyToo enemyToo : enemiesToo) {
+            enemyToo.draw(g);
+        }
 
 
-    // Rysowanie pocisków
-    for (Bullet bullet : bullets) {
-        bullet.draw(g);
-    }
-    for (MinigunnerBullet minigunnerBullet : minigunnerBullets){
-        minigunnerBullet.draw(g);
-    }
-    for (ArtBullet artBullet : artBullets) {
-        artBullet.draw(g);
-    }
+        // Rysowanie pocisków
+        for (Bullet bullet : bullets) {
+            bullet.draw(g);
+        }
+        for (MinigunnerBullet minigunnerBullet : minigunnerBullets){
+            minigunnerBullet.draw(g);
+        }
+        for (ArtBullet artBullet : artBullets) {
+            artBullet.draw(g);
+        }
 
-    for (Hive hive : hives) {
-        hive.draw(g); // Rysowanie Hive
-    }
+        for (Hive hive : hives) {
+            hive.draw(g); // Rysowanie Hive
+        }
 
-    // Rysowanie pocisków
-    for (Projectile projectile : projectiles) {
-        projectile.draw(g);
-    }
+        // Rysowanie pocisków
+        for (Projectile projectile : projectiles) {
+            projectile.draw(g);
+        }
 
-    for (Factory factory : factories) {
-        factory.draw(g);
-    }
+        for (Factory factory : factories) {
+            factory.draw(g);
+        }
 
 
 
-    // Rysowanie prostokąta zaznaczenia
-    if (selectionRectangle != null) {
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(new Color(0, 0, 255, 50)); // Półprzezroczysty niebieski
-        g2d.fill(selectionRectangle);
-        g2d.setColor(Color.BLUE); // Krawędź prostokąta
-        g2d.draw(selectionRectangle);
-    }
+        // Rysowanie prostokąta zaznaczenia
+        if (selectionRectangle != null) {
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setColor(new Color(0, 0, 255, 50)); // Półprzezroczysty niebieski
+            g2d.fill(selectionRectangle);
+            g2d.setColor(Color.BLUE); // Krawędź prostokąta
+            g2d.draw(selectionRectangle);
+        }
+        //to jest od stawiania budynkow czerwone/biale pole
+        if (isPlacingBuilding && placementCursor != null && selectedBuilderVehicle != null) {
+            Graphics2D g2 = (Graphics2D) g;
+
+            int builderX = selectedBuilderVehicle.getX() + 25;
+            int builderY = selectedBuilderVehicle.getY() + 25;
+            int cursorCenterX = placementCursor.x + BUILD_SIZE / 2;
+            int cursorCenterY = placementCursor.y + BUILD_SIZE / 2;
+
+            double distance = Point.distance(builderX, builderY, cursorCenterX, cursorCenterY);
+
+            g2.setColor(distance <= BUILD_RANGE ? Color.WHITE : Color.RED);
+            g2.drawRect(placementCursor.x, placementCursor.y, BUILD_SIZE, BUILD_SIZE);
+        }
 
 
 
 // Wyświetlanie zasobów niezależnie od przewijania mapy
-    Graphics2D g2dOverlay = (Graphics2D) g;
-    Font largeFont = new Font("Arial", Font.BOLD, 15); // Czcionka Arial, pogrubiona, rozmiar 15
-    g2dOverlay.setFont(largeFont);
-    g2dOverlay.setColor(Color.WHITE);
+        Graphics2D g2dOverlay = (Graphics2D) g;
+        Font largeFont = new Font("Arial", Font.BOLD, 15); // Czcionka Arial, pogrubiona, rozmiar 15
+        g2dOverlay.setFont(largeFont);
+        g2dOverlay.setColor(Color.WHITE);
 
 // Oblicz przesunięcie widoku z JScrollPane (czyli przesunięcie mapy)
-    if (getParent() instanceof JViewport viewport) {
-        Point viewPos = viewport.getViewPosition();
-        int screenX = viewPos.x;
-        int screenY = viewPos.y;
+//        if (getParent() instanceof JViewport viewport) {
+//            Point viewPos = viewport.getViewPosition();
+//            int screenX = viewPos.x;
+//            int screenY = viewPos.y;
+//
+//            // Tekst zawsze przyklejony do lewego górnego rogu widoku
+//            g2dOverlay.drawString("Steel Collected: " + collectedSteel, screenX + 20, screenY + 30);
+//            g2dOverlay.drawString("Power: " + totalPower, screenX + 20, screenY + 60);
+//        }
+        if (getParent() instanceof JViewport viewport) {
+            Point viewPos = viewport.getViewPosition();
+            int screenX = viewPos.x;
+            int screenY = viewPos.y;
 
-        // Tekst zawsze przyklejony do lewego górnego rogu widoku
-        g2dOverlay.drawString("Steel Collected: " + collectedSteel, screenX + 20, screenY + 30);
-        g2dOverlay.drawString("Power: " + totalPower, screenX + 20, screenY + 60);
+            btnPowerPlant.setLocation(screenX + 10, screenY + 90);
+            btnSteelMine.setLocation(screenX + 10, screenY + 130);
+            btnBaracks.setLocation(screenX + 10, screenY + 170);
+            btnFactory.setLocation(screenX + 10, screenY + 210);
+
+            // Dodaj te:
+            btnHarvester.setLocation(screenX + 10, screenY + 90);
+            btnArtylery.setLocation(screenX + 10, screenY + 130);
+            btnBattleVehicle.setLocation(screenX + 10, screenY + 170);
+            btnBuilderVehicle.setLocation(screenX + 10, screenY + 210);
+        }
+
     }
-
-}
 }

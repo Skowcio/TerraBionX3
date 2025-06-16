@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 public class PowerPlant {
     private int x, y;
     private int width = 80, height = 80;
-    private static final int POWER = 100; // Moc dostarczana przez elektrownię
+    private static final int POWER = 10; // Moc dostarczana przez elektrownię
     private BufferedImage powerImage;
 
     public PowerPlant(int x, int y) {

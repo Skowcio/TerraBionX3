@@ -44,10 +44,10 @@ public class Soldier {
             imgUpRight = ImageIO.read(getClass().getResource("/APC/APCupright.png"));
             imgDownLeft = ImageIO.read(getClass().getResource("/APC/APCdownleft.png"));
             imgDownRight = ImageIO.read(getClass().getResource("/APC/APCdownright.png"));
-    }
+        }
         catch (IOException e) {
-        e.printStackTrace();
-    }
+            e.printStackTrace();
+        }
     }
 
     public Rectangle getBounds() {
@@ -71,7 +71,7 @@ public class Soldier {
         return new Point(x, y);
     }
 
-//    public void setPosition(int x, int y, ArrayList<PowerPlant> powerPlants) {
+    //    public void setPosition(int x, int y, ArrayList<PowerPlant> powerPlants) {
 //        for (PowerPlant powerPlant : powerPlants) {
 //            // Jeśli docelowa pozycja koliduje z elektrownią, nie wykonuj ruchu
 //            if (isCollidingWithPowerPlant(powerPlant, x, y)) {
@@ -93,11 +93,11 @@ public class Soldier {
 //        this.x = x;
 //        this.y = y;
 //    }
-public void setCurrentDirection(String direction) {
-    this.currentDirection = direction;
-}// to jest kierunek Soldiera po lodagame - z tego co czaje?
+    public void setCurrentDirection(String direction) {
+        this.currentDirection = direction;
+    }// to jest kierunek Soldiera po lodagame - z tego co czaje?
 
-        public void setPosition(int x, int y, ArrayList<PowerPlant> powerPlants, ArrayList<Baracks> baracks, ArrayList<Soldier> soldiers, ArrayList<Hive> hives, ArrayList<BattleVehicle> battleVehicles) {
+    public void setPosition(int x, int y, ArrayList<PowerPlant> powerPlants, ArrayList<Baracks> baracks, ArrayList<Soldier> soldiers, ArrayList<Hive> hives, ArrayList<BattleVehicle> battleVehicles) {
         for (PowerPlant powerPlant : powerPlants) {
             // Jeśli docelowa pozycja koliduje z elektrownią, nie wykonuj ruchu
             if (isCollidingWithPowerPlant(powerPlant, x, y)) {
@@ -124,20 +124,20 @@ public void setCurrentDirection(String direction) {
                 return;
             }
         }
-            if (x > this.x) {
-                direction = Direction.RIGHT;
-            }
-            else if (x < this.x) {
-                direction = Direction.LEFT;
-            } else if (y > this.y) {
-                direction = Direction.DOWN;
-            } else if (y < this.y) {
-                direction = Direction.UP;
-            }
-
-            this.x = x;
-            this.y = y;
+        if (x > this.x) {
+            direction = Direction.RIGHT;
         }
+        else if (x < this.x) {
+            direction = Direction.LEFT;
+        } else if (y > this.y) {
+            direction = Direction.DOWN;
+        } else if (y < this.y) {
+            direction = Direction.UP;
+        }
+
+        this.x = x;
+        this.y = y;
+    }
 
     public void updateDirection(Point delta) {
         int dx = delta.x;

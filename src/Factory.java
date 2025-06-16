@@ -1,17 +1,28 @@
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 
 public class Factory {
     private int x, y; // Pozycja na mapie
-    private int width = 50, height = 50;
+    private int width = 110, height = 110;
     private boolean selected; // Czy koszary są zaznaczone
     private boolean producing = false;
     private int productionSecondsLeft = 0;
+    private BufferedImage baracImage;
+
 
     public Factory(int x, int y) {
         this.x = x;
         this.y = y;
         this.selected = false;
+
+        try {
+            baracImage = ImageIO.read(getClass().getResource("/factory/factory1.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     public Point getPosition() {
         return new Point(x, y);
@@ -63,14 +74,18 @@ public class Factory {
 
     // Rysowanie koszar
     public void draw(Graphics g) {
-        g.setColor(Color.PINK); // Kolor koszar
-        g.fillRect(x, y, 50, 50); // Koszary są kwadratem 50x50
-        g.setColor(Color.BLACK);
-        g.drawString("Factory", x + width / 2 - 19, y + height / 2 + 5);
+
+        if (baracImage != null) {
+            g.drawImage(baracImage, x, y, width, height, null);
+        }
+//        g.setColor(Color.PINK); // Kolor koszar
+//        g.fillRect(x, y, 50, 50); // Koszary są kwadratem 50x50
+//        g.setColor(Color.BLACK);
+//        g.drawString("Factory", x + width / 2 - 19, y + height / 2 + 5);
 
         if (selected) {
             g.setColor(Color.GRAY); // Obramowanie dla zaznaczonych fabryki
-            g.drawRect(x - 2, y - 2, 54, 54); // Obramowanie o 2px większe
+            g.drawRect(x - 2, y - 2, 114, 114); // Obramowanie o 2px większe
         }
         if (producing) {
             g.setColor(Color.WHITE);
