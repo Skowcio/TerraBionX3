@@ -2010,6 +2010,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             soldier.draw(g);
             soldier.shoot(g, bullets, enemies, enemiesToo, hives, enemyShooters, enemyHunters); // Żołnierz strzela
         }
+
+        //budowniczy
+        for (BuilderVehicle builderVehicle :builderVehicles) {
+            builderVehicle.draw(g);
+            builderVehicle.shoot(g, bullets, enemies, enemiesToo, hives, enemyShooters, enemyHunters); // Żołnierz strzela
+        }
         for (Minigunner minigunner : minigunners) {
             minigunner.draw(g);
             minigunner.shoot(g, minigunnerBullets, enemies, enemiesToo, hives, enemyShooters, enemyHunters); // Żołnierz strzela

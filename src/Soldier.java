@@ -13,9 +13,10 @@ import java.io.IOException;   // Do obsługi wyjątków podczas ładowania obraz
 public class Soldier {
     private int x, y;
     private boolean selected;
+    private int width = 42, height = 34;
+
     private Point target;
     private final int range = 180;
-    private int width = 42, height = 34;
     private final int shootCooldown = 500; // Czas odnowienia strzału (ms)
     private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
     private long lastShotTime = 0; // Czas ostatniego strzału
