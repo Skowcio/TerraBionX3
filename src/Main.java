@@ -19,6 +19,9 @@ public class Main {
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setBounds(0, 0, 1920, 980);
 
+        // przekazuje scrollPane do gamePanel
+        gamePanel.setScrollPane(scrollPane);
+
         // 5. HUDPanel – jako przezroczysty panel na wierzchu
         hudPanel.setBounds(0, 0, 1920, 980);
         hudPanel.setOpaque(false);

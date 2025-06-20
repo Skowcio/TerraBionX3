@@ -122,6 +122,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private final int BUILD_RANGE = 170;
     private static final int BUILD_SIZE = 80;
 
+    private JScrollPane scrollPane;
+
+    public void setScrollPane(JScrollPane scrollPane) {
+        this.scrollPane = scrollPane;
+    }
+
     // to jest odpowiedzalne za to by nie pojawila sie jakas jednostka na sobie
 
     private boolean isCollidingWithOthers(int x, int y, ArrayList<Soldier> soldiers, ArrayList<Minigunner> minigunners, ArrayList<BattleVehicle> battleVehicles) {
@@ -2014,12 +2020,30 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         //budowniczy
         for (BuilderVehicle builderVehicle :builderVehicles) {
             builderVehicle.draw(g);
+            builderVehicle.update(deltaTime);
             builderVehicle.shoot(g, bullets, enemies, enemiesToo, hives, enemyShooters, enemyHunters); // Żołnierz strzela
         }
         for (Minigunner minigunner : minigunners) {
             minigunner.draw(g);
-            minigunner.shoot(g, minigunnerBullets, enemies, enemiesToo, hives, enemyShooters, enemyHunters); // Żołnierz strzela
+
+            Rectangle viewRect = getVisibleRect();
+
+            // Używamy instancji `minigunner`, NIE klasy!
+            minigunner.shoot(
+                    g,
+                    minigunnerBullets,
+                    enemies,
+                    enemiesToo,
+                    hives,
+                    enemyShooters,
+                    enemyHunters,
+                    viewRect.x,
+                    viewRect.y,
+                    viewRect.width,
+                    viewRect.height
+            );
         }
+
 
         for (BattleVehicle battleVehicle : battleVehicles){
             battleVehicle.draw(g);

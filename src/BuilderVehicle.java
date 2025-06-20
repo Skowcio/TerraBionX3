@@ -1,4 +1,8 @@
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -6,9 +10,18 @@ import java.awt.Point;
 
 public class BuilderVehicle {
     private int x, y;
-    private int width = 25, height = 25;
+    private double hoverOffset = 0;           // Przesunięcie do rysowania w pionie
+    private double hoverTime = 0;             // Czas do animacji unoszenia
+    private final double hoverSpeed = 0.005;  // Im mniejsze, tym wolniejsze falowanie
+    private final int hoverAmplitude = 4;     // Jak bardzo w górę/dół się unosi
+    private int width = 45, height = 45;
     private int speed = 2;
     private boolean selected;
+    private BufferedImage vehicleImage;
+    private double vehicleAngle; // Kąt obrotu pojazdu
+    private double targetVehicleAngle; // Docelowy kąt obrotu podwozia
+    private final double rotationTime = 800; // Czas obrotu w milisekundach (0.8 sekundy)
+    private double rotationStartTime = -1;  // Czas rozpoczęcia obrotu
     private int health = 5;
     private Point target;
 
@@ -27,6 +40,13 @@ public class BuilderVehicle {
         this.y = y;
         this.selected = false;
         this.target = null;
+        try {
+            vehicleImage = ImageIO.read(getClass().getResource("basedrone/basedrone.png"));
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getX() {
@@ -55,7 +75,11 @@ public class BuilderVehicle {
     }
 
     public void setTarget(Point target) {
-        this.target = target;
+        if (target != null) {
+            this.target = new Point(target.x - width / 2, target.y - height / 2);
+        } else {
+            this.target = null;
+        }
     }
 
     public Rectangle getBounds() {
@@ -73,7 +97,50 @@ public class BuilderVehicle {
         int dy = enemyShooter.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    public void update(long deltaTime) {
+        // 🔁 Aktualizacja efektu "unoszenia się"
+        hoverTime += deltaTime;
+        hoverOffset = Math.sin(hoverTime * hoverSpeed) * hoverAmplitude;
 
+        // 🔁 Aktualizacja obrotu
+        if (target != null) {
+            rotateVehicleTowardsTarget(deltaTime);
+        }
+    }
+
+    // Tu PRACUJ NAD PLYNNYM RUCHEM podwozia
+    private void rotateVehicleTowardsTarget(long deltaTime) {
+        int dx = target.x - (x + width / 2);
+        int dy = target.y - (y + height / 2);
+        targetVehicleAngle = Math.atan2(dy, dx);
+
+        if (rotationStartTime == -1) {
+            rotationStartTime = System.currentTimeMillis(); // Startujemy obrót
+        }
+
+        double elapsedTime = System.currentTimeMillis() - rotationStartTime;
+        double progress = Math.min(elapsedTime / rotationTime, 1.0); // 0.0 -> 1.0 (w ciągu 0.8s)
+
+        // Obliczamy płynny obrót pojazdu zamiast nagłego skoku
+        vehicleAngle = interpolateAngle(vehicleAngle, targetVehicleAngle, progress);
+
+        if (progress >= 1.0) {
+            rotationStartTime = -1; // Resetujemy licznik obrotu po zakończeniu
+        }
+    }
+
+    // Funkcja do płynnej interpolacji kątów (uwzględnia przejścia przez 0°/360°)
+    private double interpolateAngle(double from, double to, double progress) {
+        double difference = to - from;
+
+        if (difference > Math.PI) {
+            difference -= 2 * Math.PI;
+        } else if (difference < -Math.PI) {
+            difference += 2 * Math.PI;
+        }
+
+        return from + difference * progress;
+    }
     public boolean isInRange(Hive hive){
         int dx = hive.getX() - x;
         int dy = hive.getY() - y;
@@ -187,21 +254,36 @@ public class BuilderVehicle {
 
 
     public void draw(Graphics g) {
-        g.setColor(Color.MAGENTA);
-        g.fillRect(x, y, width, height);
-        if (selected) {
-            g.setColor(Color.GRAY);
-            g.drawRect(x - 2, y - 2, 35, 35);
+        Graphics2D g2d = (Graphics2D) g;
+
+        if (vehicleImage != null) {
+            int imageWidth = vehicleImage.getWidth();
+            int imageHeight = vehicleImage.getHeight();
+
+            double scaleX = width / (double) imageWidth;
+            double scaleY = height / (double) imageHeight;
+
+            AffineTransform transform = new AffineTransform();
+            transform.translate(x + width / 2.0, y + height / 2.0 + hoverOffset); // użyj width i height
+            transform.rotate(vehicleAngle);
+            transform.scale(scaleX, scaleY);
+            transform.translate(-imageWidth / 2.0, -imageHeight / 2.0);
+
+            g2d.drawImage(vehicleImage, transform, null);
         }
 
-
+        // Obramowanie przy zaznaczeniu
+        if (selected) {
+            g.setColor(Color.GRAY);
+            g.drawRect(x - 2, y - 2, width + 4, height + 4);
+        }
 
         // Pasek zdrowia
-        int maxHealth = 5; // Maksymalne zdrowie
-        int healthBarWidth = 25; // Stała długość paska zdrowia
+        int maxHealth = 5;
+        int healthBarWidth = 25;
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);
-        g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
+        g.fillRect(x, y - 5, currentHealthWidth, 3);
     }
 }

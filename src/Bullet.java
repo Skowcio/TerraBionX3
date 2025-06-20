@@ -1,4 +1,7 @@
 import java.awt.*;
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
 
 public class Bullet { // Bullet jest używany przez Soldier
     private int x, y;
@@ -18,6 +21,25 @@ public class Bullet { // Bullet jest używany przez Soldier
         double distance = Math.sqrt(dx * dx + dy * dy);
         this.dx = (int) (speed * dx / distance); // Normalizujemy prędkość do jednostkowej długości
         this.dy = (int) (speed * dy / distance);
+
+        playShootSound(); // 🎯 Tu dźwięk!
+    }
+    private void playShootSound() {
+        try {
+            File soundFile = new File("F:\\projekty JAVA\\TerraBionX3\\src\\shoot\\shoot2.wav");
+            if (!soundFile.exists()) {
+                System.err.println("Nie znaleziono pliku dźwięku: " + soundFile.getAbsolutePath());
+                return;
+            }
+
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioIn);
+            clip.start();
+        } catch (Exception e) {
+            System.err.println("Błąd przy odtwarzaniu dźwięku:");
+            e.printStackTrace();
+        }
     }
 
     public void move() {
