@@ -158,57 +158,54 @@ public class BuilderVehicle {
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
 
-    public void shoot(Graphics g, ArrayList<Bullet> bullets, ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters) {
+    public void shoot(
+            Graphics g,
+            ArrayList<Bullet> Bullets,
+            ArrayList<Enemy> enemies,
+            ArrayList<EnemyToo> enemyToos,
+            ArrayList<Hive> hives,
+            ArrayList<EnemyShooter> enemyShooters,
+            ArrayList<EnemyHunter> enemyHunters,
+            int cameraX, int cameraY,
+            int screenWidth, int screenHeight
+    ) {
         long currentTime = System.currentTimeMillis();
 
-        // Jeśli aktualny cel został zniszczony lub jest poza zasięgiem, wybierz nowy
-        if (currentTarget == null ||
-                (currentTarget instanceof Enemy && !enemies.contains(currentTarget)) ||
-                (currentTarget instanceof EnemyToo && !enemyToos.contains(currentTarget)) ||
-                (currentTarget instanceof Hive && !hives.contains(currentTarget)) ||
-                (currentTarget instanceof EnemyShooter && !enemyShooters.contains(currentTarget)) ||
-                (currentTarget instanceof EnemyHunter && !enemyHunters.contains(currentTarget)) ||
+        boolean outOfRange = false;
+        if (currentTarget instanceof Enemy e && !enemies.contains(e)) outOfRange = true;
+        if (currentTarget instanceof EnemyToo et && !enemyToos.contains(et)) outOfRange = true;
+        if (currentTarget instanceof Hive h && !hives.contains(h)) outOfRange = true;
+        if (currentTarget instanceof EnemyShooter es && !enemyShooters.contains(es)) outOfRange = true;
+        if (currentTarget instanceof EnemyHunter eh && !enemyHunters.contains(eh)) outOfRange = true;
 
-                !(currentTarget instanceof Enemy enemy && isInRange(enemy)) &&
-                        !(currentTarget instanceof EnemyToo enemyToo && isInRange(enemyToo)) &&
-                        !(currentTarget instanceof EnemyShooter enemyShooter && isInRange(enemyShooter)) &&
-                        !(currentTarget instanceof EnemyHunter enemyHunter && isInRange(enemyHunter)) &&
-                        !(currentTarget instanceof Hive hive && isInRange(hive)))
-        {
-            chooseTarget(enemies, enemyToos, hives, enemyShooters, enemyHunters); // Wybierz nowy cel
+        boolean notInRange =
+                !(currentTarget instanceof Enemy e && isInRange(e)) &&
+                        !(currentTarget instanceof EnemyToo et && isInRange(et)) &&
+                        !(currentTarget instanceof Hive h && isInRange(h)) &&
+                        !(currentTarget instanceof EnemyShooter es && isInRange(es)) &&
+                        !(currentTarget instanceof EnemyHunter eh && isInRange(eh));
+
+        if (currentTarget == null || outOfRange || notInRange) {
+            chooseTarget(enemies, enemyToos, hives, enemyShooters, enemyHunters);
         }
 
-        // Jeśli mamy ważny cel, strzelaj
         if (currentTarget != null && currentTime - lastShotTime >= shootCooldown) {
-            if (currentTarget instanceof Enemy enemy) {
-                if (isInRange(enemy)) {
-                    bullets.add(new Bullet(x + 15, y + 15, enemy.getX() + 15, enemy.getY() + 15));
-                    lastShotTime = currentTime;
-                }
-            } else if (currentTarget instanceof EnemyToo enemyToo) {
-                if (isInRange(enemyToo)) {
-                    bullets.add(new Bullet(x + 15, y + 15, enemyToo.getX() + 15, enemyToo.getY() + 15));
-                    lastShotTime = currentTime;
-                }
+            int startX = x + 15;
+            int startY = y + 15;
+
+            if (currentTarget instanceof Enemy e && isInRange(e)) {
+                Bullets.add(new Bullet(startX, startY, e.getX() + 15, e.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+            } else if (currentTarget instanceof EnemyToo et && isInRange(et)) {
+                Bullets.add(new Bullet(startX, startY, et.getX() + 15, et.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+            } else if (currentTarget instanceof Hive h && isInRange(h)) {
+                Bullets.add(new Bullet(startX, startY, h.getX() + 15, h.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+            } else if (currentTarget instanceof EnemyShooter es && isInRange(es)) {
+                Bullets.add(new Bullet(startX, startY, es.getX() + 15, es.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+            } else if (currentTarget instanceof EnemyHunter eh && isInRange(eh)) {
+                Bullets.add(new Bullet(startX, startY, eh.getX() + 15, eh.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             }
-            else if (currentTarget instanceof Hive hive) {
-                if (isInRange(hive)) {
-                    bullets.add(new Bullet(x + 15, y + 15, hive.getX() + 15, hive.getY() + 15));
-                    lastShotTime = currentTime;
-                }
-            }
-            else if (currentTarget instanceof EnemyHunter enemyHunter) {
-                if (isInRange(enemyHunter)) {
-                    bullets.add(new Bullet(x + 15, y + 15, enemyHunter.getX() + 15, enemyHunter.getY() + 15));
-                    lastShotTime = currentTime;
-                }
-            }
-            else if (currentTarget instanceof EnemyShooter enemyShooter) {
-                if (isInRange(enemyShooter)) {
-                    bullets.add(new Bullet(x + 15, y + 15, enemyShooter.getX() + 15, enemyShooter.getY() + 15));
-                    lastShotTime = currentTime;
-                }
-            }
+
+            lastShotTime = currentTime;
         }
     }
 

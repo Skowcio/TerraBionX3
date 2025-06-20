@@ -783,10 +783,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         });
         movementTimer.start();
 
-        Timer globalCryopitSpawner = new Timer(30000, e -> spawnRandomCryopit()); // to timer co 30s pojawia sie namapie losy cryopit
+
+//        Timer globalCryopitSpawner = new Timer(30000, e -> spawnRandomCryopit()); // to timer co 30s pojawia sie namapie losy cryopit
 
 // Uruchamiamy timer
-        globalCryopitSpawner.start();
+//        globalCryopitSpawner.start();
 
 // Timer dla strzelania wrogów
         enemyShootingTimer = new Timer(700, e -> enemyShoot());
@@ -820,6 +821,20 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 //        projectileUpdateTimer.start();
 
     }
+    ///////////// to sa koordynaty postajacach cryopitow
+//    private void spawnRandomCryopit() {
+//        Random rand = new Random();
+//
+//        int x, y;
+//        do {
+//            x = rand.nextInt(1920 / 4) * 4; // Losowa pozycja w siatce 4x4
+//            y = rand.nextInt(980 / 4) * 4;
+//        }
+//        while (!Cryopit.isPositionFree(x, y)); // Sprawdzamy, czy miejsce jest wolne
+//
+//        new Cryopit(x, y); // Tworzymy nowy Cryopit na tej pozycji
+//        System.out.println("Nowy Cryopit pojawił się na: " + x + ", " + y);
+//    }
 
     private void checkEdgeScrolling() {
         if (mousePosition == null || getParent() == null || !(getParent() instanceof JViewport viewport)) return;
@@ -859,20 +874,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         viewport.setViewPosition(new Point(newX, newY));
     }
-    ///////////// to sa koordynaty postajacach cryopitow
-    private void spawnRandomCryopit() {
-        Random rand = new Random();
 
-        int x, y;
-        do {
-            x = rand.nextInt(1920 / 4) * 4; // Losowa pozycja w siatce 4x4
-            y = rand.nextInt(980 / 4) * 4;
-        }
-        while (!Cryopit.isPositionFree(x, y)); // Sprawdzamy, czy miejsce jest wolne
-
-        new Cryopit(x, y); // Tworzymy nowy Cryopit na tej pozycji
-        System.out.println("Nowy Cryopit pojawił się na: " + x + ", " + y);
-    }
 
     public void createExplosion(int x, int y) {
         explosions.add(new Explosion(x, y)); // Dodaje nową eksplozję do listy
@@ -1966,11 +1968,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         // Usunięcie wyczerpanych złóż
         resources.removeIf(ResourcesSteel::isDepleted);
 
-
         for (ResourcesSteel resource : resources) {
             resource.draw(g);
         }
-
 
         for (Baracks b : baracks) {
             b.draw(g);
@@ -2004,7 +2004,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Factory factory : factories) {
             factory.draw(g);
         }
-
         for (Harvester harvester : harvesters) {
             harvester.draw(g);
         }
@@ -2014,14 +2013,44 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         // Rysowanie żołnierzy
         for (Soldier soldier : soldiers) {
             soldier.draw(g);
-            soldier.shoot(g, bullets, enemies, enemiesToo, hives, enemyShooters, enemyHunters); // Żołnierz strzela
+            Rectangle viewRect = getVisibleRect();
+
+            // Używamy instancji `soldier`, NIE klasy!
+            soldier.shoot(
+                    g,
+                    bullets,
+                    enemies,
+                    enemiesToo,
+                    hives,
+                    enemyShooters,
+                    enemyHunters,
+                    viewRect.x,
+                    viewRect.y,
+                    viewRect.width,
+                    viewRect.height
+            );
         }
 
         //budowniczy
         for (BuilderVehicle builderVehicle :builderVehicles) {
             builderVehicle.draw(g);
             builderVehicle.update(deltaTime);
-            builderVehicle.shoot(g, bullets, enemies, enemiesToo, hives, enemyShooters, enemyHunters); // Żołnierz strzela
+            Rectangle viewRect = getVisibleRect();
+
+            // Używamy instancji `minigunner`, NIE klasy!
+            builderVehicle.shoot(
+                    g,
+                    bullets,
+                    enemies,
+                    enemiesToo,
+                    hives,
+                    enemyShooters,
+                    enemyHunters,
+                    viewRect.x,
+                    viewRect.y,
+                    viewRect.width,
+                    viewRect.height
+            );
         }
         for (Minigunner minigunner : minigunners) {
             minigunner.draw(g);
@@ -2043,12 +2072,29 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     viewRect.height
             );
         }
-
+        // Rysowanie pocisków
+        for (Bullet bullet : bullets) {
+            bullet.draw(g);
+        }
 
         for (BattleVehicle battleVehicle : battleVehicles){
             battleVehicle.draw(g);
             battleVehicle.update(deltaTime);
-            battleVehicle.shoot(g, bullets, enemies, enemiesToo, hives, enemyShooters);
+            Rectangle viewRect = getVisibleRect();
+
+            battleVehicle.shoot(
+                    g,
+                    bullets,
+                    enemies,
+                    enemiesToo,
+                    hives,
+                    enemyShooters,
+                    enemyHunters,
+                    viewRect.x,
+                    viewRect.y,
+                    viewRect.width,
+                    viewRect.height
+            );
         }
         for (Artylery artylery : artylerys){
             artylery.draw(g);
@@ -2086,10 +2132,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
 
 
-        // Rysowanie pocisków
-        for (Bullet bullet : bullets) {
-            bullet.draw(g);
-        }
         for (MinigunnerBullet minigunnerBullet : minigunnerBullets){
             minigunnerBullet.draw(g);
         }

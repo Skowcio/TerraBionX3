@@ -28,7 +28,6 @@ public class MinigunnerBullet {
         this.dx = (int) (speed * Math.cos(finalAngle));
         this.dy = (int) (speed * Math.sin(finalAngle));
 
-
     }
     public MinigunnerBullet(int x, int y, int targetX, int targetY,
                             int cameraX, int cameraY, int screenWidth, int screenHeight) {
@@ -57,7 +56,8 @@ public class MinigunnerBullet {
 
             // 🔹 Przelicz dystans na skalę głośności
             float maxDistance = 1000f; // dystans, po którym już nic nie słychać - jak daleko slychac
-            float volume = Math.max(0f, 1.0f - (float)(distance / maxDistance)); // 1.0 = pełna głośność, 0.0 = cisza
+            float volume = (float) Math.pow(Math.max(0f, 1.0f - distance / maxDistance), 0.7); // wolniejsze ściszanie
+
 
             // 🔹 Zmień głośność
             FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);

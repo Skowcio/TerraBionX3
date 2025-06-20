@@ -3,6 +3,7 @@ import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
 
+
 public class Bullet { // Bullet jest używany przez Soldier
     private int x, y;
     private int dx, dy; // Przemieszczenie w poziomie i pionie
@@ -22,9 +23,13 @@ public class Bullet { // Bullet jest używany przez Soldier
         this.dx = (int) (speed * dx / distance); // Normalizujemy prędkość do jednostkowej długości
         this.dy = (int) (speed * dy / distance);
 
-        playShootSound(); // 🎯 Tu dźwięk!
     }
-    private void playShootSound() {
+    public Bullet(int x, int y, int targetX, int targetY,
+                            int cameraX, int cameraY, int screenWidth, int screenHeight) {
+        this(x, y, targetX, targetY);
+        playShootSound(cameraX, cameraY, screenWidth, screenHeight); // ZAWSZE graj dźwięk, ale dynamicznie
+    }
+    private void playShootSound(int cameraX, int cameraY, int screenWidth, int screenHeight) {
         try {
             File soundFile = new File("F:\\projekty JAVA\\TerraBionX3\\src\\shoot\\shoot2.wav");
             if (!soundFile.exists()) {
@@ -35,9 +40,26 @@ public class Bullet { // Bullet jest używany przez Soldier
             AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
             Clip clip = AudioSystem.getClip();
             clip.open(audioIn);
+
+            // 🔹 Oblicz dystans do środka widoku
+            int viewCenterX = cameraX + screenWidth / 2;
+            int viewCenterY = cameraY + screenHeight / 2;
+            double dx = this.x - viewCenterX;
+            double dy = this.y - viewCenterY;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+
+            // 🔹 Przelicz dystans na skalę głośności
+            float maxDistance = 1000f; // dystans, po którym już nic nie słychać - jak daleko slychac
+            float volume = (float) Math.pow(Math.max(0f, 1.0f - distance / maxDistance), 0.7); // wolniejsze ściszanie
+
+
+            // 🔹 Zmień głośność
+            FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            float dB = (float) (20f * Math.log10(Math.max(0.01, volume))); // dB logarytmiczny
+            gainControl.setValue(dB);
+
             clip.start();
         } catch (Exception e) {
-            System.err.println("Błąd przy odtwarzaniu dźwięku:");
             e.printStackTrace();
         }
     }
