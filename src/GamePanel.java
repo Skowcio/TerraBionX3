@@ -584,8 +584,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         /////////////////////////////////// tu dodaje hives//// od prawej strony
         for (int i = 0; i < 11; i++) {
-            int x = 920 + rand.nextInt(2800); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-            int y = rand.nextInt(2800); // Losowa pozycja Y na mapie
+            int x = 900 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+            int y = rand.nextInt(2000); // Losowa pozycja Y na mapie
             hives.add(new Hive(x, y));
 //                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
 //                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
@@ -2131,7 +2131,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         for (Hive hive : hives) {
             hive.draw(g);
-            hive.updateActivationAndSpawning(g, soldiers, enemiesToo, enemyShooters, enemyHunters); // <-- nowa logika
+            hive.updateActivationAndSpawning(g, soldiers, soldierBots, builderVehicles, enemiesToo, enemyShooters, enemyHunters); // jesdnostki ktore akttywuja tez respa
         }
 
         for (EnemyHunter enemyHunter : enemyHunters){

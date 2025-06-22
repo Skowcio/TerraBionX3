@@ -27,15 +27,35 @@ public class Hive {
         }
 
     }
-    public void checkActivation(ArrayList<Soldier> soldiers) {
+    public void checkActivation(ArrayList<Soldier> soldiers, ArrayList<SoldierBot> soldierBots, ArrayList<BuilderVehicle> builders) {
         if (!activated) {
             for (Soldier soldier : soldiers) {
                 double dx = soldier.getX() - x;
                 double dy = soldier.getY() - y;
-                if (Math.sqrt(dx * dx + dy * dy) <= 500) {
+                if (Math.sqrt(dx * dx + dy * dy) <= 700) {
                     activated = true;
-                    lastSpawnTime = System.currentTimeMillis(); // startujemy licznik
-                    break;
+                    lastSpawnTime = System.currentTimeMillis();
+                    return;
+                }
+            }
+
+            for (BuilderVehicle builder : builders) {
+                double dx = builder.getX() - x;
+                double dy = builder.getY() - y;
+                if (Math.sqrt(dx * dx + dy * dy) <= 700) {
+                    activated = true;
+                    lastSpawnTime = System.currentTimeMillis();
+                    return;
+                }
+            }
+            for (SoldierBot soldierBot : soldierBots){
+
+                double dx = soldierBot.getX() - x;
+                double dy = soldierBot.getY() - y;
+                if (Math.sqrt(dx * dx + dy * dy) <= 700) {
+                    activated = true;
+                    lastSpawnTime = System.currentTimeMillis();
+                    return;
                 }
             }
         }
@@ -66,10 +86,13 @@ public class Hive {
 
     public void updateActivationAndSpawning(Graphics g,
                                             ArrayList<Soldier> soldiers,
+                                            ArrayList<SoldierBot> soldierBots,
+                                            ArrayList<BuilderVehicle> builders,
                                             ArrayList<EnemyToo> enemiesToo,
                                             ArrayList<EnemyShooter> enemyShooters,
-                                            ArrayList<EnemyHunter> enemyHunters) {
-        checkActivation(soldiers);
+                                            ArrayList<EnemyHunter> enemyHunters)
+    {
+        checkActivation(soldiers, soldierBots, builders);
         spawnEnemiesToo(g, enemiesToo, enemyShooters, enemyHunters);
     }
     public Point getPosition() {
