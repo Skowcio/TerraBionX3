@@ -51,7 +51,9 @@ public class SoldierBot {
     }
 
 
-
+    public boolean isDead() {
+        return health <= 0; // lub inna logika zależna od Twojej gry
+    }
 
 
     public boolean isInRange(Enemy enemy) {
@@ -69,6 +71,11 @@ public class SoldierBot {
     public boolean isInRange(Hive hive){
         int dx = hive.getX() - x;
         int dy = hive.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
+    public boolean isInRange(HiveToo hiveToo){
+        int dx = hiveToo.getX() - x;
+        int dy = hiveToo.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
     public boolean isInRange(EnemyHunter enemyHunters) {
@@ -89,6 +96,7 @@ public class SoldierBot {
             ArrayList<Enemy> enemies,
             ArrayList<EnemyToo> enemyToos,
             ArrayList<Hive> hives,
+            ArrayList<HiveToo> hiveToos,
             ArrayList<EnemyShooter> enemyShooters,
             ArrayList<EnemyHunter> enemyHunters,
             int cameraX, int cameraY,
@@ -100,6 +108,7 @@ public class SoldierBot {
         if (currentTarget instanceof Enemy e && !enemies.contains(e)) outOfRange = true;
         if (currentTarget instanceof EnemyToo et && !enemyToos.contains(et)) outOfRange = true;
         if (currentTarget instanceof Hive h && !hives.contains(h)) outOfRange = true;
+        if (currentTarget instanceof HiveToo ht && !hiveToos.contains(ht)) outOfRange = true;
         if (currentTarget instanceof EnemyShooter es && !enemyShooters.contains(es)) outOfRange = true;
         if (currentTarget instanceof EnemyHunter eh && !enemyHunters.contains(eh)) outOfRange = true;
 
@@ -107,11 +116,12 @@ public class SoldierBot {
                 !(currentTarget instanceof Enemy e && isInRange(e)) &&
                         !(currentTarget instanceof EnemyToo et && isInRange(et)) &&
                         !(currentTarget instanceof Hive h && isInRange(h)) &&
+                        !(currentTarget instanceof HiveToo ht && isInRange(ht)) &&
                         !(currentTarget instanceof EnemyShooter es && isInRange(es)) &&
                         !(currentTarget instanceof EnemyHunter eh && isInRange(eh));
 
         if (currentTarget == null || outOfRange || notInRange) {
-            chooseTarget(enemies, enemyToos, hives, enemyShooters, enemyHunters);
+            chooseTarget(enemies, enemyToos, hives, hiveToos, enemyShooters, enemyHunters);
         }
 
         if (currentTarget != null && currentTime - lastShotTime >= shootCooldown) {
@@ -124,6 +134,8 @@ public class SoldierBot {
                 Bullets.add(new Bullet(startX, startY, et.getX() + 15, et.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             } else if (currentTarget instanceof Hive h && isInRange(h)) {
                 Bullets.add(new Bullet(startX, startY, h.getX() + 15, h.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+            } else if (currentTarget instanceof HiveToo h && isInRange(h)) {
+                Bullets.add(new Bullet(startX, startY, h.getX() + 15, h.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             } else if (currentTarget instanceof EnemyShooter es && isInRange(es)) {
                 Bullets.add(new Bullet(startX, startY, es.getX() + 15, es.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             } else if (currentTarget instanceof EnemyHunter eh && isInRange(eh)) {
@@ -135,7 +147,7 @@ public class SoldierBot {
     }
 
 
-    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters) {
+    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters) {
         currentTarget = null;
 
         // Szukaj najbliższego Enemy w zasięgu
@@ -171,11 +183,18 @@ public class SoldierBot {
                 return; // Znaleziono cel
             }
         }
+        for (HiveToo hiveToo : hiveToos) {
+            if (isInRange(hiveToo)) {
+                currentTarget = hiveToo;
+                return; // Znaleziono cel
+            }
+        }
     }
-    public void update(List<Enemy> enemies, List<Hive> hives) {
+    public void update(List<Enemy> enemies, List<Hive> hives, List<HiveToo> hiveToos) {
 
         moveTowardsEnemy(enemies);
         moveTowardsHive(hives);
+        moveTowardsHiveToo(hiveToos);
 
 //        moveTowardsPowerPlant(powerPlants);
 //        attackClosestSoldier(soldiers);
@@ -217,6 +236,19 @@ public class SoldierBot {
         }
         return closest;
     }
+    private HiveToo getClosestHiveToo(java.util.List<HiveToo> hiveToos) {
+        HiveToo closest = null;
+        double minDistance = Double.MAX_VALUE;
+
+        for (HiveToo hiveToo : hiveToos) {
+            double distance = hiveToo.getPosition().distance(x, y);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closest = hiveToo;
+            }
+        }
+        return closest;
+    }
 
 
     public void  moveTowardsHive(List<Hive> hives){
@@ -224,6 +256,17 @@ public class SoldierBot {
         if (closestHive != null) {
             int dx = closestHive.getX() - x;
             int dy = closestHive.getY() - y;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance > 110) {
+                x += (int) (speed * dx / distance);
+                y += (int) (speed * dy / distance);
+            }
+        }
+    }public void  moveTowardsHiveToo(List<HiveToo> hiveToos){
+        HiveToo closestHiveToo = getClosestHiveToo(hiveToos);
+        if (closestHiveToo != null) {
+            int dx = closestHiveToo.getX() - x;
+            int dy = closestHiveToo.getY() - y;
             double distance = Math.sqrt(dx * dx + dy * dy);
             if (distance > 110) {
                 x += (int) (speed * dx / distance);

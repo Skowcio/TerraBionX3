@@ -65,7 +65,7 @@ public class Hive {
 
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 1; i++) {
                 int spawnX = random.nextInt(size * 2) + x - size;
                 int spawnY = random.nextInt(size * 2) + y - size;
                 enemiesToo.add(new EnemyToo(spawnX, spawnY));

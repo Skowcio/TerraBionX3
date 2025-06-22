@@ -42,6 +42,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Baracks> baracks;
     private ArrayList<Factory> factories;
     private ArrayList<Bulding> buldings;
+    private ArrayList<Hive> hives;
+    private ArrayList<HiveToo> hiveToos;
     private ArrayList<SteelMine> steelMines;
     private Soldier selectedSoldier;
     private Minigunner selectedMinigunner;
@@ -80,6 +82,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JButton btnBattleVehicle;
     private JButton btnArtylery;
     private JButton btnBuilderVehicle;
+    private JButton btnDroneBot;
 
 
     // to do wskazywania miejsca gdzie budowac np powerplant itp na przyszlosc
@@ -92,7 +95,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private Point mousePosition;
     private JFrame mainFrame;
 
-    private ArrayList<Hive> hives;
+
     private BufferedImage backgroundImage;
 
     private long lastSpawnTime = System.currentTimeMillis();
@@ -258,6 +261,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
 
         this.hives = new ArrayList<>();
+        this.hiveToos = new ArrayList<>();
         this.cryopits = new ArrayList<>();
         this.powerPlants = new ArrayList<>();
         this.steelMines = new ArrayList<>();
@@ -366,6 +370,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnBuilderVehicle.setBounds(10, 210, 120, 30);
         btnBuilderVehicle.setVisible(false);
         add(btnBuilderVehicle);
+
+        // przycisk do powiekrzania ilsoci botow w resp
+        btnDroneBot = new JButton("UPGRADE NO' OF BOTS");
+        btnDroneBot.setBounds(10, 290, 120, 30);
+        btnDroneBot.setVisible(false);
+        add(btnDroneBot);
 
         // to sluzy do odliczania czasu budowy i wyswietlania
         countdownLabel = new JLabel("");
@@ -583,10 +593,18 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             resources.add(new ResourcesSteel(x, y));
         }
         /////////////////////////////////// tu dodaje hives//// od prawej strony
-        for (int i = 0; i < 11; i++) {
+        for (int i = 0; i < 21; i++) {
             int x = 900 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
             int y = rand.nextInt(2000); // Losowa pozycja Y na mapie
             hives.add(new Hive(x, y));
+//                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
+//                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
+        }
+
+        for (int i = 0; i < 11; i++) {
+            int x = 900 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+            int y = rand.nextInt(2000); // Losowa pozycja Y na mapie
+            hiveToos.add(new HiveToo(x, y));
 //                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
 //                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
         }
@@ -917,6 +935,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnArtylery.setVisible((showFactorysMenu));
         btnBattleVehicle.setVisible((showFactorysMenu));
         btnBuilderVehicle.setVisible((showFactorysMenu));
+        btnDroneBot.setVisible((showFactorysMenu));
         repaint();
     }
     private void showPauseMenu() {
@@ -1360,6 +1379,17 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     }
 
                 }
+                for (HiveToo hiveToo : hiveToos) {
+                    if (bullet.checkCollision(hiveToo)) {
+                        bulletsToRemove.add(bullet);
+//                        hit = true;
+                        if (hiveToo.takeDamage()) {
+                            hiveToos.remove(hiveToo);
+                        }
+                        break;
+                    }
+
+                }
                 for (EnemyShooter enemyShooter : enemyShooters) {
                     if (bullet.checkCollision(enemyShooter)) {
                         bulletsToRemove.add(bullet);
@@ -1448,7 +1478,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             enemyShooter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories);
         }
         for (SoldierBot soldierBot : soldierBots){
-            soldierBot.update(enemies, hives);
+            soldierBot.update(enemies, hives, hiveToos);
         }
         for (Enemy enemy : enemies) {
             enemy.move();
@@ -2050,6 +2080,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     enemies,
                     enemiesToo,
                     hives,
+                    hiveToos,
                     enemyShooters,
                     enemyHunters,
                     viewRect.x,
@@ -2134,6 +2165,16 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             hive.updateActivationAndSpawning(g, soldiers, soldierBots, builderVehicles, enemiesToo, enemyShooters, enemyHunters); // jesdnostki ktore akttywuja tez respa
         }
 
+//        for (Hive hive : hives) {
+//            hive.draw(g); // Rysowanie Hive
+//        }
+// do zwyklego spawnu czasowego
+        for (HiveToo hiveToo : hiveToos) {
+            hiveToo.draw(g);
+            hiveToo.spawnEnemiesToo(g, enemiesToo, enemyShooters, enemyHunters); // Aktualizuje Hive i spawnuje EnemyToo
+        }
+
+
         for (EnemyHunter enemyHunter : enemyHunters){
             enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, enemyHunters);
             enemyHunter.draw(g);
@@ -2153,22 +2194,16 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             builderVehicle.draw(g);
         }
 
-
         // Rysowanie wrogów EnemyToo
         for (EnemyToo enemyToo : enemiesToo) {
             enemyToo.draw(g);
         }
-
 
         for (MinigunnerBullet minigunnerBullet : minigunnerBullets){
             minigunnerBullet.draw(g);
         }
         for (ArtBullet artBullet : artBullets) {
             artBullet.draw(g);
-        }
-
-        for (Hive hive : hives) {
-            hive.draw(g); // Rysowanie Hive
         }
 
         // Rysowanie pocisków
@@ -2178,6 +2213,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         for (Factory factory : factories) {
             factory.draw(g);
+            factory.spawnBots(g, soldierBots); // Aktualizuje Hive i spawnuje EnemyToo
         }
 
 

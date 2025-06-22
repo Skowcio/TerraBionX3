@@ -2,15 +2,27 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Random;
+import javax.imageio.ImageIO;
 
 
 public class Factory {
     private int x, y; // Pozycja na mapie
     private int width = 110, height = 110;
     private boolean selected; // Czy koszary są zaznaczone
+    private final int size = 140; // Rozmiar factory
     private boolean producing = false;
     private int productionSecondsLeft = 0;
     private BufferedImage baracImage;
+    private long lastSpawnTime = System.currentTimeMillis();
+    private final int SPAWN_INTERVAL = 30000; // 20 sekund w milisekundach
+    private Random random = new Random();
+    private SoldierBot producedBot = null; // obecnie żyjący bot tej fabryki
 
 
     public Factory(int x, int y) {
@@ -63,6 +75,28 @@ public class Factory {
             }
         }
     }
+
+    public void spawnBots(Graphics g, ArrayList<SoldierBot> soldierBots) {
+        long currentTime = System.currentTimeMillis();
+
+        // Jeśli bot żyje, nie rób nic
+        if (producedBot != null && !producedBot.isDead()) {
+            return;
+        }
+
+        // Jeśli bot nie istnieje lub zginął, zacznij odliczać czas
+        if (producedBot == null || producedBot.isDead()) {
+            if (currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
+                int spawnX = random.nextInt(size * 2) + x - size;
+                int spawnY = random.nextInt(size * 2) + y - size;
+                producedBot = new SoldierBot(spawnX, spawnY);
+                soldierBots.add(producedBot);
+                lastSpawnTime = currentTime;
+            }
+        }
+    }
+
+
 
     public boolean isProducing() {
         return producing;
