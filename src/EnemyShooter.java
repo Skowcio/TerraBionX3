@@ -31,6 +31,10 @@ public class EnemyShooter {
         return new Rectangle(x, y, width, height);
     }
 
+    public Point getPosition() {
+        return new Point(x, y);
+    }
+
     public boolean takeDamage() {
         health--;
         return health <= 0; // Zwraca true, jeśli Enemy zostało zniszczone

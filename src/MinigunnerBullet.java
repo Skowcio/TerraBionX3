@@ -55,7 +55,7 @@ public class MinigunnerBullet {
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             // 🔹 Przelicz dystans na skalę głośności
-            float maxDistance = 1000f; // dystans, po którym już nic nie słychać - jak daleko slychac
+            float maxDistance = 1800f; // dystans, po którym już nic nie słychać - jak daleko slychac
             float volume = (float) Math.pow(Math.max(0f, 1.0f - distance / maxDistance), 0.7); // wolniejsze ściszanie
 
 

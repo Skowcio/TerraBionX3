@@ -31,7 +31,7 @@ public class Bullet { // Bullet jest używany przez Soldier
     }
     private void playShootSound(int cameraX, int cameraY, int screenWidth, int screenHeight) {
         try {
-            File soundFile = new File("F:\\projekty JAVA\\TerraBionX3\\src\\shoot\\shoot2.wav");
+            File soundFile = new File("F:\\projekty JAVA\\TerraBionX3\\src\\shoot\\shoot5.wav");
             if (!soundFile.exists()) {
                 System.err.println("Nie znaleziono pliku dźwięku: " + soundFile.getAbsolutePath());
                 return;
@@ -49,7 +49,7 @@ public class Bullet { // Bullet jest używany przez Soldier
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             // 🔹 Przelicz dystans na skalę głośności
-            float maxDistance = 1000f; // dystans, po którym już nic nie słychać - jak daleko slychac
+            float maxDistance = 1800f; // dystans, po którym już nic nie słychać - jak daleko slychac
             float volume = (float) Math.pow(Math.max(0f, 1.0f - distance / maxDistance), 0.7); // wolniejsze ściszanie
 
 

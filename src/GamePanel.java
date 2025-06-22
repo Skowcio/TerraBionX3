@@ -23,6 +23,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JFrame frame; // Referencja do głównego okna
     private ArrayList<Explosion> explosions; // Lista eksplozji
     private ArrayList<Soldier> soldiers;
+    private ArrayList<SoldierBot> soldierBots;
     private ArrayList<Cryopit> cryopits;
     private ArrayList<Minigunner> minigunners;
     private ArrayList<BattleVehicle> battleVehicles;
@@ -261,6 +262,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.powerPlants = new ArrayList<>();
         this.steelMines = new ArrayList<>();
         this.soldiers = new ArrayList<>();
+        this.soldierBots = new ArrayList<>();
         this.minigunners = new ArrayList<>();
         this.battleVehicles = new ArrayList<>();
         this.artylerys = new ArrayList<>();
@@ -576,29 +578,29 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         // Dodajemy 4 losowe pola Stalil Resources Steel
         Random rand = new Random();
         for (int i = 0; i < 13; i++) {
-            int x = rand.nextInt(3000); // Losowa pozycja X na mapie
-            int y = rand.nextInt(3000); // Losowa pozycja Y na mapie
+            int x = rand.nextInt(2800); // Losowa pozycja X na mapie
+            int y = rand.nextInt(2800); // Losowa pozycja Y na mapie
             resources.add(new ResourcesSteel(x, y));
         }
         /////////////////////////////////// tu dodaje hives//// od prawej strony
         for (int i = 0; i < 11; i++) {
-            int x = 920 + rand.nextInt(3000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-            int y = rand.nextInt(3000); // Losowa pozycja Y na mapie
+            int x = 920 + rand.nextInt(2800); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+            int y = rand.nextInt(2800); // Losowa pozycja Y na mapie
             hives.add(new Hive(x, y));
 //                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
 //                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
         }
-        for (int i = 0; i < 1; i++){
-            int x = 920 + rand.nextInt(811); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
-            cryopits.add(new Cryopit(x, y));
-        }
+//        for (int i = 0; i < 1; i++){
+//            int x = 920 + rand.nextInt(811); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+//            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
+//            cryopits.add(new Cryopit(x, y));
+//        }
 
 
 
 
         // TU  masz ilosc żołnierzy pojawiajacych sie losowo na start
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             int maxAttempts = 100; // Ograniczenie prób, by uniknąć nieskończonej pętli
             int attempts = 0;
             int x, y;
@@ -622,6 +624,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             } else {
                 System.out.println("Nie znaleziono wolnego miejsca dla nowego żołnierza!");
             }
+        }
+
+        for (int i = 0; i < 1; i++) {
+            int x = 920 + rand.nextInt(511); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
+            soldierBots.add(new SoldierBot(x, y));
         }
 //        for (int i = 0; i < 10; i++) {int side = rand.nextInt(4);  // Losujemy, z której strony pojawi się przeciwnik
 //            int x, y;
@@ -713,7 +721,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 //            minigunners.add(new Minigunner(x, y));
 //        }
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             builderVehicles.add(new BuilderVehicle(rand.nextInt(600), rand.nextInt(400)));
         }
 
@@ -779,7 +787,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             shootEnemies();
             minigunnerBulletshoot();
             updateProjectiles();
-            updateCryopits(); // Dodane do obsługi rozrostu Cryopit
+//            updateCryopits(); // Dodane do obsługi rozrostu Cryopit
         });
         movementTimer.start();
 
@@ -993,15 +1001,15 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     }
     private long lastCryopitSpawnTime = System.currentTimeMillis();
 
-    private void updateCryopits() {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastCryopitSpawnTime >= 2000) { // Co 2 sekundy
-            for (Cryopit cryopit : cryopits) { // Iterujemy przez istniejące Cryopit
-                cryopit.tryToSpawnNewCryopit();
-            }
-            lastCryopitSpawnTime = currentTime;
-        }
-    }
+//    private void updateCryopits() {
+//        long currentTime = System.currentTimeMillis();
+//        if (currentTime - lastCryopitSpawnTime >= 2000) { // Co 2 sekundy
+//            for (Cryopit cryopit : cryopits) { // Iterujemy przez istniejące Cryopit
+//                cryopit.tryToSpawnNewCryopit();
+//            }
+//            lastCryopitSpawnTime = currentTime;
+//        }
+//    }
 
     // tu jest gdy Enemy strzela w twoje jednostki
     private void updateProjectiles() {
@@ -1038,7 +1046,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             for (BuilderVehicle builderVehicle : builderVehicles) {
                 if (projectile.checkCollision(builderVehicle)) {
                     toRemove.add(projectile);
-                    builderVehicles.remove(builderVehicle); // Usuń żołnierza po trafieniu
+                    if (builderVehicle.takeDamage()){
+                    builderVehicles.remove(builderVehicle);
+                    } // Usuń żołnierza po trafieniu
                     break;
                 }
             }
@@ -1437,11 +1447,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (EnemyShooter enemyShooter : enemyShooters) {
             enemyShooter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories);
         }
+        for (SoldierBot soldierBot : soldierBots){
+            soldierBot.update(enemies, hives);
+        }
         for (Enemy enemy : enemies) {
             enemy.move();
         }
-        // do zbierania zasobow
-
 
                 repaint();
     }
@@ -2007,9 +2018,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Harvester harvester : harvesters) {
             harvester.draw(g);
         }
-        for (Cryopit cryopit : cryopits){
-            cryopit.drawAll(g);
-        }
+//        for (Cryopit cryopit : cryopits){
+//            cryopit.drawAll(g);
+//        }
         // Rysowanie żołnierzy
         for (Soldier soldier : soldiers) {
             soldier.draw(g);
@@ -2018,6 +2029,23 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             // Używamy instancji `soldier`, NIE klasy!
             soldier.shoot(
                     g,
+                    bullets,
+                    enemies,
+                    enemiesToo,
+                    hives,
+                    enemyShooters,
+                    enemyHunters,
+                    viewRect.x,
+                    viewRect.y,
+                    viewRect.width,
+                    viewRect.height
+            );
+        }
+        for (SoldierBot soldierBot : soldierBots){
+            soldierBot.draw(g);
+            Rectangle viewRect = getVisibleRect();
+            soldierBot.shoot(g,
+
                     bullets,
                     enemies,
                     enemiesToo,
@@ -2103,7 +2131,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         for (Hive hive : hives) {
             hive.draw(g);
-            hive.spawnEnemiesToo(g, enemiesToo, enemyShooters, enemyHunters); // Aktualizuje Hive i spawnuje EnemyToo
+            hive.updateActivationAndSpawning(g, soldiers, enemiesToo, enemyShooters, enemyHunters); // <-- nowa logika
         }
 
         for (EnemyHunter enemyHunter : enemyHunters){

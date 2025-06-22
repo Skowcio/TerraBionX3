@@ -1,54 +1,34 @@
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Random;
+import java.awt.*;
 import java.util.ArrayList;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
+import javax.swing.*;
+import javax.imageio.ImageIO;
+import java.awt.Image;        // Do reprezentacji obrazów
+import java.io.IOException;   // Do obsługi wyjątków podczas ładowania obrazów
+// soldierBot uzywa bullet do strzelania
 
-public class BuilderVehicle {
+
+public class SoldierBot {
     private int x, y;
-    private double hoverOffset = 0;           // Przesunięcie do rysowania w pionie
-    private double hoverTime = 0;             // Czas do animacji unoszenia
-    private final double hoverSpeed = 0.005;  // Im mniejsze, tym wolniejsze falowanie
-    private final int hoverAmplitude = 4;     // Jak bardzo w górę/dół się unosi
-    private int width = 45, height = 45;
-    private int speed = 2;
-    private boolean selected;
-    private BufferedImage vehicleImage;
-    private double vehicleAngle; // Kąt obrotu pojazdu
-    private double targetVehicleAngle; // Docelowy kąt obrotu podwozia
-    private final double rotationTime = 800; // Czas obrotu w milisekundach (0.8 sekundy)
-    private double rotationStartTime = -1;  // Czas rozpoczęcia obrotu
-    private int health = 10;
-    private Point target;
-
-    private final int range = 180;
-    private final int shootCooldown = 500; // Czas odnowienia strzału (ms)
+    private final int range = 140; // Zasięg strzelania w pikselach
+    private final int width = 25, height = 25;
+    private int health = 3;
+    private int speed = 3;
+    private final int shootCooldown = 600; // Czas odnowienia strzału (ms)
     private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
     private long lastShotTime = 0; // Czas ostatniego strzału
+    private Random random = new Random();
 
-    public boolean takeDamage() {
-        health--;
-        return health <= 0; // Zwraca true, jeśli Hive zostało zniszczone
-    }
-
-    public BuilderVehicle(int x, int y) {
+    public SoldierBot(int x, int y) {
         this.x = x;
         this.y = y;
-        this.selected = false;
-        this.target = null;
-        try {
-            vehicleImage = ImageIO.read(getClass().getResource("basedrone/basedrone.png"));
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
-
 
     public int getX() {
         return x;
@@ -58,34 +38,21 @@ public class BuilderVehicle {
         return y;
     }
 
-    // Getter pozycji jako obiekt Point
-    public Point getPosition() {
-        return new Point(x, y);
-    }
-    public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public Point getTarget() {
-        return target;
-    }
-
-    public void setTarget(Point target) {
-        if (target != null) {
-            this.target = new Point(target.x - width / 2, target.y - height / 2);
-        } else {
-            this.target = null;
-        }
-    }
-
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
     }
+
+    public boolean takeDamage() {
+        health--;
+        return health <= 0; // Zwraca true, jeśli Enemy zostało zniszczone
+    }
+    public Point getPosition() {
+        return new Point(x, y);
+    }
+
+
+
+
 
     public boolean isInRange(Enemy enemy) {
         int dx = enemy.getX() - x;
@@ -98,50 +65,7 @@ public class BuilderVehicle {
         int dy = enemyShooter.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
-    public void update(long deltaTime) {
-        // 🔁 Aktualizacja efektu "unoszenia się"
-        hoverTime += deltaTime;
-        hoverOffset = Math.sin(hoverTime * hoverSpeed) * hoverAmplitude;
 
-        // 🔁 Aktualizacja obrotu
-        if (target != null) {
-            rotateVehicleTowardsTarget(deltaTime);
-        }
-    }
-
-    // Tu PRACUJ NAD PLYNNYM RUCHEM podwozia
-    private void rotateVehicleTowardsTarget(long deltaTime) {
-        int dx = target.x - (x + width / 2);
-        int dy = target.y - (y + height / 2);
-        targetVehicleAngle = Math.atan2(dy, dx);
-
-        if (rotationStartTime == -1) {
-            rotationStartTime = System.currentTimeMillis(); // Startujemy obrót
-        }
-
-        double elapsedTime = System.currentTimeMillis() - rotationStartTime;
-        double progress = Math.min(elapsedTime / rotationTime, 1.0); // 0.0 -> 1.0 (w ciągu 0.8s)
-
-        // Obliczamy płynny obrót pojazdu zamiast nagłego skoku
-        vehicleAngle = interpolateAngle(vehicleAngle, targetVehicleAngle, progress);
-
-        if (progress >= 1.0) {
-            rotationStartTime = -1; // Resetujemy licznik obrotu po zakończeniu
-        }
-    }
-
-    // Funkcja do płynnej interpolacji kątów (uwzględnia przejścia przez 0°/360°)
-    private double interpolateAngle(double from, double to, double progress) {
-        double difference = to - from;
-
-        if (difference > Math.PI) {
-            difference -= 2 * Math.PI;
-        } else if (difference < -Math.PI) {
-            difference += 2 * Math.PI;
-        }
-
-        return from + difference * progress;
-    }
     public boolean isInRange(Hive hive){
         int dx = hive.getX() - x;
         int dy = hive.getY() - y;
@@ -248,40 +172,114 @@ public class BuilderVehicle {
             }
         }
     }
+    public void update(List<Enemy> enemies, List<Hive> hives) {
 
+        moveTowardsEnemy(enemies);
+        moveTowardsHive(hives);
+
+//        moveTowardsPowerPlant(powerPlants);
+//        attackClosestSoldier(soldiers);
+//        attackClosestBattleVehicle(battleVehicles);
+//        moveTowardsHarvester(harvesters);
+//        attackClosestHarvester(harvesters);
+//        moveTowardsBuilderVehicle(builderVehicles);
+//        attackClosestBuilderVehicles(builderVehicles);
+//        attackClosestArtylerys(artylerys);
+//        attackClosestPowerPlant(powerPlants);
+//        attackClosestFactory(factorys);
+//        moveTowardsFactory(factorys);
+
+    }
+
+    private Enemy getClosestEnemy(java.util.List<Enemy> enemies) {
+        Enemy closest = null;
+        double minDistance = Double.MAX_VALUE;
+
+        for (Enemy enemy : enemies) {
+            double distance = enemy .getPosition().distance(x, y);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closest = enemy ;
+            }
+        }
+        return closest;
+    }
+    private Hive getClosestHive(java.util.List<Hive> hives) {
+        Hive closest = null;
+        double minDistance = Double.MAX_VALUE;
+
+        for (Hive hive : hives) {
+            double distance = hive.getPosition().distance(x, y);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closest = hive;
+            }
+        }
+        return closest;
+    }
+
+
+    public void  moveTowardsHive(List<Hive> hives){
+        Hive closestHive = getClosestHive(hives);
+        if (closestHive != null) {
+            int dx = closestHive.getX() - x;
+            int dy = closestHive.getY() - y;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance > 110) {
+                x += (int) (speed * dx / distance);
+                y += (int) (speed * dy / distance);
+            }
+        }
+    }
+
+    public void moveTowardsEnemy(List<Enemy> enemies) {
+        Enemy closestEnemy = getClosestEnemy(enemies);
+
+        if (closestEnemy != null) {
+            int dx = closestEnemy.getX() - x;
+            int dy = closestEnemy.getY() - y;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > 110) {
+                x += (int) (speed * dx / distance);
+                y += (int) (speed * dy / distance);
+            }
+        }
+
+    }
 
 
     public void draw(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
+        g.setColor(new Color(0, 0, 250)); // Bordowy
+        g.fillRect(x, y, width, height);
 
-        if (vehicleImage != null) {
-            int imageWidth = vehicleImage.getWidth();
-            int imageHeight = vehicleImage.getHeight();
-
-            double scaleX = width / (double) imageWidth;
-            double scaleY = height / (double) imageHeight;
-
-            AffineTransform transform = new AffineTransform();
-            transform.translate(x + width / 2.0, y + height / 2.0 + hoverOffset); // użyj width i height
-            transform.rotate(vehicleAngle);
-            transform.scale(scaleX, scaleY);
-            transform.translate(-imageWidth / 2.0, -imageHeight / 2.0);
-
-            g2d.drawImage(vehicleImage, transform, null);
-        }
-
-        // Obramowanie przy zaznaczeniu
-        if (selected) {
-            g.setColor(Color.GRAY);
-            g.drawRect(x - 2, y - 2, width + 4, height + 4);
-        }
-
-        // Pasek zdrowia
-        int maxHealth = 10;
-        int healthBarWidth = 45;
+        int maxHealth = 3; // Maksymalne zdrowie przeciwnika
+        int healthBarWidth = 25; // Stała długość paska zdrowia
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);
-        g.fillRect(x, y - 5, currentHealthWidth, 3);
+        g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
+
+        // Rysowanie obramowania paska zdrowia
+        g.setColor(Color.BLACK);
+        g.drawRect(x, y - 5, healthBarWidth, 3);
     }
+
+//    public Projectile shootAtNearestSoldier(ArrayList<Soldier> soldiers) {
+//        Soldier nearest = null;
+//        double minDistance = Double.MAX_VALUE;
+//
+//        for (Soldier soldier : soldiers) {
+//            double distance = Math.sqrt(Math.pow(soldier.getX() - x, 2) + Math.pow(soldier.getY() - y, 2));
+//            if (distance <= range && distance < minDistance) {
+//                minDistance = distance;
+//                nearest = soldier;
+//            }
+//        }
+//        if (nearest != null) {
+//            return new Projectile(x + width / 2, y + height / 2, nearest.getX(), nearest.getY());
+//        }
+//        return null;
+//    }
+
 }

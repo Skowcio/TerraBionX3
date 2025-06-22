@@ -42,6 +42,11 @@ public class Enemy {
         return new Rectangle(x, y, width, height);
     }
 
+    // Getter pozycji jako obiekt Point
+    public Point getPosition() {
+        return new Point(x, y);
+    }
+
     public boolean takeDamage() {
         health--;
         return health <= 0; // Zwraca true, jeśli Enemy zostało zniszczone
