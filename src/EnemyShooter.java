@@ -45,6 +45,11 @@ public class EnemyShooter {
         int dy = soldier.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    public boolean isInRange(SoldierBot soldierBot) {
+        int dx = soldierBot.getX() - x;
+        int dy = soldierBot.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
     public boolean isInRange(BattleVehicle battleVehicle) {
         int dx = battleVehicle.getX() - x;
         int dy = battleVehicle.getY() - y;
@@ -57,7 +62,7 @@ public class EnemyShooter {
     }
 
 
-    private void chooseTarget(ArrayList<Soldier> soldiers, ArrayList<BattleVehicle> battleVehicles, ArrayList<PowerPlant> powerPlants
+    private void chooseTarget(ArrayList<Soldier> soldiers, ArrayList<SoldierBot> soldierBots, ArrayList<BattleVehicle> battleVehicles, ArrayList<PowerPlant> powerPlants
 //            , ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives
     )
     {
@@ -67,6 +72,12 @@ public class EnemyShooter {
         for (Soldier soldier : soldiers) {
             if (isInRange(soldier)) {
                 currentTarget = soldier;
+                return; // Znaleziono cel
+            }
+        }
+        for (SoldierBot soldierBot : soldierBots) {
+            if (isInRange(soldierBot)) {
+                currentTarget = soldierBot;
                 return; // Znaleziono cel
             }
         }
@@ -84,7 +95,7 @@ public class EnemyShooter {
         }
     }
 
-    public void shoot(Graphics g, ArrayList<Projectile> projectiles, ArrayList<Soldier> soldiers, ArrayList<BattleVehicle> battleVehicles,ArrayList<PowerPlant> powerPlants
+    public void shoot(Graphics g, ArrayList<Projectile> projectiles, ArrayList<Soldier> soldiers, ArrayList<SoldierBot> soldierBots, ArrayList<BattleVehicle> battleVehicles,ArrayList<PowerPlant> powerPlants
 //            , ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives
     ) {
         long currentTime = System.currentTimeMillis();
@@ -92,17 +103,19 @@ public class EnemyShooter {
         // Jeśli aktualny cel został zniszczony lub jest poza zasięgiem, wybierz nowy
         if (currentTarget == null ||
                 (currentTarget instanceof Soldier && !soldiers.contains(currentTarget)) ||
+                (currentTarget instanceof SoldierBot && !soldierBots.contains(currentTarget)) ||
                (currentTarget instanceof BattleVehicle && !battleVehicles.contains(currentTarget)) ||
                 (currentTarget instanceof PowerPlant && !powerPlants.contains(currentTarget)) ||
 
 //                (currentTarget instanceof Hive && !hives.contains(currentTarget)) ||
                 !(currentTarget instanceof Soldier soldier && isInRange(soldier)) &&
+                        !(currentTarget instanceof SoldierBot soldierBot&& isInRange(soldierBot)) &&
                         !(currentTarget instanceof BattleVehicle battleVehicle && isInRange(battleVehicle)) &&
         !(currentTarget instanceof PowerPlant powerPlant && isInRange(powerPlant))
 
         )
         {
-            chooseTarget(soldiers, battleVehicles, powerPlants); // Wybierz nowy cel
+            chooseTarget(soldiers, soldierBots, battleVehicles, powerPlants); // Wybierz nowy cel
         }
 
         // Jeśli mamy ważny cel, strzelaj
@@ -110,6 +123,12 @@ public class EnemyShooter {
             if (currentTarget instanceof Soldier soldier) {
                 if (isInRange(soldier)) {
                     projectiles.add(new Projectile(x + 15, y + 15, soldier.getX() + 15, soldier.getY() + 15));
+                    lastShotTime = currentTime;
+                }
+            }
+            if (currentTarget instanceof SoldierBot soldierBot) {
+                if (isInRange(soldierBot)) {
+                    projectiles.add(new Projectile(x + 15, y + 15, soldierBot.getX() + 15, soldierBot.getY() + 15));
                     lastShotTime = currentTime;
                 }
             }
@@ -133,108 +152,93 @@ public class EnemyShooter {
 //            }
         }
     }
-    public void update(List<Soldier> soldiers, List<Harvester> harvesters, List<BuilderVehicle> builderVehicles, List<Artylery> artylerys, List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants, List<Factory> factorys) {
-
-        moveTowardsSoldier(soldiers);
-        moveTowardsBattleVehicle(battleVehicles);
-//        moveTowardsArtylery(artylerys);
-        moveTowardsPowerPlant(powerPlants);
-//        attackClosestSoldier(soldiers);
-//        attackClosestBattleVehicle(battleVehicles);
-//        moveTowardsHarvester(harvesters);
-//        attackClosestHarvester(harvesters);
-//        moveTowardsBuilderVehicle(builderVehicles);
-//        attackClosestBuilderVehicles(builderVehicles);
-//        attackClosestArtylerys(artylerys);
-//        attackClosestPowerPlant(powerPlants);
-//        attackClosestFactory(factorys);
-//        moveTowardsFactory(factorys);
-
+    public void update(
+            List<SoldierBot> soldierBots,
+            List<Soldier> soldiers,
+            List<Harvester> harvesters,
+            List<BuilderVehicle> builderVehicles,
+            List<Artylery> artylerys,
+            List<BattleVehicle> battleVehicles,
+            List<PowerPlant> powerPlants,
+            List<Factory> factorys
+    ) {
+        Object target = getClosestTarget(soldierBots, soldiers, powerPlants, battleVehicles);
+        moveTowardsTarget(target);
     }
 
-    private Soldier getClosestSoldier(java.util.List<Soldier> soldiers) {
-        Soldier closest = null;
+    public Object getClosestTarget(
+            List<SoldierBot> soldierBots,
+            List<Soldier> soldiers,
+            List<PowerPlant> powerPlants,
+            List<BattleVehicle> battleVehicles
+    ) {
+        Object closest = null;
         double minDistance = Double.MAX_VALUE;
 
         for (Soldier soldier : soldiers) {
-            double distance = soldier.getPosition().distance(x, y);
-            if (distance < minDistance) {
-                minDistance = distance;
+            double dist = soldier.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
                 closest = soldier;
             }
         }
+
+        for (SoldierBot bot : soldierBots) {
+            double dist = bot.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = bot;
+            }
+        }
+
+        for (PowerPlant plant : powerPlants) {
+            double dist = plant.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = plant;
+            }
+        }
+
+        for (BattleVehicle vehicle : battleVehicles) {
+            double dist = vehicle.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = vehicle;
+            }
+        }
+
         return closest;
     }
-    private PowerPlant getClosestPowerPlant(java.util.List<PowerPlant> powerPlants) {
-        PowerPlant closest = null;
-        double minDistance = Double.MAX_VALUE;
+    public void moveTowardsTarget(Object target) {
+        if (target == null) return;
 
-        for (PowerPlant powerPlant : powerPlants) {
-            double distance =powerPlant.getPosition().distance(x, y);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closest = powerPlant;
-            }
+        int tx = 0, ty = 0;
+
+        if (target instanceof Soldier s) {
+            tx = s.getX();
+            ty = s.getY();
+        } else if (target instanceof SoldierBot sb) {
+            tx = sb.getX();
+            ty = sb.getY();
+        } else if (target instanceof PowerPlant pp) {
+            tx = pp.getX();
+            ty = pp.getY();
+        } else if (target instanceof BattleVehicle bv) {
+            tx = bv.getX();
+            ty = bv.getY();
         }
-        return closest;
-    }
-    private BattleVehicle getClosestBattleVehicle(java.util.List<BattleVehicle> battleVehicles) {
-        BattleVehicle closest = null;
-        double minDistance = Double.MAX_VALUE;
 
-        for (BattleVehicle battleVehicle : battleVehicles) {
-            double distance = battleVehicle.getPosition().distance(x, y);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closest = battleVehicle;
-            }
-        }
-        return closest;
-    }
+        int dx = tx - x;
+        int dy = ty - y;
+        double distance = Math.sqrt(dx * dx + dy * dy);
 
-    public void  moveTowardsPowerPlant(List<PowerPlant> powerPlants){
-        PowerPlant closestPowerPlant = getClosestPowerPlant(powerPlants);
-        if (closestPowerPlant != null) {
-            int dx = closestPowerPlant.getX() - x;
-            int dy = closestPowerPlant.getY() - y;
-            double distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance > 110) {
-                x += (int) (speed * dx / distance);
-                y += (int) (speed * dy / distance);
-            }
+        if (distance > 110) {
+            x += (int) (speed * dx / distance);
+            y += (int) (speed * dy / distance);
         }
     }
 
-    public void moveTowardsSoldier(List<Soldier> soldiers) {
-        Soldier closestSoldier = getClosestSoldier(soldiers);
 
-        if (closestSoldier != null) {
-            int dx = closestSoldier.getX() - x;
-            int dy = closestSoldier.getY() - y;
-            double distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance > 110) {
-                x += (int) (speed * dx / distance);
-                y += (int) (speed * dy / distance);
-            }
-        }
-
-    }
-    public void moveTowardsBattleVehicle(List<BattleVehicle> battleVehicles) {
-        BattleVehicle closestBattleVehicle = getClosestBattleVehicle(battleVehicles);
-
-        if (closestBattleVehicle != null) {
-            int dx = closestBattleVehicle.getX() - x;
-            int dy = closestBattleVehicle.getY() - y;
-            double distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance > 110) {
-                x += (int) (speed * dx / distance);
-                y += (int) (speed * dy / distance);
-            }
-        }
-
-    }
 
     public void draw(Graphics g) {
         g.setColor(new Color(109, 0, 24)); // Bordowy

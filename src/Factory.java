@@ -3,27 +3,31 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Random;
-import javax.imageio.ImageIO;
-
+import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 public class Factory {
-    private int x, y; // Pozycja na mapie
+    private int x, y;
     private int width = 110, height = 110;
-    private boolean selected; // Czy koszary są zaznaczone
-    private final int size = 140; // Rozmiar factory
+    private final int size = 140;
+    private boolean selected;
     private boolean producing = false;
     private int productionSecondsLeft = 0;
+    private boolean spawnTimerActive = false;
+    private SoldierBot producedBot = null;
+
+
+    private long productionStartTime = 0;
+
     private BufferedImage baracImage;
     private long lastSpawnTime = System.currentTimeMillis();
-    private final int SPAWN_INTERVAL = 30000; // 20 sekund w milisekundach
-    private Random random = new Random();
-    private SoldierBot producedBot = null; // obecnie żyjący bot tej fabryki
+    private final int SPAWN_INTERVAL = 5000; // 30 sekund
 
+    private ArrayList<SoldierBot> producedBots = new ArrayList<>();
+    private int maxBots = 1; // Domyślnie 1, ale można zwiększyć przyciskiem
+
+    private Random random = new Random();
 
     public Factory(int x, int y) {
         this.x = x;
@@ -36,15 +40,15 @@ public class Factory {
             e.printStackTrace();
         }
     }
+
     public Point getPosition() {
         return new Point(x, y);
     }
 
     public Rectangle getBounds() {
-        return new Rectangle(x, y,width, height); // width i height to wymiary żołnierza
+        return new Rectangle(x, y, width, height);
     }
 
-    // Gettery
     public int getX() {
         return x;
     }
@@ -57,7 +61,6 @@ public class Factory {
         return selected;
     }
 
-    // Setter
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
@@ -76,25 +79,46 @@ public class Factory {
         }
     }
 
-    public void spawnBots(Graphics g, ArrayList<SoldierBot> soldierBots) {
+    public void spawnBots(Graphics g, ArrayList<SoldierBot> soldierBots, Supplier<Integer> getPower, Runnable consumePower) {
         long currentTime = System.currentTimeMillis();
 
-        // Jeśli bot żyje, nie rób nic
-        if (producedBot != null && !producedBot.isDead()) {
+        producedBots.removeIf(SoldierBot::isDead);
+
+        if (producedBots.size() >= maxBots) {
+            spawnTimerActive = false;
             return;
         }
 
-        // Jeśli bot nie istnieje lub zginął, zacznij odliczać czas
-        if (producedBot == null || producedBot.isDead()) {
-            if (currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
-                int spawnX = random.nextInt(size * 2) + x - size;
-                int spawnY = random.nextInt(size * 2) + y - size;
-                producedBot = new SoldierBot(spawnX, spawnY);
-                soldierBots.add(producedBot);
+        // Jeśli spawn timer nie jest aktywny — próbujemy go aktywować
+        if (!spawnTimerActive) {
+            if (getPower.get() >= 50) {
+                consumePower.run(); // Zmniejszamy power o 50
                 lastSpawnTime = currentTime;
+                spawnTimerActive = true;
+            } else {
+                return; // Za mało power — nie uruchamiaj spawn
+            }
+        }
+
+        if (spawnTimerActive && currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
+            int spawnX = random.nextInt(size * 2) + x - size;
+            int spawnY = random.nextInt(size * 2) + y - size;
+            SoldierBot newBot = new SoldierBot(spawnX, spawnY);
+            soldierBots.add(newBot);
+            producedBots.add(newBot);
+
+            if (producedBots.size() < maxBots) {
+                lastSpawnTime = currentTime;
+            } else {
+                spawnTimerActive = false;
             }
         }
     }
+
+
+
+
+
 
 
 
@@ -106,29 +130,46 @@ public class Factory {
         return productionSecondsLeft;
     }
 
-    // Rysowanie koszar
-    public void draw(Graphics g) {
+    public void upgradeBotLimit() {
+        maxBots++;
+    }
 
+    public int getMaxBots() {
+        return maxBots;
+    }
+
+    public int getAliveBots() {
+        return producedBots.size();
+    }
+
+    public void draw(Graphics g) {
         if (baracImage != null) {
             g.drawImage(baracImage, x, y, width, height, null);
-        }
-//        g.setColor(Color.PINK); // Kolor koszar
-//        g.fillRect(x, y, 50, 50); // Koszary są kwadratem 50x50
-//        g.setColor(Color.BLACK);
-//        g.drawString("Factory", x + width / 2 - 19, y + height / 2 + 5);
-
-        if (selected) {
-            g.setColor(Color.GRAY); // Obramowanie dla zaznaczonych fabryki
-            g.drawRect(x - 2, y - 2, 114, 114); // Obramowanie o 2px większe
         }
         if (producing) {
             g.setColor(Color.WHITE);
             g.drawString(productionSecondsLeft + "s", x + 10, y - 5); // Nad fabryką
         }
+
+        if (selected) {
+            g.setColor(Color.GRAY);
+            g.drawRect(x - 2, y - 2, width + 4, height + 4);
+        }
+
+        // Liczba botów i limit
+        g.setColor(Color.WHITE);
+        g.drawString("Max Bots: " + maxBots, x + 5, y - 20);
+        g.drawString("Live: " + producedBots.size(), x + 5, y - 8);
+
+        // Czas do następnego bota
+        if (producedBots.size() < maxBots) {
+            long timeUntilNextSpawn = Math.max(0, (SPAWN_INTERVAL - (System.currentTimeMillis() - lastSpawnTime)) / 1000);
+            g.setColor(Color.YELLOW);
+            g.drawString("Next bot: " + timeUntilNextSpawn + "s", x + 5, y - 32);
+        }
     }
 
-    // Sprawdzanie, czy punkt (px, py) znajduje się wewnątrz koszar
     public boolean contains(int px, int py) {
-        return px >= x && px <= x + 50 && py >= y && py <= y + 50;
+        return px >= x && px <= x + width && py >= y && py <= y + height;
     }
 }

@@ -19,7 +19,7 @@ public class SoldierBot {
     private final int range = 140; // Zasięg strzelania w pikselach
     private final int width = 25, height = 25;
     private int health = 3;
-    private int speed = 3;
+    private int speed = 4;
     private final int shootCooldown = 600; // Czas odnowienia strzału (ms)
     private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
     private long lastShotTime = 0; // Czas ostatniego strzału
@@ -44,7 +44,11 @@ public class SoldierBot {
 
     public boolean takeDamage() {
         health--;
-        return health <= 0; // Zwraca true, jeśli Enemy zostało zniszczone
+        if (health <= 0) {
+            markAsDead();  // ustawia dead = true
+            return true;
+        }
+        return false;
     }
     public Point getPosition() {
         return new Point(x, y);
@@ -52,7 +56,13 @@ public class SoldierBot {
 
 
     public boolean isDead() {
-        return health <= 0; // lub inna logika zależna od Twojej gry
+        return dead;
+    }
+
+    private boolean dead = false;
+
+    public void markAsDead() {
+        this.dead = true;
     }
 
 
@@ -190,11 +200,10 @@ public class SoldierBot {
             }
         }
     }
-    public void update(List<Enemy> enemies, List<Hive> hives, List<HiveToo> hiveToos) {
-
-        moveTowardsEnemy(enemies);
-        moveTowardsHive(hives);
-        moveTowardsHiveToo(hiveToos);
+    public void update(List<Enemy> enemies, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos) {
+        Object target = getClosestTarget(enemies, enemyToos, hives, hiveToos);
+        moveTowardsTarget(target);
+    }
 
 //        moveTowardsPowerPlant(powerPlants);
 //        attackClosestSoldier(soldiers);
@@ -208,87 +217,75 @@ public class SoldierBot {
 //        attackClosestFactory(factorys);
 //        moveTowardsFactory(factorys);
 
-    }
 
-    private Enemy getClosestEnemy(java.util.List<Enemy> enemies) {
-        Enemy closest = null;
+
+    public Object getClosestTarget(List<Enemy> enemies, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos) {
+        Object closest = null;
         double minDistance = Double.MAX_VALUE;
 
         for (Enemy enemy : enemies) {
-            double distance = enemy .getPosition().distance(x, y);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closest = enemy ;
+            double dist = enemy.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = enemy;
             }
         }
-        return closest;
-    }
-    private Hive getClosestHive(java.util.List<Hive> hives) {
-        Hive closest = null;
-        double minDistance = Double.MAX_VALUE;
+        for (EnemyToo enemyToo : enemyToos) {
+            double dist = enemyToo.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = enemyToo;
+            }
+        }
 
         for (Hive hive : hives) {
-            double distance = hive.getPosition().distance(x, y);
-            if (distance < minDistance) {
-                minDistance = distance;
+            double dist = hive.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
                 closest = hive;
             }
         }
-        return closest;
-    }
-    private HiveToo getClosestHiveToo(java.util.List<HiveToo> hiveToos) {
-        HiveToo closest = null;
-        double minDistance = Double.MAX_VALUE;
 
         for (HiveToo hiveToo : hiveToos) {
-            double distance = hiveToo.getPosition().distance(x, y);
-            if (distance < minDistance) {
-                minDistance = distance;
+            double dist = hiveToo.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
                 closest = hiveToo;
             }
         }
+
         return closest;
     }
 
 
-    public void  moveTowardsHive(List<Hive> hives){
-        Hive closestHive = getClosestHive(hives);
-        if (closestHive != null) {
-            int dx = closestHive.getX() - x;
-            int dy = closestHive.getY() - y;
-            double distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance > 110) {
-                x += (int) (speed * dx / distance);
-                y += (int) (speed * dy / distance);
-            }
+    public void moveTowardsTarget(Object target) {
+        if (target == null) return;
+
+        int tx = 0, ty = 0;
+
+        if (target instanceof Enemy e) {
+            tx = e.getX();
+            ty = e.getY();
+        } else if (target instanceof Hive h) {
+            tx = h.getX();
+            ty = h.getY();
+        } else if (target instanceof HiveToo ht) {
+            tx = ht.getX();
+            ty = ht.getY();
         }
-    }public void  moveTowardsHiveToo(List<HiveToo> hiveToos){
-        HiveToo closestHiveToo = getClosestHiveToo(hiveToos);
-        if (closestHiveToo != null) {
-            int dx = closestHiveToo.getX() - x;
-            int dy = closestHiveToo.getY() - y;
-            double distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance > 110) {
-                x += (int) (speed * dx / distance);
-                y += (int) (speed * dy / distance);
-            }
-        }
-    }
-
-    public void moveTowardsEnemy(List<Enemy> enemies) {
-        Enemy closestEnemy = getClosestEnemy(enemies);
-
-        if (closestEnemy != null) {
-            int dx = closestEnemy.getX() - x;
-            int dy = closestEnemy.getY() - y;
-            double distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance > 110) {
-                x += (int) (speed * dx / distance);
-                y += (int) (speed * dy / distance);
-            }
+        else if (target instanceof EnemyToo et){
+            tx = et.getX();
+            ty = et.getY();
         }
 
+        int dx = tx - x;
+        int dy = ty - y;
+        double distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 110) {
+            x += (int) (speed * dx / distance);
+            y += (int) (speed * dy / distance);
+        }
     }
 
 

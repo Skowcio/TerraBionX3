@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
+import java.util.Iterator;
 
 
 public class GamePanel extends JPanel implements MouseListener, MouseMotionListener, ActionListener, KeyListener {
@@ -372,7 +373,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         add(btnBuilderVehicle);
 
         // przycisk do powiekrzania ilsoci botow w resp
-        btnDroneBot = new JButton("UPGRADE NO' OF BOTS");
+        btnDroneBot = new JButton("UPGRADE");
         btnDroneBot.setBounds(10, 290, 120, 30);
         btnDroneBot.setVisible(false);
         add(btnDroneBot);
@@ -382,6 +383,14 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         countdownLabel.setBounds(140, 130, 60, 30); // Po prawej stronie przycisku
         countdownLabel.setVisible(false);
         add(countdownLabel);
+
+        btnDroneBot.addActionListener(e -> {
+            for (Factory factory : factories) {
+                if (factory.isSelected()) {
+                    factory.upgradeBotLimit();
+                }
+            }
+        });
 
 
         btnHarvester.addActionListener(e -> {
@@ -593,15 +602,15 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             resources.add(new ResourcesSteel(x, y));
         }
         /////////////////////////////////// tu dodaje hives//// od prawej strony
-        for (int i = 0; i < 21; i++) {
+        for (int i = 0; i < 3; i++) {
             int x = 900 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
             int y = rand.nextInt(2000); // Losowa pozycja Y na mapie
             hives.add(new Hive(x, y));
 //                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
 //                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
         }
-
-        for (int i = 0; i < 11; i++) {
+// te respia ciagle
+        for (int i = 0; i < 2; i++) {
             int x = 900 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
             int y = rand.nextInt(2000); // Losowa pozycja Y na mapie
             hiveToos.add(new HiveToo(x, y));
@@ -1044,6 +1053,16 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     break;
                 }
             }
+            Iterator<SoldierBot> iterator = soldierBots.iterator();
+            while (iterator.hasNext()) {
+                SoldierBot soldierBot = iterator.next();
+                if (projectile.checkCollision(soldierBot)) {
+                    toRemove.add(projectile);
+                    soldierBot.markAsDead();
+                    iterator.remove(); // ważne: iterator, nie soldierBots.remove()
+                    break;
+                }
+            }
             for (PowerPlant powerPlant : powerPlants) {
                 if (projectile.checkCollision(powerPlant)) {
                     toRemove.add(projectile);
@@ -1475,10 +1494,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
         for (EnemyShooter enemyShooter : enemyShooters) {
-            enemyShooter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories);
+            enemyShooter.update(soldierBots,soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories);
         }
         for (SoldierBot soldierBot : soldierBots){
-            soldierBot.update(enemies, hives, hiveToos);
+            soldierBot.update(enemies, enemiesToo, hives, hiveToos);
         }
         for (Enemy enemy : enemies) {
             enemy.move();
@@ -1640,7 +1659,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                         case FACTORY:
                             factories.add(new Factory(mouseX, mouseY));
                             collectedSteel -= 2500;
-                            totalPower -= 100;
+                            totalPower -= 150;
                             break;
                     }
 
@@ -2048,6 +2067,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Harvester harvester : harvesters) {
             harvester.draw(g);
         }
+        for (Factory factory : factories) {
+            factory.draw(g);
+            factory.spawnBots(g, soldierBots,
+                    () -> totalPower,                // Supplier — odczyt
+                    () -> totalPower -= 50           // Runnable — zużycie
+            ); // Aktualizuje Hive i spawnuje EnemyToo
+        }
 //        for (Cryopit cryopit : cryopits){
 //            cryopit.drawAll(g);
 //        }
@@ -2187,7 +2213,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         for (EnemyShooter enemyShooter : enemyShooters){
             enemyShooter.draw(g);
-            enemyShooter.shoot(g, projectiles, soldiers, battleVehicles, powerPlants);
+            enemyShooter.shoot(g, projectiles, soldiers, soldierBots, battleVehicles, powerPlants);
         }
         //budowniczy
         for (BuilderVehicle builderVehicle :builderVehicles) {
@@ -2211,10 +2237,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             projectile.draw(g);
         }
 
-        for (Factory factory : factories) {
-            factory.draw(g);
-            factory.spawnBots(g, soldierBots); // Aktualizuje Hive i spawnuje EnemyToo
-        }
+
 
 
 
@@ -2274,6 +2297,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             btnArtylery.setLocation(screenX + 10, screenY + 130);
             btnBattleVehicle.setLocation(screenX + 10, screenY + 170);
             btnBuilderVehicle.setLocation(screenX + 10, screenY + 210);
+            btnDroneBot.setLocation(screenX + 10, screenY + 290);
         }
 
     }
