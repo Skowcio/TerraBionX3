@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 public class Hive {
     private int x, y;
     private int health = 50; // Liczba uderzeń, które Hive może wytrzymać
-    private final int size = 60; // Rozmiar Hive
+    private final int size = 100; // Rozmiar Hive
 //    private long lastSpawnTime = System.currentTimeMillis(); // to potrzebne do czasowego respa
     private final int SPAWN_INTERVAL = 30000; // 20 sekund w milisekundach
     private long lastSpawnTime;
@@ -21,18 +21,19 @@ public class Hive {
         this.y = y;
         // Ładowanie grafiki PNG
         try {
-            hiveImage = ImageIO.read(getClass().getResource("/hive/hive.png"));
+            hiveImage = ImageIO.read(getClass().getResource("/hive/hive2.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
+    // tu masz zaleznosc ze  gdy zblizy sie przeciwnik to sie zacznie produkcja
     public void checkActivation(ArrayList<Soldier> soldiers, ArrayList<SoldierBot> soldierBots, ArrayList<BuilderVehicle> builders) {
         if (!activated) {
             for (Soldier soldier : soldiers) {
                 double dx = soldier.getX() - x;
                 double dy = soldier.getY() - y;
-                if (Math.sqrt(dx * dx + dy * dy) <= 700) {
+                if (Math.sqrt(dx * dx + dy * dy) <= 500) {
                     activated = true;
                     lastSpawnTime = System.currentTimeMillis();
                     return;
@@ -52,7 +53,7 @@ public class Hive {
 
                 double dx = soldierBot.getX() - x;
                 double dy = soldierBot.getY() - y;
-                if (Math.sqrt(dx * dx + dy * dy) <= 700) {
+                if (Math.sqrt(dx * dx + dy * dy) <= 400) {
                     activated = true;
                     lastSpawnTime = System.currentTimeMillis();
                     return;
@@ -65,17 +66,20 @@ public class Hive {
 
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 0; i++) {
                 int spawnX = random.nextInt(size * 2) + x - size;
                 int spawnY = random.nextInt(size * 2) + y - size;
                 enemiesToo.add(new EnemyToo(spawnX, spawnY));
             }
-            for (int i = 0; i < 1; i++) {
-                int spawnX = random.nextInt(size * 5) + x - size;
-                int spawnY = random.nextInt(size * 5) + y - size;
+
+            // tu jest kod by pojawialo sie ich losowa liczba
+            int count = 1 + random.nextInt(8); // losowa liczba od 1 do 5
+            for (int i = 0; i < count; i++) {
+                int spawnX = random.nextInt(size * 8) + x - size;
+                int spawnY = random.nextInt(size * 8) + y - size;
                 enemyShooters.add(new EnemyShooter(spawnX, spawnY));
             }
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 0; i++) {
                 int spawnX = random.nextInt(size * 5) + x - size;
                 int spawnY = random.nextInt(size * 5) + y - size;
                 enemyHunters.add(new EnemyHunter(spawnX, spawnY));
@@ -118,7 +122,7 @@ public class Hive {
         }
 // Rysowanie paska zdrowia
         int maxHealth = 50; // Maksymalne zdrowie przeciwnika
-        int healthBarWidth = 60; // Stała długość paska zdrowia
+        int healthBarWidth = 100; // Stała długość paska zdrowia
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);

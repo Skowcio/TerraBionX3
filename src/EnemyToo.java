@@ -4,7 +4,7 @@ import java.util.List;
 public class EnemyToo {
     private int x, y;
     private int width = 30, height = 30;
-    private int speed = 2; // prędkość poruszania
+    private int speed = 4; // prędkość poruszania
     private int health = 20;
 
     public EnemyToo(int x, int y) {

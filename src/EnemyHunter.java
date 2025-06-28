@@ -5,7 +5,7 @@ public class EnemyHunter {
 
     private int x, y;
     private int width = 10, height = 10;
-    private int speed = 2; // prędkość poruszania
+    private int speed = 4; // prędkość poruszania
     private int health = 2;
 
 

@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 public class HiveToo {
     private int x, y;
     private int health = 50; // Liczba uderzeń, które Hive może wytrzymać
-    private final int size = 60; // Rozmiar Hive
+    private final int size = 100; // Rozmiar Hive
     private long lastSpawnTime = System.currentTimeMillis();
     private final int SPAWN_INTERVAL = 30000; // 20 sekund w milisekundach
     private Random random = new Random();
@@ -19,7 +19,7 @@ public class HiveToo {
         this.y = y;
         // Ładowanie grafiki PNG
         try {
-            hiveImage = ImageIO.read(getClass().getResource("/hive/hive.png"));
+            hiveImage = ImageIO.read(getClass().getResource("/hive/hive2.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -48,7 +48,7 @@ public class HiveToo {
         }
 // Rysowanie paska zdrowia
         int maxHealth = 50; // Maksymalne zdrowie przeciwnika
-        int healthBarWidth = 60; // Stała długość paska zdrowia
+        int healthBarWidth = 100; // Stała długość paska zdrowia
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);
@@ -84,7 +84,7 @@ public class HiveToo {
                 enemiesToo.add(new EnemyToo(spawnX, spawnY));
                 lastSpawnTime = currentTime;
             }
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 3; i++) {
                 int spawnX = random.nextInt(size * 5) + x - size; // Wokół Hive
                 int spawnY = random.nextInt(size * 5) + y - size;
                 enemyShooters.add(new EnemyShooter(spawnX, spawnY));

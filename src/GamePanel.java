@@ -255,7 +255,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         try {
             // Wczytaj obraz tła z plikuF:\projekty JAVA
-            backgroundImage = ImageIO.read(new File("F:/projekty JAVA/TerraBionX2/plener.png"));
+            backgroundImage = ImageIO.read(new File("F:/projekty JAVA/TerraBionX3/src/background/plener2.png"));
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Nie udało się załadować obrazu tła.");
@@ -596,21 +596,28 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 /////////////////////////////////////////////////////////////////////////////////////////
         // Dodajemy 4 losowe pola Stalil Resources Steel
         Random rand = new Random();
-        for (int i = 0; i < 13; i++) {
+        for (int i = 0; i < 18; i++) {
             int x = rand.nextInt(2800); // Losowa pozycja X na mapie
             int y = rand.nextInt(2800); // Losowa pozycja Y na mapie
             resources.add(new ResourcesSteel(x, y));
         }
         /////////////////////////////////// tu dodaje hives//// od prawej strony
-        for (int i = 0; i < 3; i++) {
-            int x = 900 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-            int y = rand.nextInt(2000); // Losowa pozycja Y na mapie
+        for (int i = 0; i < 15; i++) {
+            int x = 900 + rand.nextInt(2500); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+            int y = rand.nextInt(2500); // Losowa pozycja Y na mapie
+            hives.add(new Hive(x, y));
+//                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
+//                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
+        }
+        for (int i = 0; i < 15; i++) {
+            int x = 1500 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+            int y = 1200 + rand.nextInt(2000); // Losowa pozycja Y na mapie
             hives.add(new Hive(x, y));
 //                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
 //                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
         }
 // te respia ciagle
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 5; i++) {
             int x = 900 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
             int y = rand.nextInt(2000); // Losowa pozycja Y na mapie
             hiveToos.add(new HiveToo(x, y));
@@ -674,7 +681,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 //// Dodaj nowego żołnierza w środkowej części mapy
 //            soldiers.add(new Soldier(x, y));
 //        }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             int maxAttempts = 100; // Ograniczenie prób, by uniknąć nieskończonej pętli
             int attempts = 0;
             int x, y;
@@ -700,7 +707,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             }
             //tu masz resp czołgi
         }
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 2; i++) {
             int maxAttempts = 100; // Ograniczenie prób, by uniknąć nieskończonej pętli
             int attempts = 0;
             int x, y;
@@ -758,7 +765,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             int y = rand.nextInt(850); // Losowa pozycja Y na mapie
             enemyHunters.add(new EnemyHunter(x, y));
         }
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             artylerys.add(new Artylery(rand.nextInt(600), rand.nextInt(400)));
         }
 
@@ -1058,8 +1065,18 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 SoldierBot soldierBot = iterator.next();
                 if (projectile.checkCollision(soldierBot)) {
                     toRemove.add(projectile);
-                    soldierBot.markAsDead();
-                    iterator.remove(); // ważne: iterator, nie soldierBots.remove()
+                    if (soldierBot.takeDamage()) {
+                        iterator.remove(); // usuń tylko jeśli health <= 0
+                    }
+                    break; // zakończ pętlę po trafieniu
+                }
+            }
+            for (BuilderVehicle builderVehicle : builderVehicles) {
+                if (projectile.checkCollision(builderVehicle)) {
+                    toRemove.add(projectile);
+                    if (builderVehicle.takeDamage()){
+                        builderVehicles.remove(builderVehicle);
+                    } // Usuń żołnierza po trafieniu
                     break;
                 }
             }
@@ -1081,15 +1098,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     break;
                 }
             }
-            for (BuilderVehicle builderVehicle : builderVehicles) {
-                if (projectile.checkCollision(builderVehicle)) {
-                    toRemove.add(projectile);
-                    if (builderVehicle.takeDamage()){
-                    builderVehicles.remove(builderVehicle);
-                    } // Usuń żołnierza po trafieniu
-                    break;
-                }
-            }
+
 
             for (BattleVehicle battleVehicle : battleVehicles) {
                 if (projectile.checkCollision(battleVehicle)) {
@@ -1496,8 +1505,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (EnemyShooter enemyShooter : enemyShooters) {
             enemyShooter.update(soldierBots,soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories);
         }
-        for (SoldierBot soldierBot : soldierBots){
-            soldierBot.update(enemies, enemiesToo, hives, hiveToos);
+        for (SoldierBot soldierBot : new ArrayList<>(soldierBots)) {
+            soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots);
+        }
+        for (EnemyHunter enemyHunter : new ArrayList<>(enemyHunters)){
+            enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, enemyHunters);
         }
         for (Enemy enemy : enemies) {
             enemy.move();
@@ -2202,7 +2214,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
         for (EnemyHunter enemyHunter : enemyHunters){
-            enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, enemyHunters);
+
             enemyHunter.draw(g);
         }
 

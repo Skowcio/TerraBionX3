@@ -27,6 +27,8 @@ public class Factory {
     private ArrayList<SoldierBot> producedBots = new ArrayList<>();
     private int maxBots = 1; // Domyślnie 1, ale można zwiększyć przyciskiem
 
+
+
     private Random random = new Random();
 
     public Factory(int x, int y) {
@@ -69,6 +71,7 @@ public class Factory {
         producing = true;
         productionSecondsLeft = duration;
     }
+
 
     public void updateProduction() {
         if (producing && productionSecondsLeft > 0) {
@@ -130,8 +133,14 @@ public class Factory {
         return productionSecondsLeft;
     }
 
+//    public void upgradeBotLimit() {
+//        maxBots++;
+//    }
+
     public void upgradeBotLimit() {
-        maxBots++;
+        if (maxBots < 6) {
+            maxBots++;
+        }
     }
 
     public int getMaxBots() {

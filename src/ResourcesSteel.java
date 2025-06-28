@@ -20,7 +20,7 @@ public class ResourcesSteel {
 
         // Wczytanie grafiki zasobu
         try {
-            image = ImageIO.read(getClass().getResource("/steel/steel2.png")); // Ścieżka do obrazu
+            image = ImageIO.read(getClass().getResource("/steel/steel3.png")); // Ścieżka do obrazu
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Nie udało się załadować obrazu dla ResourcesSteel.");

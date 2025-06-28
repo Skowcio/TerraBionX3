@@ -16,7 +16,7 @@ import java.io.IOException;   // Do obsługi wyjątków podczas ładowania obraz
 
 public class SoldierBot {
     private int x, y;
-    private final int range = 140; // Zasięg strzelania w pikselach
+    private final int range = 150; // Zasięg strzelania w pikselach
     private final int width = 25, height = 25;
     private int health = 3;
     private int speed = 4;
@@ -98,6 +98,16 @@ public class SoldierBot {
         int dx = enemyToos.getX() - x;
         int dy = enemyToos.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
+    private boolean isCollidingWithOtherBots(int targetX, int targetY, List<SoldierBot> allBots) {
+        Rectangle futureBounds = new Rectangle(targetX, targetY, width, height);
+        for (SoldierBot other : allBots) {
+            if (this == other) continue; // Nie sprawdzaj samego siebie
+            if (futureBounds.intersects(other.getBounds())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void shoot(
@@ -200,26 +210,15 @@ public class SoldierBot {
             }
         }
     }
-    public void update(List<Enemy> enemies, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos) {
-        Object target = getClosestTarget(enemies, enemyToos, hives, hiveToos);
-        moveTowardsTarget(target);
+    public void update(List<Enemy> enemies, List<EnemyShooter> enemyShooters, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos, List<SoldierBot> allBots) {
+        Object target = getClosestTarget(enemies, enemyShooters, enemyToos, hives, hiveToos);
+        moveTowardsTarget(target, allBots);
     }
 
-//        moveTowardsPowerPlant(powerPlants);
-//        attackClosestSoldier(soldiers);
-//        attackClosestBattleVehicle(battleVehicles);
-//        moveTowardsHarvester(harvesters);
-//        attackClosestHarvester(harvesters);
-//        moveTowardsBuilderVehicle(builderVehicles);
-//        attackClosestBuilderVehicles(builderVehicles);
-//        attackClosestArtylerys(artylerys);
-//        attackClosestPowerPlant(powerPlants);
-//        attackClosestFactory(factorys);
-//        moveTowardsFactory(factorys);
 
 
 
-    public Object getClosestTarget(List<Enemy> enemies, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos) {
+    public Object getClosestTarget(List<Enemy> enemies, List<EnemyShooter> enemyShooters, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos) {
         Object closest = null;
         double minDistance = Double.MAX_VALUE;
 
@@ -230,6 +229,14 @@ public class SoldierBot {
                 closest = enemy;
             }
         }
+        for (EnemyShooter enemyShooter : enemyShooters){
+            double dist = enemyShooter.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = enemyShooter;
+            }
+        }
+
         for (EnemyToo enemyToo : enemyToos) {
             double dist = enemyToo.getPosition().distance(x, y);
             if (dist < minDistance) {
@@ -258,35 +265,39 @@ public class SoldierBot {
     }
 
 
-    public void moveTowardsTarget(Object target) {
+    public void moveTowardsTarget(Object target, List<SoldierBot> allBots) {
         if (target == null) return;
 
         int tx = 0, ty = 0;
 
         if (target instanceof Enemy e) {
-            tx = e.getX();
-            ty = e.getY();
-        } else if (target instanceof Hive h) {
-            tx = h.getX();
-            ty = h.getY();
-        } else if (target instanceof HiveToo ht) {
-            tx = ht.getX();
-            ty = ht.getY();
+            tx = e.getX(); ty = e.getY();
+        }else if (target instanceof EnemyShooter es) {
+            tx = es.getX(); ty = es.getY();
         }
-        else if (target instanceof EnemyToo et){
-            tx = et.getX();
-            ty = et.getY();
+        else if (target instanceof Hive h) {
+            tx = h.getX(); ty = h.getY();
+        } else if (target instanceof HiveToo ht) {
+            tx = ht.getX(); ty = ht.getY();
+        } else if (target instanceof EnemyToo et) {
+            tx = et.getX(); ty = et.getY();
         }
 
         int dx = tx - x;
         int dy = ty - y;
         double distance = Math.sqrt(dx * dx + dy * dy);
+// tu jest dystans na jaki sie zblizy do przeciwnika
+        if (distance > 100) {
+            int nextX = x + (int) (speed * dx / distance);
+            int nextY = y + (int) (speed * dy / distance);
 
-        if (distance > 110) {
-            x += (int) (speed * dx / distance);
-            y += (int) (speed * dy / distance);
+            if (!isCollidingWithOtherBots(nextX, nextY, allBots)) {
+                x = nextX;
+                y = nextY;
+            }
         }
     }
+
 
 
     public void draw(Graphics g) {
