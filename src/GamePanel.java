@@ -16,10 +16,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class GamePanel extends JPanel implements MouseListener, MouseMotionListener, ActionListener, KeyListener {
-
+    private MiniMapPanel miniMapPanel;
     private GameState gameState;
     private JFrame frame; // Referencja do głównego okna
     private ArrayList<Explosion> explosions; // Lista eksplozji
@@ -60,6 +61,17 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     private Soldier soldier; // to jest do zapisywania do calego Soldier w savegame i load
 
+    public List<Soldier> getSoldiers() {
+        return soldiers;
+    }
+    public List<Enemy> getEnemies() {
+        return enemies;
+    }
+    public List<Factory> getFactories() {
+        return factories;
+    }
+
+
     private Timer movementTimer;
     private Timer shootingTimer;
     private Timer shootingTimer2;
@@ -95,6 +107,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private Timer scrollTimer;
     private Point mousePosition;
     private JFrame mainFrame;
+
+
 
 
     private BufferedImage backgroundImage;
@@ -260,6 +274,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             e.printStackTrace();
             System.out.println("Nie udało się załadować obrazu tła.");
         }
+
 
         this.hives = new ArrayList<>();
         this.hiveToos = new ArrayList<>();
@@ -922,7 +937,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         explosions.add(new Explosion(x, y)); // Dodaje nową eksplozję do listy
     }
 
-
+    public void setMiniMapPanel(MiniMapPanel miniMapPanel) {
+        this.miniMapPanel = miniMapPanel;
+    }
 
 
     // menu buldiera
@@ -2310,6 +2327,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             btnBattleVehicle.setLocation(screenX + 10, screenY + 170);
             btnBuilderVehicle.setLocation(screenX + 10, screenY + 210);
             btnDroneBot.setLocation(screenX + 10, screenY + 290);
+        }
+        if (miniMapPanel != null) {
+            miniMapPanel.repaint();
         }
 
     }

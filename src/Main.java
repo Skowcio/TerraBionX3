@@ -26,16 +26,23 @@ public class Main {
         hudPanel.setBounds(0, 0, 1920, 980);
         hudPanel.setOpaque(false);
 
+
+
         // 6. JLayeredPane do nałożenia HUD na mapę
         JLayeredPane layeredPane = new JLayeredPane();
         layeredPane.setPreferredSize(new java.awt.Dimension(1920, 980));
         layeredPane.add(scrollPane, Integer.valueOf(1));
         layeredPane.add(hudPanel, Integer.valueOf(2));
+        // 6.5 Dodanie minimapy
+        MiniMapPanel miniMap = new MiniMapPanel(gamePanel, scrollPane);
+        layeredPane.add(miniMap, Integer.valueOf(3));  // wyżej niż HUD, jeśli chcesz
+        gamePanel.setMiniMapPanel(miniMap); // by mógł ją odświeżać
 
         // 7. Konfiguracja JFrame
         frame.setContentPane(layeredPane);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+
     }
 }
