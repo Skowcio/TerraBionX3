@@ -37,6 +37,12 @@ public class MiniMapPanel extends JPanel {
             int y = (int) (soldier.getY() * scaleY);
             g2d.fillRect(x, y, 2, 2);
         }
+        g2d.setColor(Color.BLUE);
+        for (SoldierBot soldierBot : gamePanel.getSoldierBots()) {
+            int x = (int) (soldierBot.getX() * scaleX);
+            int y = (int) (soldierBot.getY() * scaleY);
+            g2d.fillRect(x, y, 2, 2);
+        }
 
         // Wrogowie - czerwoni
         g2d.setColor(Color.RED);
@@ -45,6 +51,25 @@ public class MiniMapPanel extends JPanel {
             int y = (int) (enemy.getY() * scaleY);
             g2d.fillRect(x, y, 2, 2);
         }
+        g2d.setColor(Color.RED);
+        for (EnemyShooter enemyShooter : gamePanel.getenemyShooters()) {
+            int x = (int) (enemyShooter.getX() * scaleX);
+            int y = (int) (enemyShooter.getY() * scaleY);
+            g2d.fillRect(x, y, 2, 2);
+        }
+        g2d.setColor(Color.RED);
+        for (Hive hive : gamePanel.getHives()) {
+            int x = (int) (hive.getX() * scaleX);
+            int y = (int) (hive.getY() * scaleY);
+            g2d.fillRect(x, y, 2, 2);
+        }
+        g2d.setColor(Color.RED);
+        for (HiveToo hiveToo : gamePanel.getHiveToos()) {
+            int x = (int) (hiveToo.getX() * scaleX);
+            int y = (int) (hiveToo.getY() * scaleY);
+            g2d.fillRect(x, y, 2, 2);
+        }
+
 
         // Fabryki - żółte
         g2d.setColor(Color.YELLOW);

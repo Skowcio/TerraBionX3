@@ -61,11 +61,25 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     private Soldier soldier; // to jest do zapisywania do calego Soldier w savegame i load
 
+
+//////////////////////////////////// to sa do minimapy jednostki by je zwracalo
     public List<Soldier> getSoldiers() {
         return soldiers;
     }
+    public List<SoldierBot> getSoldierBots() {
+        return soldierBots;
+    }
     public List<Enemy> getEnemies() {
         return enemies;
+    }
+    public List<EnemyShooter> getenemyShooters() {
+        return enemyShooters;
+    }
+    public List<Hive> getHives() {
+        return hives;
+    }
+    public List<HiveToo> getHiveToos() {
+        return hiveToos;
     }
     public List<Factory> getFactories() {
         return factories;
