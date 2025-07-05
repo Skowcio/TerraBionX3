@@ -10,7 +10,7 @@ public class Hive {
     private int health = 50; // Liczba uderzeń, które Hive może wytrzymać
     private final int size = 100; // Rozmiar Hive
 //    private long lastSpawnTime = System.currentTimeMillis(); // to potrzebne do czasowego respa
-    private final int SPAWN_INTERVAL = 30000; // 20 sekund w milisekundach
+    private final int SPAWN_INTERVAL = 20000; // 20 sekund w milisekundach
     private long lastSpawnTime;
     private Random random = new Random();
     private BufferedImage hiveImage;
@@ -26,6 +26,9 @@ public class Hive {
             e.printStackTrace();
         }
 
+    }
+    public boolean isDead() {
+        return health <= 0;
     }
     // tu masz zaleznosc ze  gdy zblizy sie przeciwnik to sie zacznie produkcja
     public void checkActivation(ArrayList<Soldier> soldiers, ArrayList<SoldierBot> soldierBots, ArrayList<BuilderVehicle> builders) {

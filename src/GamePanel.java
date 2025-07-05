@@ -56,6 +56,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private Baracks selectedBaracks;
     private SteelMine selectedSteelMines;
     private Factory selectedFactories;
+    private Random rand = new Random();
+
+
 
     private JLabel countdownLabel; // to jest do tego by odliczalo budowe pojazdow
 
@@ -93,7 +96,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Projectile> projectiles;
     private ArrayList<ResourcesSteel> resources;
     private ArrayList<PowerPlant> powerPlants;
-    private int collectedSteel = 10000; // Przechowuje zebraną ilość stali
+    private int collectedSteel = 100000; // Przechowuje zebraną ilość stali
     private int totalPower = 0;
     private final int MAX_POWER = 200;
 
@@ -156,10 +159,135 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private static final int BUILD_SIZE = 80;
 
     private JScrollPane scrollPane;
+    private MissionManager missionManager;
+
+    private int destroyedHiveCount = 0;
+    private boolean missionCompleted = false;
+
 
     public void setScrollPane(JScrollPane scrollPane) {
         this.scrollPane = scrollPane;
     }
+
+    /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    ///
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+// tu jest load misjii
+    public void loadMission(Mission mission) {
+        soldiers.clear();
+        builderVehicles.clear();
+        enemies.clear();
+        hives.clear();
+        resources.clear();
+        // ... inne listy też, jeśli chcesz
+
+        destroyedHiveCount = 0;       // <--- NOWE
+        missionCompleted = false;     // <--- NOWE
+
+        for (Point p : mission.soldierPositions) {
+            soldiers.add(new Soldier(p.x, p.y));
+        }
+
+        for (Point p : mission.builderPositions) {
+            builderVehicles.add(new BuilderVehicle(p.x, p.y));
+        }
+
+        for (Point p : mission.enemyPositions) {
+            enemies.add(new Enemy(p.x, p.y));
+        }
+
+        for (Point p : mission.resourcesPositions){
+            resources.add(new ResourcesSteel(p.x, p.y));
+        }
+
+        for (int i = 0; i < mission.randomHiveCount; i++) {
+            int x = mission.hiveSpawnArea.x + rand.nextInt(mission.hiveSpawnArea.width);
+            int y = mission.hiveSpawnArea.y + rand.nextInt(mission.hiveSpawnArea.height);
+            hives.add(new Hive(x, y));
+        }
+
+        // Możesz tu dodać np. tekst wyświetlany na ekranie:
+        System.out.println("🔹 Misja załadowana: " + mission.name);
+    }
+
+
+    private void onMissionCompleted() {
+        if (missionCompleted) return; // zabezpieczenie, by nie wykonać 2 razy
+        System.out.println("✅ Misja została ukończona, przechodzimy dalej.");
+        missionCompleted = true;
+
+        JOptionPane.showMessageDialog(this, "Misja ukończona!");
+
+        missionManager.nextMission(); // ⬅PRZEJŚCIE DO KOLEJNEJ MISJI
+        Mission next = missionManager.getCurrentMission();
+
+        if (missionManager.hasMoreMissions()) {
+            clearAllUnitsAndEnemies();  // usuwa wszystkie obiekty z gry
+            loadMission(next);          // załadowanie nowej misji
+            missionCompleted = false;   // reset flagi
+        } else {
+            JOptionPane.showMessageDialog(this, " Ukończono wszystkie misje!");
+        }
+    }
+
+    // do czyszczenia mapy przed nowa misja
+    private void clearAllUnitsAndEnemies() {
+        soldiers.clear();
+        soldierBots.clear();
+        cryopits.clear();
+        minigunners.clear();
+        battleVehicles.clear();
+        artylerys.clear();
+        selectedSoldiers.clear();
+        harvesters.clear();
+        enemies.clear();
+        enemyShooters.clear();
+        enemiesToo.clear();
+        enemyHunters.clear();
+        builderVehicles.clear();
+        bullets.clear();
+        minigunnerBullets.clear();
+        artBullets.clear();
+        baracks.clear();
+        factories.clear();
+        buldings.clear();
+        hives.clear();
+        hiveToos.clear();
+        steelMines.clear();
+        explosions.clear();
+
+        // Wyczyść zaznaczenia jednostek
+        selectedSoldier = null;
+        selectedMinigunner = null;
+        selectedBattleVehicle = null;
+        selectedArtylery = null;
+        selectedHarvester = null;
+        selectedBuilderVehicle = null;
+        selectedBaracks = null;
+        selectedSteelMines = null;
+        selectedFactories = null;
+
+        // Wyczyść obiekty zajmujące pola
+        occupiedTargets.clear();
+    }
+
+
+    /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+    /// /// /////////////////////////////////////////////////////////////////////////////////////
+
 
     // to jest odpowiedzalne za to by nie pojawila sie jakas jednostka na sobie
 
@@ -221,7 +349,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     }
 
 
-    public GamePanel(JFrame frame) {
+    public GamePanel(JFrame frame, MissionManager missionManager) {
 
         // to do przesuwania myszka po mapie - by dal osie zamiast strzalkami przesowac mapa
         this.mainFrame = frame;
@@ -620,222 +748,243 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 System.out.println("Wybierz miejsce budowy Factory.");
             }
         });
-
-
 /////////////////////////////////////////////////////////////////////////////////////////
-        // Dodajemy 4 losowe pola Stalil Resources Steel
-        Random rand = new Random();
-        for (int i = 0; i < 18; i++) {
-            int x = rand.nextInt(2800); // Losowa pozycja X na mapie
-            int y = rand.nextInt(2800); // Losowa pozycja Y na mapie
-            resources.add(new ResourcesSteel(x, y));
-        }
-        /////////////////////////////////// tu dodaje hives//// od prawej strony
-        for (int i = 0; i < 15; i++) {
-            int x = 900 + rand.nextInt(2500); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-            int y = rand.nextInt(2500); // Losowa pozycja Y na mapie
-            hives.add(new Hive(x, y));
-//                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
-//                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
-        }
-        for (int i = 0; i < 15; i++) {
-            int x = 1500 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-            int y = 1200 + rand.nextInt(2000); // Losowa pozycja Y na mapie
-            hives.add(new Hive(x, y));
-//                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
-//                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
-        }
-// te respia ciagle
-        for (int i = 0; i < 5; i++) {
-            int x = 900 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-            int y = rand.nextInt(2000); // Losowa pozycja Y na mapie
-            hiveToos.add(new HiveToo(x, y));
-//                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
-//                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
-        }
-//        for (int i = 0; i < 1; i++){
-//            int x = 920 + rand.nextInt(811); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-//            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
-//            cryopits.add(new Cryopit(x, y));
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+//        // testowe spawny jednostek itp
+//        // Dodajemy 4 losowe pola Stalil Resources Steel
+//        Random rand = new Random();
+//        for (int i = 0; i < 18; i++) {
+//            int x = rand.nextInt(2800); // Losowa pozycja X na mapie
+//            int y = rand.nextInt(2800); // Losowa pozycja Y na mapie
+//            resources.add(new ResourcesSteel(x, y));
 //        }
-
-
-
-
-        // TU  masz ilosc żołnierzy pojawiajacych sie losowo na start
-        for (int i = 0; i < 5; i++) {
-            int maxAttempts = 100; // Ograniczenie prób, by uniknąć nieskończonej pętli
-            int attempts = 0;
-            int x, y;
-
-            do {
-                // Środek mapy jako prostokąt obejmujący 50% szerokości i wysokości
-                int centerXStart = 700 / 4; // 25% szerokości od lewej
-                int centerXEnd = 3 * 700 / 4; // 75% szerokości
-                int centerYStart = 500 / 4; // 25% wysokości od góry
-                int centerYEnd = 3 * 500 / 4; // 75% wysokości
-
-                // Losowa pozycja w obrębie środkowej części
-                x = rand.nextInt(centerXEnd - centerXStart) + centerXStart;
-                y = rand.nextInt(centerYEnd - centerYStart) + centerYStart;
-
-                attempts++;
-            } while (isCollidingWithOthers(x, y, soldiers, minigunners, battleVehicles) && attempts < maxAttempts);
-
-            if (attempts < maxAttempts) {
-                soldiers.add(new Soldier(x, y)); // Dodanie żołnierza, jeśli znaleziono wolne miejsce
-            } else {
-                System.out.println("Nie znaleziono wolnego miejsca dla nowego żołnierza!");
-            }
-        }
-
-        for (int i = 0; i < 1; i++) {
-            int x = 920 + rand.nextInt(511); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
-            soldierBots.add(new SoldierBot(x, y));
-        }
-//        for (int i = 0; i < 10; i++) {int side = rand.nextInt(4);  // Losujemy, z której strony pojawi się przeciwnik
+//        /////////////////////////////////// tu dodaje hives//// od prawej strony
+//        for (int i = 0; i < 15; i++) {
+//            int x = 900 + rand.nextInt(2500); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+//            int y = rand.nextInt(2500); // Losowa pozycja Y na mapie
+//            hives.add(new Hive(x, y));
+////                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
+////                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
+//        }
+////        for (int i = 0; i < 15; i++) {
+////            int x = 1500 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+////            int y = 1200 + rand.nextInt(2000); // Losowa pozycja Y na mapie
+////            hives.add(new Hive(x, y));
+//////                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
+//////                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
+////        }
+//// te respia ciagle
+//        for (int i = 0; i < 5; i++) {
+//            int x = 900 + rand.nextInt(2000); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+//            int y = rand.nextInt(2000); // Losowa pozycja Y na mapie
+//            hiveToos.add(new HiveToo(x, y));
+////                int x = 1620 + rand.nextInt(111); // Pozycja na prawej krawędzi poza mapą (poza szerokością 1600)
+////                int y = rand.nextInt(900); // Losowa pozycja na osi Y w granicach wysokości mapy (0-900)
+//        }
+////        for (int i = 0; i < 1; i++){
+////            int x = 920 + rand.nextInt(811); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+////            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
+////            cryopits.add(new Cryopit(x, y));
+////        }
+//
+//
+//
+//
+//        // TU  masz ilosc żołnierzy pojawiajacych sie losowo na start
+//        for (int i = 0; i < 5; i++) {
+//            int maxAttempts = 100; // Ograniczenie prób, by uniknąć nieskończonej pętli
+//            int attempts = 0;
 //            int x, y;
 //
-//// Środek mapy jako prostokąt obejmujący 50% szerokości i wysokości
-//            int centerXStart = 700 / 4; // 25% szerokości od lewej
-//            int centerXEnd = 3 * 700 / 4; // 75% szerokości
-//            int centerYStart = 500 / 4; // 25% wysokości od góry
-//            int centerYEnd = 3 * 500 / 4; // 75% wysokości
+//            do {
+//                // Środek mapy jako prostokąt obejmujący 50% szerokości i wysokości
+//                int centerXStart = 700 / 4; // 25% szerokości od lewej
+//                int centerXEnd = 3 * 700 / 4; // 75% szerokości
+//                int centerYStart = 500 / 4; // 25% wysokości od góry
+//                int centerYEnd = 3 * 500 / 4; // 75% wysokości
 //
-//// Losowa pozycja w obrębie środkowej części
-//            x = rand.nextInt(centerXEnd - centerXStart) + centerXStart;
-//            y = rand.nextInt(centerYEnd - centerYStart) + centerYStart;
+//                // Losowa pozycja w obrębie środkowej części
+//                x = rand.nextInt(centerXEnd - centerXStart) + centerXStart;
+//                y = rand.nextInt(centerYEnd - centerYStart) + centerYStart;
 //
-//// Dodaj nowego żołnierza w środkowej części mapy
-//            soldiers.add(new Soldier(x, y));
-//        }
-        for (int i = 0; i < 2; i++) {
-            int maxAttempts = 100; // Ograniczenie prób, by uniknąć nieskończonej pętli
-            int attempts = 0;
-            int x, y;
-
-            do {
-                // Środek mapy jako prostokąt obejmujący 50% szerokości i wysokości
-                int centerXStart = 700 / 4; // 25% szerokości od lewej
-                int centerXEnd = 3 * 700 / 4; // 75% szerokości
-                int centerYStart = 500 / 4; // 25% wysokości od góry
-                int centerYEnd = 3 * 500 / 4; // 75% wysokości
-
-                // Losowa pozycja w obrębie środkowej części
-                x = rand.nextInt(centerXEnd - centerXStart) + centerXStart;
-                y = rand.nextInt(centerYEnd - centerYStart) + centerYStart;
-
-                attempts++;
-            } while (isCollidingWithOthers(x, y, soldiers, minigunners, battleVehicles) && attempts < maxAttempts);
-
-            if (attempts < maxAttempts) {
-                minigunners.add(new Minigunner(x, y)); // Dodanie żołnierza, jeśli znaleziono wolne miejsce
-            } else {
-                System.out.println("Nie znaleziono wolnego miejsca dla nowego żołnierza!");
-            }
-            //tu masz resp czołgi
-        }
-        for (int i = 0; i < 2; i++) {
-            int maxAttempts = 100; // Ograniczenie prób, by uniknąć nieskończonej pętli
-            int attempts = 0;
-            int x, y;
-
-            do {
-                // Środek mapy jako prostokąt obejmujący 50% szerokości i wysokości
-                int centerXStart = 700 / 4; // 25% szerokości od lewej
-                int centerXEnd = 3 * 700 / 4; // 75% szerokości
-                int centerYStart = 500 / 4; // 25% wysokości od góry
-                int centerYEnd = 3 * 500 / 4; // 75% wysokości
-
-                // Losowa pozycja w obrębie środkowej części
-                x = rand.nextInt(centerXEnd - centerXStart) + centerXStart;
-                y = rand.nextInt(centerYEnd - centerYStart) + centerYStart;
-
-                attempts++;
-            } while (isCollidingWithOthers(x, y, soldiers, minigunners, battleVehicles) && attempts < maxAttempts);
-            if (attempts < maxAttempts) {
-                battleVehicles.add(new BattleVehicle(x, y)); // Dodanie żołnierza, jeśli znaleziono wolne miejsce
-            }
-            else {
-                System.out.println("Nie znaleziono wolnego miejsca dla nowego żołnierza!");
-            }
-        }
-//        for (int i = 0; i < 7; i++) {
-//            battleVehicles.add(new BattleVehicle(rand.nextInt(600), rand.nextInt(400)));
-//        }
-
-
-
-//        for (int i = 0; i < 10; i++) {int side = rand.nextInt(4);  // Losujemy, z której strony pojawi się
-//            int x, y;
+//                attempts++;
+//            } while (isCollidingWithOthers(x, y, soldiers, minigunners, battleVehicles) && attempts < maxAttempts);
 //
-//// Środek mapy jako prostokąt obejmujący 50% szerokości i wysokości
-//            int centerXStart = 700 / 4; // 25% szerokości od lewej
-//            int centerXEnd = 3 * 700 / 4; // 75% szerokości
-//            int centerYStart = 500 / 4; // 25% wysokości od góry
-//            int centerYEnd = 3 * 500 / 4; // 75% wysokości
-//
-//// Losowa pozycja w obrębie środkowej części
-//            x = rand.nextInt(centerXEnd - centerXStart) + centerXStart;
-//            y = rand.nextInt(centerYEnd - centerYStart) + centerYStart;
-//
-//// Dodaj nowego żołnierza w środkowej części mapy
-//            minigunners.add(new Minigunner(x, y));
-//        }
-
-        for (int i = 0; i < 3; i++) {
-            builderVehicles.add(new BuilderVehicle(rand.nextInt(600), rand.nextInt(400)));
-        }
-
-
-        for (int i = 0; i < 1; i++) {
-            int x = 920 + rand.nextInt(511); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
-            enemyHunters.add(new EnemyHunter(x, y));
-        }
-        for (int i = 0; i < 3; i++) {
-            artylerys.add(new Artylery(rand.nextInt(600), rand.nextInt(400)));
-        }
-
-        // Dodajemy 3 losowych wrogów
-        for (int i = 0; i < 1; i++) {
-            int x = 920 + rand.nextInt(511); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
-            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
-            enemies.add(new Enemy(x, y));
-        }
-        for (int i = 0; i < 1; i++){
-            enemyShooters.add(new EnemyShooter(rand.nextInt(1550), rand.nextInt(850)));
-        }
-
-        for (int i = 0; i< 2; i++){
-            harvesters.add(new Harvester(rand.nextInt(700), rand.nextInt(500)));
-        }
-        // inwazja
-// to dodaje w losowych miejscach na krawedzi mapy EnemyToo
-        for (int i = 0; i < 1; i++) {
-            int side = rand.nextInt(4);  // Losujemy, z której strony pojawi się przeciwnik
-            int x = 0, y = 0;
-
-//            if (side == 0) {  // Górna część
-//                x = rand.nextInt(1400);  // Losowa pozycja na osi X w granicach szerokości planszy
-//                y = -20;  // Pozycja na górze poza mapą
+//            if (attempts < maxAttempts) {
+//                soldiers.add(new Soldier(x, y)); // Dodanie żołnierza, jeśli znaleziono wolne miejsce
+//            } else {
+//                System.out.println("Nie znaleziono wolnego miejsca dla nowego żołnierza!");
 //            }
-            ////// tu poniżej musi być else if/////////////////////
-            if (side == 1) {  // Dolna część
-                x = rand.nextInt(1400);  // Losowa pozycja na osi X w granicach szerokości planszy
-                y = 520;  // Pozycja na dole poza mapą
-            } else if (side == 2) {  // Lewa część
-                x = -20;  // Pozycja na lewej krawędzi poza mapą
-                y = rand.nextInt(800);  // Losowa pozycja na osi Y w granicach wysokości planszy
-            }
-            if (side == 3) {  // Prawa część
-                x = 720;  // Pozycja na prawej krawędzi poza mapą
-                y = rand.nextInt(800);  // Losowa pozycja na osi Y w granicach wysokości planszy
-            }
+//        }
+//
+//        for (int i = 0; i < 1; i++) {
+//            int x = 920 + rand.nextInt(511); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+//            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
+//            soldierBots.add(new SoldierBot(x, y));
+//        }
+////        for (int i = 0; i < 10; i++) {int side = rand.nextInt(4);  // Losujemy, z której strony pojawi się przeciwnik
+////            int x, y;
+////
+////// Środek mapy jako prostokąt obejmujący 50% szerokości i wysokości
+////            int centerXStart = 700 / 4; // 25% szerokości od lewej
+////            int centerXEnd = 3 * 700 / 4; // 75% szerokości
+////            int centerYStart = 500 / 4; // 25% wysokości od góry
+////            int centerYEnd = 3 * 500 / 4; // 75% wysokości
+////
+////// Losowa pozycja w obrębie środkowej części
+////            x = rand.nextInt(centerXEnd - centerXStart) + centerXStart;
+////            y = rand.nextInt(centerYEnd - centerYStart) + centerYStart;
+////
+////// Dodaj nowego żołnierza w środkowej części mapy
+////            soldiers.add(new Soldier(x, y));
+////        }
+//        for (int i = 0; i < 2; i++) {
+//            int maxAttempts = 100; // Ograniczenie prób, by uniknąć nieskończonej pętli
+//            int attempts = 0;
+//            int x, y;
+//
+//            do {
+//                // Środek mapy jako prostokąt obejmujący 50% szerokości i wysokości
+//                int centerXStart = 700 / 4; // 25% szerokości od lewej
+//                int centerXEnd = 3 * 700 / 4; // 75% szerokości
+//                int centerYStart = 500 / 4; // 25% wysokości od góry
+//                int centerYEnd = 3 * 500 / 4; // 75% wysokości
+//
+//                // Losowa pozycja w obrębie środkowej części
+//                x = rand.nextInt(centerXEnd - centerXStart) + centerXStart;
+//                y = rand.nextInt(centerYEnd - centerYStart) + centerYStart;
+//
+//                attempts++;
+//            } while (isCollidingWithOthers(x, y, soldiers, minigunners, battleVehicles) && attempts < maxAttempts);
+//
+//            if (attempts < maxAttempts) {
+//                minigunners.add(new Minigunner(x, y)); // Dodanie żołnierza, jeśli znaleziono wolne miejsce
+//            } else {
+//                System.out.println("Nie znaleziono wolnego miejsca dla nowego żołnierza!");
+//            }
+//            //tu masz resp czołgi
+//        }
+//        for (int i = 0; i < 2; i++) {
+//            int maxAttempts = 100; // Ograniczenie prób, by uniknąć nieskończonej pętli
+//            int attempts = 0;
+//            int x, y;
+//
+//            do {
+//                // Środek mapy jako prostokąt obejmujący 50% szerokości i wysokości
+//                int centerXStart = 700 / 4; // 25% szerokości od lewej
+//                int centerXEnd = 3 * 700 / 4; // 75% szerokości
+//                int centerYStart = 500 / 4; // 25% wysokości od góry
+//                int centerYEnd = 3 * 500 / 4; // 75% wysokości
+//
+//                // Losowa pozycja w obrębie środkowej części
+//                x = rand.nextInt(centerXEnd - centerXStart) + centerXStart;
+//                y = rand.nextInt(centerYEnd - centerYStart) + centerYStart;
+//
+//                attempts++;
+//            } while (isCollidingWithOthers(x, y, soldiers, minigunners, battleVehicles) && attempts < maxAttempts);
+//            if (attempts < maxAttempts) {
+//                battleVehicles.add(new BattleVehicle(x, y)); // Dodanie żołnierza, jeśli znaleziono wolne miejsce
+//            }
+//            else {
+//                System.out.println("Nie znaleziono wolnego miejsca dla nowego żołnierza!");
+//            }
+//        }
+////        for (int i = 0; i < 7; i++) {
+////            battleVehicles.add(new BattleVehicle(rand.nextInt(600), rand.nextInt(400)));
+////        }
+//
+//
+//
+////        for (int i = 0; i < 10; i++) {int side = rand.nextInt(4);  // Losujemy, z której strony pojawi się
+////            int x, y;
+////
+////// Środek mapy jako prostokąt obejmujący 50% szerokości i wysokości
+////            int centerXStart = 700 / 4; // 25% szerokości od lewej
+////            int centerXEnd = 3 * 700 / 4; // 75% szerokości
+////            int centerYStart = 500 / 4; // 25% wysokości od góry
+////            int centerYEnd = 3 * 500 / 4; // 75% wysokości
+////
+////// Losowa pozycja w obrębie środkowej części
+////            x = rand.nextInt(centerXEnd - centerXStart) + centerXStart;
+////            y = rand.nextInt(centerYEnd - centerYStart) + centerYStart;
+////
+////// Dodaj nowego żołnierza w środkowej części mapy
+////            minigunners.add(new Minigunner(x, y));
+////        }
+//
+//        for (int i = 0; i < 3; i++) {
+//            builderVehicles.add(new BuilderVehicle(rand.nextInt(600), rand.nextInt(400)));
+//        }
+//
+//
+//        for (int i = 0; i < 1; i++) {
+//            int x = 920 + rand.nextInt(511); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+//            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
+//            enemyHunters.add(new EnemyHunter(x, y));
+//        }
+//        for (int i = 0; i < 3; i++) {
+//            artylerys.add(new Artylery(rand.nextInt(600), rand.nextInt(400)));
+//        }
+//
+//        // Dodajemy 3 losowych wrogów
+//        for (int i = 0; i < 1; i++) {
+//            int x = 920 + rand.nextInt(511); // Losowa pozycja na mapie w zakresie od 920 pxl + 511
+//            int y = rand.nextInt(850); // Losowa pozycja Y na mapie
+//            enemies.add(new Enemy(x, y));
+//        }
+//        for (int i = 0; i < 1; i++){
+//            enemyShooters.add(new EnemyShooter(rand.nextInt(1550), rand.nextInt(850)));
+//        }
+//
+//        for (int i = 0; i< 2; i++){
+//            harvesters.add(new Harvester(rand.nextInt(700), rand.nextInt(500)));
+//        }
+//        // inwazja
+//// to dodaje w losowych miejscach na krawedzi mapy EnemyToo
+//        for (int i = 0; i < 1; i++) {
+//            int side = rand.nextInt(4);  // Losujemy, z której strony pojawi się przeciwnik
+//            int x = 0, y = 0;
+//
+////            if (side == 0) {  // Górna część
+////                x = rand.nextInt(1400);  // Losowa pozycja na osi X w granicach szerokości planszy
+////                y = -20;  // Pozycja na górze poza mapą
+////            }
+//            ////// tu poniżej musi być else if/////////////////////
+//            if (side == 1) {  // Dolna część
+//                x = rand.nextInt(1400);  // Losowa pozycja na osi X w granicach szerokości planszy
+//                y = 520;  // Pozycja na dole poza mapą
+//            } else if (side == 2) {  // Lewa część
+//                x = -20;  // Pozycja na lewej krawędzi poza mapą
+//                y = rand.nextInt(800);  // Losowa pozycja na osi Y w granicach wysokości planszy
+//            }
+//            if (side == 3) {  // Prawa część
+//                x = 720;  // Pozycja na prawej krawędzi poza mapą
+//                y = rand.nextInt(800);  // Losowa pozycja na osi Y w granicach wysokości planszy
+//            }
+//
+//            enemiesToo.add(new EnemyToo(x, y));
+//        }
+/////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 
-            enemiesToo.add(new EnemyToo(x, y));
-        }
 
         // Timer do płynnego ruchu/////////////////////////////////////////////////////////////////////////////////////////////////
         Timer movementTimer = new Timer(40, e -> {
@@ -868,28 +1017,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             updateGameresources();
         });
         resourcesTimer.start();
-
-//        movementTimer = new Timer(20, e -> moveSoldiers());
-//        movementTimer.start();
-//
-//        movementTimer = new Timer(20, e -> moveHarvesters());
-//        movementTimer.start();
-
-        // Timer do strzelania w wrogow
-//        shootingTimer = new Timer(10, e -> shootEnemies());
-//        shootingTimer.start();
-
-//        shootingTimer2 = new Timer ( 10, e -> shootEnemiesart());
-//        shootingTimer2.start();
-
-        // Timer do aktualizacji gry
-//        Timer timer = new Timer(30, e -> updateGame()); // to odswierzenie dla updategame, bez tego nie beda poruszac sie EnemyToo w stone Soldier
-//        timer.start();
-
-
-        // Timer dla aktualizacji pocisków
-//        Timer projectileUpdateTimer = new Timer(25, e -> updateProjectiles());
-//        projectileUpdateTimer.start();
 
     }
     ///////////// to sa koordynaty postajacach cryopitow
@@ -1364,6 +1491,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 //                        hit = true;
                         if (hive.takeDamage()) {
                             hives.remove(hive);
+                            destroyedHiveCount++;
                         }
                         break;
                     }
@@ -1426,22 +1554,23 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                         break;
                     }
                 }
-//                boolean hit = false;
-                for (Hive hive : hives) {
+
+                for (Hive hive : new ArrayList<>(hives)) {
                     if (bullet.checkCollision(hive)) {
                         bulletsToRemove.add(bullet);
-//                        hit = true;
                         if (hive.takeDamage()) {
                             hives.remove(hive);
+                            destroyedHiveCount++;
+
+                            System.out.println("Hive zniszczony! Liczba zniszczonych: " + destroyedHiveCount);
                         }
                         break;
                     }
-
                 }
                 for (HiveToo hiveToo : hiveToos) {
                     if (bullet.checkCollision(hiveToo)) {
                         bulletsToRemove.add(bullet);
-//                        hit = true;
+
                         if (hiveToo.takeDamage()) {
                             hiveToos.remove(hiveToo);
                         }
@@ -1452,7 +1581,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 for (EnemyShooter enemyShooter : enemyShooters) {
                     if (bullet.checkCollision(enemyShooter)) {
                         bulletsToRemove.add(bullet);
-//                        hit = true;
+
                         if (enemyShooter.takeDamage()) {
                             enemyShooters.remove(enemyShooter);
                         }
@@ -1522,6 +1651,18 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     //update co się dzieje w grze gdy trafi w cos dany pocisk ?
     private void updateGame() {
 
+        if (!missionCompleted && missionManager != null) {
+            Mission current = missionManager.getCurrentMission();
+            if (current.objectiveType == Mission.ObjectiveType.DESTROY_ALL_HIVES) {
+                System.out.println("Sprawdzanie celu misji: zniszczone " + destroyedHiveCount +
+                        " / wymagane " + current.requiredHivesDestroyed);
+
+                if (destroyedHiveCount >= current.requiredHivesDestroyed) {
+                    onMissionCompleted();
+                }
+            }
+        }
+
         bullets.removeIf(bullet -> bullet.isOutOfBounds(getWidth(), getHeight()) || bullet.isExpired());
         projectiles.removeIf(projectile -> projectile.isOutOfBounds(getWidth(), getHeight()) || projectile.isExpired());
         minigunnerBullets.removeIf(minigunnerBullet -> minigunnerBullet.isOutOfBounds(getWidth(), getHeight()) || minigunnerBullet.isExpired());
@@ -1555,11 +1696,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public void actionPerformed(ActionEvent e) {
         long currentTime = System.currentTimeMillis();
 
-        // Sprawdzanie czy minęło 45 sekund
-        if (currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
-            spawnEnemyToo();
-            lastSpawnTime = currentTime;
-        }
+//        // Sprawdzanie czy minęło 45 sekund
+//        if (currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
+//            spawnEnemyToo();
+//            lastSpawnTime = currentTime;
+//        }
 
         repaint();
     }

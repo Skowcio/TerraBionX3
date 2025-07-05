@@ -4,13 +4,16 @@ public class Main {
     public static void main(String[] args) {
         JFrame frame = new JFrame("TerraBionX2");
 
-        // 1. Tworzymy główny panel gry (mapę)
-        GamePanel gamePanel = new GamePanel(frame);
+        // 1. Tworzymy MissionManager
+        MissionManager missionManager = new MissionManager();
+        Mission current = missionManager.getCurrentMission();
 
-        // 2. Tworzymy panel HUD i przekazujemy mu referencję do gamePanel
+        // 2. Tworzymy główny panel gry (mapę)
+        GamePanel gamePanel = new GamePanel(frame, missionManager);
+        gamePanel.loadMission(current);
+
+        // 3. Tworzymy panel HUD i przekazujemy mu referencję do gamePanel
         HUDPanel hudPanel = new HUDPanel(gamePanel);
-
-        // 3. Przekazujemy HUD z powrotem do GamePanel, żeby mógł go odświeżać
         gamePanel.setHUDPanel(hudPanel);
 
         // 4. ScrollPane z GamePanel
@@ -18,31 +21,28 @@ public class Main {
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setBounds(0, 0, 1920, 980);
-
-        // przekazuje scrollPane do gamePanel
         gamePanel.setScrollPane(scrollPane);
 
         // 5. HUDPanel – jako przezroczysty panel na wierzchu
         hudPanel.setBounds(0, 0, 1920, 980);
         hudPanel.setOpaque(false);
 
-
-
-        // 6. JLayeredPane do nałożenia HUD na mapę
+        // 6. Tworzymy JLayeredPane i dodajemy komponenty
         JLayeredPane layeredPane = new JLayeredPane();
         layeredPane.setPreferredSize(new java.awt.Dimension(1920, 980));
-        layeredPane.add(scrollPane, Integer.valueOf(1));
-        layeredPane.add(hudPanel, Integer.valueOf(2));
-        // 6.5 Dodanie minimapy
-        MiniMapPanel miniMap = new MiniMapPanel(gamePanel, scrollPane);
-        layeredPane.add(miniMap, Integer.valueOf(3));  // wyżej niż HUD, jeśli chcesz
-        gamePanel.setMiniMapPanel(miniMap); // by mógł ją odświeżać
+        layeredPane.add(scrollPane, Integer.valueOf(1)); // mapa
+        layeredPane.add(hudPanel, Integer.valueOf(2));   // HUD
 
-        // 7. Konfiguracja JFrame
+        // 7. Dodajemy minimapę
+        MiniMapPanel miniMap = new MiniMapPanel(gamePanel, scrollPane);
+        miniMap.setBounds(1600, 0, 300, 300); // pozycja w prawym górnym rogu
+        layeredPane.add(miniMap, Integer.valueOf(3));    // minimapa nad wszystkim
+        gamePanel.setMiniMapPanel(miniMap);
+
+        // 8. Konfiguracja JFrame
         frame.setContentPane(layeredPane);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
-
     }
 }
