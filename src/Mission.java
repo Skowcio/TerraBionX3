@@ -12,7 +12,7 @@ public class Mission {
     public int randomHiveCount = 0;
     public Rectangle hiveSpawnArea;
 
-    public int requiredHivesDestroyed = 0;
+    public int requiredHivesDestroyed = 5;
 
     public ObjectiveType objectiveType;
 

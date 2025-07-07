@@ -59,31 +59,36 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private Random rand = new Random();
 
 
-
     private JLabel countdownLabel; // to jest do tego by odliczalo budowe pojazdow
 
     private Soldier soldier; // to jest do zapisywania do calego Soldier w savegame i load
 
 
-//////////////////////////////////// to sa do minimapy jednostki by je zwracalo
+    /// ///////////////////////////////// to sa do minimapy jednostki by je zwracalo
     public List<Soldier> getSoldiers() {
         return soldiers;
     }
+
     public List<SoldierBot> getSoldierBots() {
         return soldierBots;
     }
+
     public List<Enemy> getEnemies() {
         return enemies;
     }
+
     public List<EnemyShooter> getenemyShooters() {
         return enemyShooters;
     }
+
     public List<Hive> getHives() {
         return hives;
     }
+
     public List<HiveToo> getHiveToos() {
         return hiveToos;
     }
+
     public List<Factory> getFactories() {
         return factories;
     }
@@ -126,15 +131,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JFrame mainFrame;
 
 
-
-
     private BufferedImage backgroundImage;
 
     private long lastSpawnTime = System.currentTimeMillis();
     private static final long SPAWN_INTERVAL = 45000; // resoawn przeciwnika w milisekundach - pojawiaja sie od prawej strony mapy
     private Timer timer;
     private long previousTime = System.currentTimeMillis();
-
 
 
     private boolean showBuilderMenu = false;
@@ -161,8 +163,23 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JScrollPane scrollPane;
     private MissionManager missionManager;
 
+    private long missionStartTime = 0;  // czas rozpoczęcia misji
+    private final long defendDurationMillis = 15 * 60 * 1000; // 15 minut w milisekundach
+
     private int destroyedHiveCount = 0;
     private boolean missionCompleted = false;
+
+    public long getMissionStartTime() {
+        return missionStartTime;
+    }
+
+    public long getDefendDurationMillis() {
+        return defendDurationMillis;
+    }
+
+    public MissionManager getMissionManager() {
+        return missionManager;
+    }
 
 
     public void setScrollPane(JScrollPane scrollPane) {
@@ -186,10 +203,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         enemies.clear();
         hives.clear();
         resources.clear();
-        // ... inne listy też, jeśli chcesz
 
-        destroyedHiveCount = 0;       // <--- NOWE
-        missionCompleted = false;     // <--- NOWE
+        System.out.println("🔄 Resetuję licznik Hive. Przed: " + destroyedHiveCount);
+        destroyedHiveCount = 0;
+        System.out.println("🔄 Po resecie: " + destroyedHiveCount);
+        missionCompleted = false;
 
         for (Point p : mission.soldierPositions) {
             soldiers.add(new Soldier(p.x, p.y));
@@ -203,37 +221,77 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             enemies.add(new Enemy(p.x, p.y));
         }
 
-        for (Point p : mission.resourcesPositions){
+        for (Point p : mission.resourcesPositions) {
             resources.add(new ResourcesSteel(p.x, p.y));
         }
 
+        // ✅ Hive bez nakładania się
+        int hiveSize = 80; // Rozmiar Hive (dostosuj jeśli masz inną grafikę)
+        ArrayList<Rectangle> hiveRects = new ArrayList<>();
+        Random rand = new Random();
+
         for (int i = 0; i < mission.randomHiveCount; i++) {
-            int x = mission.hiveSpawnArea.x + rand.nextInt(mission.hiveSpawnArea.width);
-            int y = mission.hiveSpawnArea.y + rand.nextInt(mission.hiveSpawnArea.height);
-            hives.add(new Hive(x, y));
+            boolean placed = false;
+            int attempts = 0;
+
+            while (!placed && attempts < 100) {
+                int x = mission.hiveSpawnArea.x + rand.nextInt(mission.hiveSpawnArea.width - hiveSize);
+                int y = mission.hiveSpawnArea.y + rand.nextInt(mission.hiveSpawnArea.height - hiveSize);
+                Rectangle newRect = new Rectangle(x, y, hiveSize, hiveSize);
+
+                boolean overlaps = false;
+                for (Rectangle r : hiveRects) {
+                    if (newRect.intersects(r)) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+
+                if (!overlaps) {
+                    hiveRects.add(newRect);
+                    hives.add(new Hive(x, y));
+                    placed = true;
+                } else {
+                    attempts++;
+                }
+            }
+
+            if (!placed) {
+                System.out.println("⚠️ Nie udało się wstawić Hive bez kolizji po 100 próbach.");
+            }
         }
 
-        // Możesz tu dodać np. tekst wyświetlany na ekranie:
         System.out.println("🔹 Misja załadowana: " + mission.name);
+        System.out.println("➡️ Typ celu: " + mission.objectiveType);
+        System.out.println("➡️ Wymagane Hive do zniszczenia: " + mission.requiredHivesDestroyed);
+
+        updateGame(); // od razu sprawdzanie celu
+        missionStartTime = System.currentTimeMillis();
     }
 
 
     private void onMissionCompleted() {
-        if (missionCompleted) return; // zabezpieczenie, by nie wykonać 2 razy
-        System.out.println("✅ Misja została ukończona, przechodzimy dalej.");
+        System.out.println("✅ ✅ onMissionCompleted() — zaczynam wykonanie");
+        if (missionCompleted) {
+            System.out.println("⚠️ onMissionCompleted() już wywołane, nic nie robię.");
+            return;
+        }
+
+        System.out.println("🎉 Wywołano onMissionCompleted()!");
         missionCompleted = true;
 
         JOptionPane.showMessageDialog(this, "Misja ukończona!");
 
-        missionManager.nextMission(); // ⬅PRZEJŚCIE DO KOLEJNEJ MISJI
-        Mission next = missionManager.getCurrentMission();
+        missionManager.nextMission();
 
+        Mission next = missionManager.getCurrentMission();
         if (missionManager.hasMoreMissions()) {
-            clearAllUnitsAndEnemies();  // usuwa wszystkie obiekty z gry
-            loadMission(next);          // załadowanie nowej misji
-            missionCompleted = false;   // reset flagi
+            System.out.println("➡️ Ładuję kolejną misję: " + next.name);
+            clearAllUnitsAndEnemies();
+            loadMission(next);
+            missionCompleted = false;
         } else {
-            JOptionPane.showMessageDialog(this, " Ukończono wszystkie misje!");
+            JOptionPane.showMessageDialog(this, "🎉 Ukończono wszystkie misje!");
         }
     }
 
@@ -244,6 +302,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         cryopits.clear();
         minigunners.clear();
         battleVehicles.clear();
+        powerPlants.clear();
         artylerys.clear();
         selectedSoldiers.clear();
         harvesters.clear();
@@ -290,25 +349,24 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
     // to jest odpowiedzalne za to by nie pojawila sie jakas jednostka na sobie
-
     private boolean isCollidingWithOthers(int x, int y, ArrayList<Soldier> soldiers, ArrayList<Minigunner> minigunners, ArrayList<BattleVehicle> battleVehicles) {
         Rectangle newSoldierBounds = new Rectangle(x, y, 42, 34); // Wymiary żołnierza
         Rectangle newMinigunerBounds = new Rectangle(x, y, 20, 20);
-        Rectangle newBattleVehicle = new Rectangle(x, y, 50,50);
+        Rectangle newBattleVehicle = new Rectangle(x, y, 50, 50);
 
         for (Soldier soldier : soldiers) {
             if (newSoldierBounds.intersects(soldier.getBounds())) {
                 return true; // Koliduje z innym żołnierzem
             }
         }
-        for (Minigunner minigunner : minigunners){
-            if (newMinigunerBounds.intersects(minigunner.getBounds())){
+        for (Minigunner minigunner : minigunners) {
+            if (newMinigunerBounds.intersects(minigunner.getBounds())) {
                 return true;
             }
         }
 
         for (BattleVehicle battleVehicle : battleVehicles) {
-            if (newBattleVehicle.intersects(battleVehicle.getBounds())){
+            if (newBattleVehicle.intersects(battleVehicle.getBounds())) {
                 return true;
             }
         }
@@ -316,9 +374,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     }
 
 
-
-
-    /////////// do zaznaczania grupowego
+    /// //////// do zaznaczania grupowego
     private Rectangle selectionRectangle = null; // Prostokąt zaznaczenia
     private Point startPoint = null; // Punkt początkowy zaznaczenia
 
@@ -353,6 +409,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         // to do przesuwania myszka po mapie - by dal osie zamiast strzalkami przesowac mapa
         this.mainFrame = frame;
+        this.missionManager = missionManager;
 
         // Timer sprawdzający pozycję myszy
         scrollTimer = new Timer(20, e -> checkEdgeScrolling());
@@ -381,10 +438,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         });
 
 
-
-
 // tu jest okenko glowne gry oraz okienko ktore jest po nacisnieciu ecape
-        {this.frame = frame;
+        {
+            this.frame = frame;
             this.setPreferredSize(new Dimension(3000, 3000)); // Duża mapa
 
             setFocusable(true);
@@ -497,8 +553,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     showBaracksMenu = false;
                     updateBaracksMenu();
                     repaint(); // Odśwież panel
-                }
-                else {
+                } else {
                     // Poinformuj gracza, że nie ma wystarczającej ilości stali
                     System.out.println("Nie masz wystarczającej ilości stali! Potrzebujesz 1000 Steel.");
                 }
@@ -524,7 +579,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         add(btnBattleVehicle);
 
 
-        btnBuilderVehicle = new JButton( "FENIX Drone");
+        btnBuilderVehicle = new JButton("FENIX Drone");
         btnBuilderVehicle.setBounds(10, 210, 120, 30);
         btnBuilderVehicle.setVisible(false);
         add(btnBuilderVehicle);
@@ -566,8 +621,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     showFactorysMenu = false;
                     updateFactorysMenu();
                     repaint(); // Odśwież panel
-                }
-                else {
+                } else {
                     // Poinformuj gracza, że nie ma wystarczającej ilości stali
                     System.out.println("Nie masz wystarczającej ilości stali! Potrzebujesz 2000 Steel.");
                 }
@@ -592,8 +646,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     showFactorysMenu = false;
                     updateFactorysMenu();
                     repaint(); // Odśwież panel
-                }
-                else {
+                } else {
                     // Poinformuj gracza, że nie ma wystarczającej ilości stali
                     System.out.println("Nie masz wystarczającej ilości stali! Potrzebujesz 2000 Steel.");
                 }
@@ -698,7 +751,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         add(btnPowerPlant);
 
         btnSteelMine = new JButton("Steel Mine");
-        btnSteelMine.setBounds(10,130,120,30);
+        btnSteelMine.setBounds(10, 130, 120, 30);
         btnSteelMine.setVisible(false);
         btnSteelMine.setEnabled(false);
         add(btnSteelMine);
@@ -1019,7 +1072,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         resourcesTimer.start();
 
     }
-    ///////////// to sa koordynaty postajacach cryopitow
+
+    /// ////////// to sa koordynaty postajacach cryopitow
 //    private void spawnRandomCryopit() {
 //        Random rand = new Random();
 //
@@ -1033,7 +1087,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 //        new Cryopit(x, y); // Tworzymy nowy Cryopit na tej pozycji
 //        System.out.println("Nowy Cryopit pojawił się na: " + x + ", " + y);
 //    }
-
     private void checkEdgeScrolling() {
         if (mousePosition == null || getParent() == null || !(getParent() instanceof JViewport viewport)) return;
 
@@ -1097,6 +1150,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnSoldier.setVisible(showBaracksMenu);
         repaint();
     }
+
     private void stopAllSoldiers() {
         for (Soldier soldier : soldiers) {
             soldier.setTarget(null); // Wyzeruj cel ruchu
@@ -1112,6 +1166,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnDroneBot.setVisible((showFactorysMenu));
         repaint();
     }
+
     private void showPauseMenu() {
         JDialog pauseMenu = new JDialog(frame, "Menu Pauzy", true);
         pauseMenu.setSize(300, 150);
@@ -1192,6 +1247,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             }
         }
     }
+
     private long lastCryopitSpawnTime = System.currentTimeMillis();
 
 //    private void updateCryopits() {
@@ -1232,7 +1288,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             for (BuilderVehicle builderVehicle : builderVehicles) {
                 if (projectile.checkCollision(builderVehicle)) {
                     toRemove.add(projectile);
-                    if (builderVehicle.takeDamage()){
+                    if (builderVehicle.takeDamage()) {
                         builderVehicles.remove(builderVehicle);
                     } // Usuń żołnierza po trafieniu
                     break;
@@ -1316,7 +1372,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
     private void moveMinigunner() {
-        for (Minigunner minigunner : minigunners){
+        for (Minigunner minigunner : minigunners) {
             Point target = minigunner.getTarget();
             if (target != null) {
                 int dx = target.x - minigunner.getX();
@@ -1405,6 +1461,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         repaint();
     }
+
     private void moveArtylery() {
         for (Artylery artylery : artylerys) {
             Point target = artylery.getTarget();
@@ -1473,12 +1530,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             if (minigunnerBullet.isOutOfBounds(getWidth(), getHeight())) {
                 minigunnerBulletToRemove.add(minigunnerBullet);
 
-            }
-            else {
+            } else {
                 for (Enemy enemy : enemies) {
                     if (minigunnerBullet.checkCollision(enemy)) {
                         minigunnerBulletToRemove.add(minigunnerBullet);
-                        if (enemy.takeDamage()){
+                        if (enemy.takeDamage()) {
                             enemies.remove(enemy);
                         }
                         break;
@@ -1522,7 +1578,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 for (EnemyToo enemyToo : enemiesToo) {
                     if (minigunnerBullet.checkCollision(enemyToo)) {
                         minigunnerBulletToRemove.add(minigunnerBullet);
-                        if (enemyToo.takeDamage()){
+                        if (enemyToo.takeDamage()) {
                             enemiesToo.remove(enemyToo);
                         }
                         break;
@@ -1534,7 +1590,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         repaint();
     }
-    //////////////////////////////////////////////////////////////////////////////////////////
+
+    /// ///////////////////////////////////////////////////////////////////////////////////////
     private void shootEnemies() { // to do strzelania w wrogow za pomoca bullet
         ArrayList<Bullet> bulletsToRemove = new ArrayList<>();
 
@@ -1543,12 +1600,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             if (bullet.isOutOfBounds(getWidth(), getHeight())) {
                 bulletsToRemove.add(bullet);
 
-            }
-            else {
+            } else {
                 for (Enemy enemy : enemies) {
                     if (bullet.checkCollision(enemy)) {
                         bulletsToRemove.add(bullet);
-                        if (enemy.takeDamage2()){
+                        if (enemy.takeDamage2()) {
                             enemies.remove(enemy);
                         }
                         break;
@@ -1603,7 +1659,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 for (EnemyToo enemyToo : enemiesToo) {
                     if (bullet.checkCollision(enemyToo)) {
                         bulletsToRemove.add(bullet);
-                        if (enemyToo.takeDamage2()){
+                        if (enemyToo.takeDamage2()) {
                             enemiesToo.remove(enemyToo);
                         }
                         break;
@@ -1618,7 +1674,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         repaint();
     }
 
-    private void updateGameresources(){
+    private void updateGameresources() {
         for (Harvester harvester : harvesters) { // Iteracja po liście harvesterów
             for (ResourcesSteel resource : resources) { // Iteracja po zasobach
                 if (!resource.isDepleted() && harvester.getBounds().intersects(resource.getBounds())) {
@@ -1648,20 +1704,62 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         repaint();
     }
+
     //update co się dzieje w grze gdy trafi w cos dany pocisk ?
     private void updateGame() {
+        // 🔄 Ogólna aktywność
+        System.out.println("⏱️ updateGame() działa");
 
-        if (!missionCompleted && missionManager != null) {
-            Mission current = missionManager.getCurrentMission();
+        // 🔄 Status misji
+        System.out.println("🟡 updateGame() | missionCompleted = " + missionCompleted);
+
+        // 🔍 Sprawdzenie MissionManager i obecnej misji
+        if (missionManager == null) {
+            System.out.println("❌ missionManager jest null");
+            return;
+        }
+
+        Mission current = missionManager.getCurrentMission();
+
+        if (current == null) {
+            System.out.println("❌ current mission jest null");
+            return;
+        }
+
+        System.out.println("📋 Obecna misja: " + current.name);
+        System.out.println("🎯 Typ celu misji: " + current.objectiveType);
+        System.out.println("🔥 Hive zniszczone: " + destroyedHiveCount + " / wymagane: " + current.requiredHivesDestroyed);
+
+        // ✅ Logika sprawdzająca warunek zakończenia misji
+        if (!missionCompleted) {
             if (current.objectiveType == Mission.ObjectiveType.DESTROY_ALL_HIVES) {
-                System.out.println("Sprawdzanie celu misji: zniszczone " + destroyedHiveCount +
-                        " / wymagane " + current.requiredHivesDestroyed);
+                System.out.println("🔍 Sprawdzam warunek zniszczenia wszystkich Hive...");
+                System.out.println("🧪 DEBUG | destroyedHiveCount = " + destroyedHiveCount);
+                System.out.println("🧪 DEBUG | current.requiredHivesDestroyed = " + current.requiredHivesDestroyed);
 
                 if (destroyedHiveCount >= current.requiredHivesDestroyed) {
+                    System.out.println("✅ Warunek spełniony — wywołuję onMissionCompleted()");
                     onMissionCompleted();
                 }
+
+            } else if (current.objectiveType == Mission.ObjectiveType.DEFEND_FOR_TIME) {
+                long elapsedTime = System.currentTimeMillis() - missionStartTime;
+                long remaining = defendDurationMillis - elapsedTime;
+
+                System.out.println("🕒 Pozostały czas: " + (remaining / 1000) + " sekund");
+
+                if (elapsedTime >= defendDurationMillis) {
+                    System.out.println("✅ Czas przetrwania upłynął — misja zakończona!");
+                    onMissionCompleted();
+                }
+
+            } else {
+                System.out.println("ℹ️ Inny typ misji — warunek nieobsługiwany.");
             }
         }
+
+
+
 
         bullets.removeIf(bullet -> bullet.isOutOfBounds(getWidth(), getHeight()) || bullet.isExpired());
         projectiles.removeIf(projectile -> projectile.isOutOfBounds(getWidth(), getHeight()) || projectile.isExpired());

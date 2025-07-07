@@ -1,8 +1,5 @@
-
-
 import javax.swing.*;
 import java.awt.*;
-
 
 public class HUDPanel extends JPanel {
     private final GamePanel gamePanel;
@@ -11,13 +8,9 @@ public class HUDPanel extends JPanel {
         this.gamePanel = gamePanel;
         setLayout(null);
 
-//        JButton btnPowerPlant = new JButton("Power Plant");
-//        btnPowerPlant.setBounds(10, 90, 120, 30);
-//        add(btnPowerPlant);
-//
-//        JButton btnSteelMine = new JButton("Steel Mine");
-//        btnSteelMine.setBounds(10, 130, 120, 30);
-//        add(btnSteelMine);
+        // ⏱️ Co sekundę odświeżaj HUD (do odliczania)
+        Timer hudTimer = new Timer(1000, e -> repaint());
+        hudTimer.start();
     }
 
     @Override
@@ -25,9 +18,31 @@ public class HUDPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
+        // 🔹 Wyświetlanie zasobów
         g2d.setFont(new Font("Arial", Font.BOLD, 15));
         g2d.setColor(Color.WHITE);
         g2d.drawString("Steel Collected: " + gamePanel.getCollectedSteel(), 20, 30);
         g2d.drawString("Power: " + gamePanel.getTotalPower(), 20, 60);
+
+        // 🔹 Wyświetlanie czasu obrony (jeśli to misja DEFEND_FOR_TIME)
+        if (gamePanel.getMissionManager() != null) {
+            Mission current = gamePanel.getMissionManager().getCurrentMission();
+            if (current != null && current.objectiveType == Mission.ObjectiveType.DEFEND_FOR_TIME) {
+                long elapsed = System.currentTimeMillis() - gamePanel.getMissionStartTime();
+                long remaining = gamePanel.getDefendDurationMillis() - elapsed;
+                if (remaining < 0) remaining = 0;
+
+                long seconds = remaining / 1000;
+                long minutes = seconds / 60;
+                long secondsLeft = seconds % 60;
+
+                String timeText = String.format("⏳ Time to survive: %02d:%02d", minutes, secondsLeft);
+
+                g2d.setFont(new Font("Arial", Font.BOLD, 16));
+                g2d.setColor(Color.YELLOW);
+                g2d.drawString(timeText, 20, 90);
+            }
+        }
     }
 }
+
