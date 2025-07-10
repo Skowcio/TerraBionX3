@@ -106,7 +106,9 @@ public class Factory {
         if (spawnTimerActive && currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
             int spawnX = random.nextInt(size * 2) + x - size;
             int spawnY = random.nextInt(size * 2) + y - size;
-            SoldierBot newBot = new SoldierBot(spawnX, spawnY);
+            int patrolSize = 1000; // szerokość i wysokość strefy w ktorej patroluje soldierbot
+            Rectangle patrol = new Rectangle(x - patrolSize / 2, y - patrolSize / 2, patrolSize, patrolSize);
+            SoldierBot newBot = new SoldierBot(spawnX, spawnY, patrol);
             soldierBots.add(newBot);
             producedBots.add(newBot);
 

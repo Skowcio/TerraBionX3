@@ -71,7 +71,7 @@ public class MissionManager {
         mission2.soldierPositions.add(new Point(300, 400));
         mission2.builderPositions.add(new Point(320, 430));
         mission2.enemyPositions.add(new Point(1200, 1300));
-        mission2.randomHiveCount = 3;
+        mission2.randomHiveCount = 30;
         mission2.hiveSpawnArea = new Rectangle(1600, 1300, 800, 800);
         mission2.requiredHivesDestroyed = 0;
         mission2.objectiveType = Mission.ObjectiveType.DEFEND_FOR_TIME; // <- inny typ celu

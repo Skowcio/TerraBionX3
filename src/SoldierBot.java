@@ -25,9 +25,16 @@ public class SoldierBot {
     private long lastShotTime = 0; // Czas ostatniego strzału
     private Random random = new Random();
 
-    public SoldierBot(int x, int y) {
+    private Rectangle patrolArea; // obszar działania bota
+
+
+    public SoldierBot(int x, int y, Rectangle patrolArea) {
         this.x = x;
         this.y = y;
+        this.patrolArea = patrolArea;
+    }
+    public SoldierBot(int x, int y) { // kontruktor pomocniczy
+        this(x, y, new Rectangle(x - 200, y - 200, 400, 400)); // domyślny obszar jeśli nie podano
     }
 
     public int getX() {
@@ -272,15 +279,18 @@ public class SoldierBot {
 
         if (target instanceof Enemy e) {
             tx = e.getX(); ty = e.getY();
-        }else if (target instanceof EnemyShooter es) {
+        } else if (target instanceof EnemyShooter es) {
             tx = es.getX(); ty = es.getY();
-        }
-        else if (target instanceof Hive h) {
+        } else if (target instanceof Hive h) {
             tx = h.getX(); ty = h.getY();
         } else if (target instanceof HiveToo ht) {
             tx = ht.getX(); ty = ht.getY();
         } else if (target instanceof EnemyToo et) {
             tx = et.getX(); ty = et.getY();
+        }
+
+        if (!patrolArea.contains(tx, ty)) {
+            return; // 👈 ignoruj cel spoza strefy
         }
 
         int dx = tx - x;
