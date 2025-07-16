@@ -16,8 +16,16 @@ public class Factory {
     private int productionSecondsLeft = 0;
     private boolean spawnTimerActive = false;
     private SoldierBot producedBot = null;
+/// //////////////////////////////////////////////////////////////
+// to bedzie do przyciskow gettery i setter by np zwiekrzac zasieg patrolu soldierbot itp
+    public int getPatrolSize() {
+        return patrolSize;
+    }
 
-
+    public void setPatrolSize(int patrolSize) {
+        this.patrolSize = patrolSize;
+    }
+/////////////////////////////////////////////////////
     private long productionStartTime = 0;
 
     private BufferedImage baracImage;
@@ -26,7 +34,7 @@ public class Factory {
 
     private ArrayList<SoldierBot> producedBots = new ArrayList<>();
     private int maxBots = 1; // Domyślnie 1, ale można zwiększyć przyciskiem
-
+    private int patrolSize = 2000;
 
 
     private Random random = new Random();
@@ -106,8 +114,7 @@ public class Factory {
         if (spawnTimerActive && currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
             int spawnX = random.nextInt(size * 2) + x - size;
             int spawnY = random.nextInt(size * 2) + y - size;
-            int patrolSize = 1000; // szerokość i wysokość strefy w ktorej patroluje soldierbot
-            Rectangle patrol = new Rectangle(x - patrolSize / 2, y - patrolSize / 2, patrolSize, patrolSize);
+            Rectangle patrol = new Rectangle(x + width / 2 - patrolSize / 2, y + height / 2 - patrolSize / 2, patrolSize, patrolSize);
             SoldierBot newBot = new SoldierBot(spawnX, spawnY, patrol);
             soldierBots.add(newBot);
             producedBots.add(newBot);
@@ -153,18 +160,58 @@ public class Factory {
         return producedBots.size();
     }
 
+    // bez zaznaczenia
+//    public void draw(Graphics g) {
+//        if (baracImage != null) {
+//            g.drawImage(baracImage, x, y, width, height, null);
+//        }
+//        if (producing) {
+//            g.setColor(Color.WHITE);
+//            g.drawString(productionSecondsLeft + "s", x + 10, y - 5); // Nad fabryką
+//        }
+//
+//        if (selected) {
+//            g.setColor(Color.GRAY);
+//            g.drawRect(x - 2, y - 2, width + 4, height + 4);
+//        }
+//
+//        // Liczba botów i limit
+//        g.setColor(Color.WHITE);
+//        g.drawString("Max Bots: " + maxBots, x + 5, y - 20);
+//        g.drawString("Live: " + producedBots.size(), x + 5, y - 8);
+//
+//        // Czas do następnego bota
+//        if (producedBots.size() < maxBots) {
+//            long timeUntilNextSpawn = Math.max(0, (SPAWN_INTERVAL - (System.currentTimeMillis() - lastSpawnTime)) / 1000);
+//            g.setColor(Color.YELLOW);
+//            g.drawString("Next bot: " + timeUntilNextSpawn + "s", x + 5, y - 32);
+//        }
+//    }
     public void draw(Graphics g) {
         if (baracImage != null) {
             g.drawImage(baracImage, x, y, width, height, null);
         }
+
         if (producing) {
             g.setColor(Color.WHITE);
             g.drawString(productionSecondsLeft + "s", x + 10, y - 5); // Nad fabryką
         }
 
         if (selected) {
+            // Szare obramowanie
             g.setColor(Color.GRAY);
             g.drawRect(x - 2, y - 2, width + 4, height + 4);
+
+            // 🔵 Półprzezroczysty niebieski obszar patrolu
+
+            int patrolX = x + width / 2 - patrolSize / 2;
+            int patrolY = y + height / 2 - patrolSize / 2;
+
+            g.setColor(new Color(0, 0, 255, 10)); // Przezroczysty niebieski
+            g.fillRect(patrolX, patrolY, patrolSize, patrolSize);
+
+            g.setColor(Color.BLUE);
+            g.drawRect(patrolX, patrolY, patrolSize, patrolSize); // Obramowanie
         }
 
         // Liczba botów i limit

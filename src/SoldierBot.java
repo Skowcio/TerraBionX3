@@ -25,6 +25,12 @@ public class SoldierBot {
     private long lastShotTime = 0; // Czas ostatniego strzału
     private Random random = new Random();
 
+    private int wanderDirX = 0;
+    private int wanderDirY = 0;
+    private long lastWanderDirectionChange = 0;
+    private final int wanderSpeed = 2;
+    private final int wanderChangeInterval = 2000; // co 2 sekundy zmiana kierunku
+
     private Rectangle patrolArea; // obszar działania bota
 
 
@@ -219,7 +225,21 @@ public class SoldierBot {
     }
     public void update(List<Enemy> enemies, List<EnemyShooter> enemyShooters, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos, List<SoldierBot> allBots) {
         Object target = getClosestTarget(enemies, enemyShooters, enemyToos, hives, hiveToos);
-        moveTowardsTarget(target, allBots);
+
+        if (target != null && patrolArea.contains(getTargetPosition(target))) {
+            moveTowardsTarget(target, allBots);
+        } else {
+            wander(allBots);
+        }
+    }
+
+    private Point getTargetPosition(Object target) {
+        if (target instanceof Enemy e) return e.getPosition();
+        if (target instanceof EnemyShooter es) return es.getPosition();
+        if (target instanceof EnemyToo et) return et.getPosition();
+        if (target instanceof Hive h) return h.getPosition();
+        if (target instanceof HiveToo ht) return ht.getPosition();
+        return new Point(0, 0);
     }
 
 
@@ -307,6 +327,34 @@ public class SoldierBot {
             }
         }
     }
+
+    private long lastWanderTime = 0;
+    private final long wanderDelay = 500; // co 500 ms
+
+    private void wander(List<SoldierBot> allBots) {
+        long now = System.currentTimeMillis();
+
+        // co 2 sekundy losuj nowy kierunek
+        if (now - lastWanderDirectionChange > wanderChangeInterval || (wanderDirX == 0 && wanderDirY == 0)) {
+            wanderDirX = random.nextInt(3) - 1; // -1, 0 lub 1
+            wanderDirY = random.nextInt(3) - 1;
+            lastWanderDirectionChange = now;
+        }
+
+        int nextX = x + wanderDirX * wanderSpeed;
+        int nextY = y + wanderDirY * wanderSpeed;
+
+        Rectangle nextBounds = new Rectangle(nextX, nextY, width, height);
+
+        if (patrolArea.contains(nextBounds) && !isCollidingWithOtherBots(nextX, nextY, allBots)) {
+            x = nextX;
+            y = nextY;
+        } else {
+            // jeśli kolizja lub poza strefą, zmień kierunek przy najbliższej okazji
+            lastWanderDirectionChange = 0;
+        }
+    }
+
 
 
 
