@@ -64,32 +64,63 @@ public class Hive {
             }
         }
     }
-    public void spawnEnemiesToo(Graphics g, ArrayList<EnemyToo> enemiesToo, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters) {
+    public void spawnEnemiesToo(Graphics g, ArrayList<EnemyToo> enemiesToo,
+                                ArrayList<EnemyShooter> enemyShooters,
+                                ArrayList<EnemyHunter> enemyHunters) {
         if (!activated) return;
 
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
-            for (int i = 0; i < 0; i++) {
-                int spawnX = random.nextInt(size * 2) + x - size;
-                int spawnY = random.nextInt(size * 2) + y - size;
-                enemiesToo.add(new EnemyToo(spawnX, spawnY));
+            final int MAX_ENEMY_TOO = 10;
+            final int MAX_ENEMY_SHOOTER = 15;
+            final int MAX_ENEMY_HUNTER = 5;
+
+            // ==== EnemyToo ====
+            int currentEnemyTooCount = enemiesToo.size();
+            int enemiesTooToSpawn = MAX_ENEMY_TOO - currentEnemyTooCount;
+
+            if (enemiesTooToSpawn > 0) {
+                int spawnCount = 1 + random.nextInt(3); // 1–3 losowo
+                spawnCount = Math.min(spawnCount, enemiesTooToSpawn);
+                for (int i = 0; i < spawnCount; i++) {
+                    int spawnX = random.nextInt(size * 2) + x - size;
+                    int spawnY = random.nextInt(size * 2) + y - size;
+                    enemiesToo.add(new EnemyToo(spawnX, spawnY));
+                }
             }
 
-            // tu jest kod by pojawialo sie ich losowa liczba
-            int count = 1 + random.nextInt(8); // losowa liczba od 1 do 5
-            for (int i = 0; i < count; i++) {
-                int spawnX = random.nextInt(size * 8) + x - size;
-                int spawnY = random.nextInt(size * 8) + y - size;
-                enemyShooters.add(new EnemyShooter(spawnX, spawnY));
+            // ==== EnemyShooter ====
+            int currentShooterCount = enemyShooters.size();
+            int shootersToSpawn = MAX_ENEMY_SHOOTER - currentShooterCount;
+
+            if (shootersToSpawn > 0) {
+                int spawnCount = 1 + random.nextInt(3); // 1–3 losowo
+                spawnCount = Math.min(spawnCount, shootersToSpawn);
+                for (int i = 0; i < spawnCount; i++) {
+                    int spawnX = random.nextInt(size * 8) + x - size;
+                    int spawnY = random.nextInt(size * 8) + y - size;
+                    enemyShooters.add(new EnemyShooter(spawnX, spawnY));
+                }
             }
-            for (int i = 0; i < 0; i++) {
-                int spawnX = random.nextInt(size * 5) + x - size;
-                int spawnY = random.nextInt(size * 5) + y - size;
-                enemyHunters.add(new EnemyHunter(spawnX, spawnY));
+
+            // ==== EnemyHunter ====
+            int currentHunterCount = enemyHunters.size();
+            int huntersToSpawn = MAX_ENEMY_HUNTER - currentHunterCount;
+
+            if (huntersToSpawn > 0) {
+                int spawnCount = 1 + random.nextInt(6); // 1–6 losowo
+                spawnCount = Math.min(spawnCount, huntersToSpawn);
+                for (int i = 0; i < spawnCount; i++) {
+                    int spawnX = random.nextInt(size * 5) + x - size;
+                    int spawnY = random.nextInt(size * 5) + y - size;
+                    enemyHunters.add(new EnemyHunter(spawnX, spawnY));
+                }
             }
-            lastSpawnTime = currentTime; // resetujemy licznik
+
+            lastSpawnTime = currentTime;
         }
     }
+
 
     public void updateActivationAndSpawning(Graphics g,
                                             ArrayList<Soldier> soldiers,
