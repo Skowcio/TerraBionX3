@@ -1912,8 +1912,24 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 for (Baracks barack : baracks)
                     if (barack.getBounds().intersects(newBuilding)) collision = true;
 
-                for (Factory factory : factories)
-                    if (factory.getBounds().intersects(newBuilding)) collision = true;
+//                for (Factory factory : factories)
+//                    if (factory.getBounds().intersects(newBuilding)) collision = true;
+                for (Factory factory : factories) {
+                    if (factory.getBounds().intersects(newBuilding)) {
+                        collision = true;
+                        break;
+                    }
+
+                    // ❗ Sprawdzenie minimalnej odległości 200px
+                    Point existingCenter = new Point(factory.getX() + 55, factory.getY() + 55); // 110/2 = 55
+                    Point newCenter = new Point(mouseX + 55, mouseY + 55);
+                    if (existingCenter.distance(newCenter) < 200) {
+                        collision = true;
+                        System.out.println("Zbyt blisko innej fabryki!");
+                        break;
+                    }
+                }
+
 
                 if (!collision) {
                     switch (buildingToPlace) {
