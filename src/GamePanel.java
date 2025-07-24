@@ -158,6 +158,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private boolean isPlacingBarracks = false;
     private Point currentMousePosition = null;
     private final int BUILD_RANGE = 170;
+    private final int MIN_DISTANCE_FROM_FACTORY = 350;
     private static final int BUILD_SIZE = 80;
 
     private JScrollPane scrollPane;
@@ -1889,7 +1890,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public void keyTyped(KeyEvent e) {
         // Niepotrzebne tutaj
     }
-
+// tu jest to jak budynki moga byc budowane
     @Override
     public void mousePressed(MouseEvent e) {
         if (isPlacingBuilding && selectedBuilderVehicle != null && SwingUtilities.isLeftMouseButton(e)) {
@@ -1920,11 +1921,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                         break;
                     }
 
-                    // ❗ Sprawdzenie minimalnej odległości tylko dla fabryk
+                    //  Sprawdzenie minimalnej odległości tylko dla fabryk
                     if (buildingToPlace == BuildingType.FACTORY) {
                         Point existingCenter = new Point(factory.getX() + 55, factory.getY() + 55);
                         Point newCenter = new Point(mouseX + 55, mouseY + 55);
-                        if (existingCenter.distance(newCenter) < 200) {
+                        // tu jest odleglosc miedzy fabrykami jaka musi byc by mozna bylo postawic
+                        if (existingCenter.distance(newCenter) < 350) {
                             collision = true;
                             System.out.println("Zbyt blisko innej fabryki!");
                             break;
@@ -2558,9 +2560,26 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             int cursorCenterX = placementCursor.x + BUILD_SIZE / 2;
             int cursorCenterY = placementCursor.y + BUILD_SIZE / 2;
 
-            double distance = Point.distance(builderX, builderY, cursorCenterX, cursorCenterY);
+            double distanceToBuilder = Point.distance(builderX, builderY, cursorCenterX, cursorCenterY);
 
-            g2.setColor(distance <= BUILD_RANGE ? Color.WHITE : Color.RED);
+            // Nowe sprawdzanie odległości od Factory
+            boolean tooCloseToFactory = false;
+            for (Factory factory : factories) {
+                int factoryCenterX = factory.getX() + factory.getWidth() / 2;
+                int factoryCenterY = factory.getY() + factory.getHeight() / 2;
+                double distanceToFactory = Point.distance(factoryCenterX, factoryCenterY, cursorCenterX, cursorCenterY);
+                if (distanceToFactory < MIN_DISTANCE_FROM_FACTORY) {
+                    tooCloseToFactory = true;
+                    break;
+                }
+            }
+
+            if (distanceToBuilder <= BUILD_RANGE && !tooCloseToFactory) {
+                g2.setColor(Color.WHITE);
+            } else {
+                g2.setColor(Color.RED);
+            }
+
             g2.drawRect(placementCursor.x, placementCursor.y, BUILD_SIZE, BUILD_SIZE);
         }
 

@@ -50,6 +50,13 @@ public class Factory {
             e.printStackTrace();
         }
     }
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 
     public Point getPosition() {
         return new Point(x, y);
