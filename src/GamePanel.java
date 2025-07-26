@@ -786,6 +786,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             if (selectedBuilderVehicle != null && collectedSteel >= 1500 && totalPower >= 150) {
                 isPlacingBuilding = true;
                 buildingToPlace = BuildingType.STEEL_MINE;
+                placingBuildingType = "Steel Mine";
                 System.out.println("Wybierz miejsce budowy Steel Mine.");
             }
         });
@@ -794,6 +795,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             if (selectedBuilderVehicle != null && collectedSteel >= 1500 && totalPower >= 150) {
                 isPlacingBuilding = true;
                 buildingToPlace = BuildingType.BARRACKS;
+                placingBuildingType = "BARRACKS";
                 System.out.println("Wybierz miejsce budowy Baracks.");
             }
         });

@@ -65,7 +65,7 @@ public class ResourcesSteel {
 
         // Wyświetlanie ilości zasobów na górze zasobu
         g.setColor(Color.WHITE);
-        g.drawString(String.valueOf(resourceAmount), x + 5, y + 20); // Wyświetlanie ilości zasobów
+        g.drawString(String.valueOf(resourceAmount), x + 5, y + 0); // Wyświetlanie ilości zasobów
     }
 
     // Czy zasób jest wyczerpany
