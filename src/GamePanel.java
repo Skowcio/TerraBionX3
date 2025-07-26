@@ -57,7 +57,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private SteelMine selectedSteelMines;
     private Factory selectedFactories;
     private Random rand = new Random();
-
+    private String placingBuildingType = "";
 
     private JLabel countdownLabel; // to jest do tego by odliczalo budowe pojazdow
 
@@ -518,10 +518,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         timer = new Timer(1000 / 60, this); // Wywołanie actionPerformed co ~16 ms
         timer.start();
-
+// timer
         Timer productionUpdateTimer = new Timer(1000, e -> {
             for (Factory factory : factories) {
                 factory.updateProduction();
+                factory.updateUpgrade();
             }
             repaint();
         });
@@ -775,6 +776,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             if (selectedBuilderVehicle != null && collectedSteel >= 1000) {
                 isPlacingBuilding = true;
                 buildingToPlace = BuildingType.POWER_PLANT;
+                placingBuildingType = "Power Plant";
                 System.out.println("Wybierz miejsce budowy Power Plant.");
             }
         });
@@ -799,6 +801,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             if (selectedBuilderVehicle != null && collectedSteel >= 3000 && totalPower >= 150) {
                 isPlacingBuilding = true;
                 buildingToPlace = BuildingType.FACTORY;
+                placingBuildingType = "Factory";
                 System.out.println("Wybierz miejsce budowy Factory.");
             }
         });
@@ -2363,9 +2366,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (SteelMine steelMine : steelMines) {
             steelMine.draw(g);
         }
-        for (Factory factory : factories) {
-            factory.draw(g);
-        }
+//        for (Factory factory : factories) {
+//            factory.draw(g);
+//        }
         for (Harvester harvester : harvesters) {
             harvester.draw(g);
         }
@@ -2560,21 +2563,25 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             int cursorCenterX = placementCursor.x + BUILD_SIZE / 2;
             int cursorCenterY = placementCursor.y + BUILD_SIZE / 2;
 
-            double distanceToBuilder = Point.distance(builderX, builderY, cursorCenterX, cursorCenterY);
+            double distance = Point.distance(builderX, builderY, cursorCenterX, cursorCenterY);
 
-            // Nowe sprawdzanie odległości od Factory
             boolean tooCloseToFactory = false;
-            for (Factory factory : factories) {
-                int factoryCenterX = factory.getX() + factory.getWidth() / 2;
-                int factoryCenterY = factory.getY() + factory.getHeight() / 2;
-                double distanceToFactory = Point.distance(factoryCenterX, factoryCenterY, cursorCenterX, cursorCenterY);
-                if (distanceToFactory < MIN_DISTANCE_FROM_FACTORY) {
-                    tooCloseToFactory = true;
-                    break;
+
+            // Tylko jeśli próbujesz postawić Factory
+            if ("Factory".equals(placingBuildingType)) {
+                for (Factory factory : factories) {
+                    int factoryCenterX = factory.getX() + factory.getWidth() / 2;
+                    int factoryCenterY = factory.getY() + factory.getHeight() / 2;
+
+                    double factoryDistance = Point.distance(factoryCenterX, factoryCenterY, cursorCenterX, cursorCenterY);
+                    if (factoryDistance < 350) {
+                        tooCloseToFactory = true;
+                        break;
+                    }
                 }
             }
 
-            if (distanceToBuilder <= BUILD_RANGE && !tooCloseToFactory) {
+            if (distance <= BUILD_RANGE && !tooCloseToFactory) {
                 g2.setColor(Color.WHITE);
             } else {
                 g2.setColor(Color.RED);

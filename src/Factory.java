@@ -16,6 +16,8 @@ public class Factory {
     private int productionSecondsLeft = 0;
     private boolean spawnTimerActive = false;
     private SoldierBot producedBot = null;
+    private boolean upgrading = false;
+    private int upgradeSecondsLeft = 0;
 /// //////////////////////////////////////////////////////////////
 // to bedzie do przyciskow gettery i setter by np zwiekrzac zasieg patrolu soldierbot itp
     public int getPatrolSize() {
@@ -154,8 +156,19 @@ public class Factory {
 //    }
 
     public void upgradeBotLimit() {
-        if (maxBots < 6) {
-            maxBots++;
+        if (!upgrading && maxBots < 6) {
+            upgrading = true;
+            upgradeSecondsLeft = 30; // np. 30 sekund upgradu
+        }
+    }
+
+    public void updateUpgrade() {
+        if (upgrading && upgradeSecondsLeft > 0) {
+            upgradeSecondsLeft--;
+            if (upgradeSecondsLeft == 0) {
+                upgrading = false;
+                maxBots++;
+            }
         }
     }
 
@@ -231,6 +244,10 @@ public class Factory {
             long timeUntilNextSpawn = Math.max(0, (SPAWN_INTERVAL - (System.currentTimeMillis() - lastSpawnTime)) / 1000);
             g.setColor(Color.YELLOW);
             g.drawString("Next bot: " + timeUntilNextSpawn + "s", x + 5, y - 32);
+        }
+        if (upgrading) {
+            g.setColor(Color.GREEN);
+            g.drawString("Upgrade time: " + upgradeSecondsLeft + "s", x + 5, y - 44);
         }
     }
 
