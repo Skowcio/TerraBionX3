@@ -65,8 +65,9 @@ public class Hive {
         }
     }
     public void spawnEnemiesToo(Graphics g, ArrayList<EnemyToo> enemiesToo,
-                                ArrayList<EnemyShooter> enemyShooters,
-                                ArrayList<EnemyHunter> enemyHunters) {
+                                ArrayList<EnemyShooter> enemyShooters
+//                                ,ArrayList<EnemyHunter> enemyHunters
+    ) {
         if (!activated) return;
 
         long currentTime = System.currentTimeMillis();
@@ -104,18 +105,18 @@ public class Hive {
             }
 
             // ==== EnemyHunter ====
-            int currentHunterCount = enemyHunters.size();
-            int huntersToSpawn = MAX_ENEMY_HUNTER - currentHunterCount;
-
-            if (huntersToSpawn > 0) {
-                int spawnCount = 1 + random.nextInt(6); // 1–6 losowo
-                spawnCount = Math.min(spawnCount, huntersToSpawn);
-                for (int i = 0; i < spawnCount; i++) {
-                    int spawnX = random.nextInt(size * 5) + x - size;
-                    int spawnY = random.nextInt(size * 5) + y - size;
-                    enemyHunters.add(new EnemyHunter(spawnX, spawnY));
-                }
-            }
+//            int currentHunterCount = enemyHunters.size();
+//            int huntersToSpawn = MAX_ENEMY_HUNTER - currentHunterCount;
+//
+//            if (huntersToSpawn > 0) {
+//                int spawnCount = 1 + random.nextInt(6); // 1–6 losowo
+//                spawnCount = Math.min(spawnCount, huntersToSpawn);
+//                for (int i = 0; i < spawnCount; i++) {
+//                    int spawnX = random.nextInt(size * 5) + x - size;
+//                    int spawnY = random.nextInt(size * 5) + y - size;
+//                    enemyHunters.add(new EnemyHunter(spawnX, spawnY));
+//                }
+//            }
 
             lastSpawnTime = currentTime;
         }
@@ -131,7 +132,9 @@ public class Hive {
                                             ArrayList<EnemyHunter> enemyHunters)
     {
         checkActivation(soldiers, soldierBots, builders);
-        spawnEnemiesToo(g, enemiesToo, enemyShooters, enemyHunters);
+        spawnEnemiesToo(g, enemiesToo, enemyShooters
+//                , enemyHunters
+        );
     }
     public Point getPosition() {
         return new Point(x, y);

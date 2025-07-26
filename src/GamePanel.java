@@ -322,6 +322,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         hiveToos.clear();
         steelMines.clear();
         explosions.clear();
+        projectiles.clear();
 
         // Wyczyść zaznaczenia jednostek
         selectedSoldier = null;
