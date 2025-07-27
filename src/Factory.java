@@ -36,7 +36,7 @@ public class Factory {
 
     private ArrayList<SoldierBot> producedBots = new ArrayList<>();
     private int maxBots = 1; // Domyślnie 1, ale można zwiększyć przyciskiem
-    private int patrolSize = 2000;
+    private int patrolSize = 3000; // zasieg obszaru patrolowania
 
 
     private Random random = new Random();
@@ -135,13 +135,6 @@ public class Factory {
             }
         }
     }
-
-
-
-
-
-
-
 
     public boolean isProducing() {
         return producing;

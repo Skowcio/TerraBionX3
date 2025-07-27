@@ -10,7 +10,7 @@ public class Explosion {
     private final int size = 90; // Rozmiar obszaru eksplozji (70x70)
     private int frameIndex = 0; // Indeks aktualnej klatki animacji
     private int frameCounter = 0; // Licznik czasu trwania danej klatki
-    private final int frameDuration = 2; // Liczba "klatek" (np. 5 ticków) na każdą klatkę animacji
+    private final int frameDuration = 50; // Liczba "klatek" (np. 5 ticków) na każdą klatkę animacji
     private BufferedImage[] frames; // Tablica przechowująca obrazy eksplozji
 
     public Explosion(int x, int y) {

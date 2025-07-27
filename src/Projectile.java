@@ -31,7 +31,7 @@ public class Projectile {
 
     public void draw(Graphics g) {
         g.setColor(Color.RED);
-        g.fillOval(x, y, 8, 8); // Pocisk w kształcie małej kropki
+        g.fillOval(x, y, 5, 5); // Pocisk w kształcie małej kropki
     }
 
     public boolean isOutOfBounds(int width, int height) {

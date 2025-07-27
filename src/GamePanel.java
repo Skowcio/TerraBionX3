@@ -1304,11 +1304,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             for (PowerPlant powerPlant : powerPlants) {
                 if (projectile.checkCollision(powerPlant)) {
                     toRemove.add(projectile);
-
-                    // Dodaj eksplozję w miejscu trafienia
-                    explosions.add(new Explosion(powerPlant.getX(), powerPlant.getY()));
-
-                    powerPlants.remove(powerPlant);
+                    if (powerPlant.takeDamage()){
+                        powerPlants.remove(powerPlant);
+                        explosions.add(new Explosion(powerPlant.getX(), powerPlant.getY()));
+                    }
                     break;
                 }
             }
@@ -1775,7 +1774,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
         for (EnemyToo enemyToo : enemiesToo) {
-            enemyToo.update(soldiers, harvesters, baracks, builderVehicles, artylerys, battleVehicles, powerPlants, factories); // Przekazuje listę żołnierzy do śledzenia
+            enemyToo.update(soldiers, harvesters, baracks, builderVehicles, artylerys, battleVehicles, powerPlants, factories, explosions); // Przekazuje listę żołnierzy do śledzenia
         }
 
 

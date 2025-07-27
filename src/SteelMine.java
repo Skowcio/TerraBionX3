@@ -1,11 +1,9 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Random;
 import javax.imageio.ImageIO;
 
-public class SteelMine {
+public class  SteelMine {
     private int x, y;
     private int width = 80, height = 80;
     private boolean selected;
@@ -21,13 +19,10 @@ public class SteelMine {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
     public int getX() {
         return x;
     }
-
     public int getY() {
         return y;
     }

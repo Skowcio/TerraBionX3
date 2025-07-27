@@ -10,6 +10,7 @@ public class PowerPlant {
     private int x, y;
     private int width = 80, height = 80;
     private static final int POWER = 10; // Moc dostarczana przez elektrownię
+    private int health = 10;
     private BufferedImage powerImage;
 
     public PowerPlant(int x, int y) {
@@ -21,6 +22,11 @@ public class PowerPlant {
             e.printStackTrace();
         }
     }
+    public boolean takeDamage() {
+        health--;
+        return health <= 0;
+    }
+
 
     public int getX() {
         return x;
@@ -50,7 +56,16 @@ public class PowerPlant {
             g.fillRect(x, y, height, height);
             g.drawString("P", x + width / 2 - 5, y + height / 2 + 5);
         }
+        int maxHealth = 10; // Maksymalne zdrowie przeciwnika
+        int healthBarWidth = 80; // Stała długość paska zdrowia
+        int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
+        g.setColor(Color.GREEN);
+        g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
+
+        // Rysowanie obramowania paska zdrowia
+        g.setColor(Color.BLACK);
+        g.drawRect(x, y - 5, healthBarWidth, 3);
 
         g.setColor(Color.BLACK);
 

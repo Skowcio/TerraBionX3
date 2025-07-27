@@ -66,8 +66,4 @@ public class Harvester {
             g.drawRect(x - 2, y - 2, 35, 35);
         }
     }
-
-
-
-
 }

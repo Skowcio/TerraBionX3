@@ -55,7 +55,7 @@ public class EnemyToo {
     public void update(List<Soldier> soldiers, List<Harvester> harvesters, List<Baracks> baracks,
                        List<BuilderVehicle> builderVehicles, List<Artylery> artylerys,
                        List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants,
-                       List<Factory> factorys) {
+                       List<Factory> factorys, List<Explosion> explosions) {
 
         Object closest = getClosestTarget(soldiers, harvesters, baracks, builderVehicles,
                 artylerys, battleVehicles, powerPlants, factorys);
@@ -63,7 +63,7 @@ public class EnemyToo {
         moveTowardsTarget(closest);
         attackIfInRange(closest, resolveListForTarget(closest,
                 soldiers, harvesters, baracks, builderVehicles,
-                artylerys, battleVehicles, powerPlants, factorys));
+                artylerys, battleVehicles, powerPlants, factorys), explosions);
     }
 
 
@@ -146,32 +146,36 @@ public class EnemyToo {
     }
 
 
-    private void attackIfInRange(Object target, List<?> list) {
+    private void attackIfInRange(Object target, List<?> list, List<Explosion> explosions) {
         if (target == null) return;
 
-        if (target instanceof Soldier s && getBounds().intersects(s.getBounds())) {
+        Rectangle bounds = getBounds();
+
+        if (target instanceof Soldier s && bounds.intersects(s.getBounds())) {
             list.remove(s);
             System.out.println("EnemyToo zaatakował Soldier i usunął go z gry!");
-        } else if (target instanceof Harvester h && getBounds().intersects(h.getBounds())) {
+        } else if (target instanceof Harvester h && bounds.intersects(h.getBounds())) {
             list.remove(h);
             System.out.println("EnemyToo zaatakował Harvester i usunął go z gry!");
-        } else if (target instanceof Baracks b && getBounds().intersects(b.getBounds())) {
+        } else if (target instanceof Baracks b && bounds.intersects(b.getBounds())) {
             list.remove(b);
             System.out.println("EnemyToo zaatakował Baracks i usunął go z gry!");
-        } else if (target instanceof BuilderVehicle bv && getBounds().intersects(bv.getBounds())) {
+        } else if (target instanceof BuilderVehicle bv && bounds.intersects(bv.getBounds())) {
             list.remove(bv);
             System.out.println("EnemyToo zaatakował Builder i usunął go z gry!");
-        } else if (target instanceof Artylery a && getBounds().intersects(a.getBounds())) {
+        } else if (target instanceof Artylery a && bounds.intersects(a.getBounds())) {
             list.remove(a);
             System.out.println("EnemyToo zaatakował Artylery i usunął go z gry!");
-        } else if (target instanceof BattleVehicle bv && getBounds().intersects(bv.getBounds())) {
+        } else if (target instanceof BattleVehicle bv && bounds.intersects(bv.getBounds())) {
             list.remove(bv);
             System.out.println("EnemyToo zaatakował BattleVehicle i usunął go z gry!");
-        } else if (target instanceof PowerPlant pp && getBounds().intersects(pp.getBounds())) {
+        } else if (target instanceof PowerPlant pp && bounds.intersects(pp.getBounds())) {
             list.remove(pp);
+            explosions.add(new Explosion(pp.getX(), pp.getY())); // 💥 eksplozja!
             System.out.println("EnemyToo zaatakował PowerPlant i usunął go z gry!");
-        } else if (target instanceof Factory f && getBounds().intersects(f.getBounds())) {
+        } else if (target instanceof Factory f && bounds.intersects(f.getBounds())) {
             list.remove(f);
+            explosions.add(new Explosion(f.getX(), f.getY())); // 💥 eksplozja!
             System.out.println("EnemyToo zaatakował Factory i usunął go z gry!");
         }
     }

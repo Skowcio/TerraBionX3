@@ -242,9 +242,6 @@ public class SoldierBot {
         return new Point(0, 0);
     }
 
-
-
-
     public Object getClosestTarget(List<Enemy> enemies, List<EnemyShooter> enemyShooters, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos) {
         Object closest = null;
         double minDistance = Double.MAX_VALUE;
@@ -290,7 +287,6 @@ public class SoldierBot {
 
         return closest;
     }
-
 
     public void moveTowardsTarget(Object target, List<SoldierBot> allBots) {
         if (target == null) return;
@@ -354,9 +350,6 @@ public class SoldierBot {
             lastWanderDirectionChange = 0;
         }
     }
-
-
-
 
     public void draw(Graphics g) {
         g.setColor(new Color(0, 0, 250)); // Bordowy

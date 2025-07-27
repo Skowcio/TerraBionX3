@@ -35,7 +35,7 @@ public class BattleVehicle {
 
     public boolean takeDamage() {
         health--;
-        return health <= 0; // Zwraca true, jeśli Hive zostało zniszczone
+        return health <= 0;
     }
 
     public BattleVehicle(int x, int y) {
