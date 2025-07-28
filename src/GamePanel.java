@@ -30,7 +30,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Minigunner> minigunners;
     private ArrayList<BattleVehicle> battleVehicles;
     private ArrayList<Artylery> artylerys;
+
+    /// to jest do zaznaczania grupowego jednostek
     private ArrayList<Soldier> selectedSoldiers;
+    private ArrayList<BuilderVehicle> selectedBuldierVehicles;
+
     private ArrayList<Harvester> harvesters;
     private ArrayList<Enemy> enemies;
     private ArrayList<EnemyShooter> enemyShooters;
@@ -68,30 +72,21 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public List<Soldier> getSoldiers() {
         return soldiers;
     }
-
     public List<SoldierBot> getSoldierBots() {
         return soldierBots;
     }
-
     public List<Enemy> getEnemies() {
         return enemies;
     }
-
     public List<EnemyShooter> getenemyShooters() {
         return enemyShooters;
     }
-
-    public List<Hive> getHives() {
-        return hives;
-    }
-
-    public List<HiveToo> getHiveToos() {
-        return hiveToos;
-    }
-
-    public List<Factory> getFactories() {
-        return factories;
-    }
+    public List<EnemyToo> getenemyToos() {return enemiesToo;}
+    public List<Hive> getHives() {return hives;}
+    public List<HiveToo> getHiveToos() {return hiveToos;}
+    public List<Factory> getFactories() {return factories;}
+    public List<PowerPlant> getPowerPlants() {return powerPlants;}
+    public List<SteelMine> getSteelMines() {return steelMines;}
 
 
     private Timer movementTimer;
@@ -204,6 +199,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         enemies.clear();
         hives.clear();
         resources.clear();
+        powerPlants.clear();
 
         System.out.println("🔄 Resetuję licznik Hive. Przed: " + destroyedHiveCount);
         destroyedHiveCount = 0;
@@ -216,6 +212,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         for (Point p : mission.builderPositions) {
             builderVehicles.add(new BuilderVehicle(p.x, p.y));
+        }
+        for (Point p : mission.powerPlantPositions){
+            powerPlants.add(new PowerPlant(p.x, p.y));
         }
 
         for (Point p : mission.enemyPositions) {
@@ -306,6 +305,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         powerPlants.clear();
         artylerys.clear();
         selectedSoldiers.clear();
+        selectedBuldierVehicles.clear();
         harvesters.clear();
         enemies.clear();
         enemyShooters.clear();
@@ -498,7 +498,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.artBullets = new ArrayList<>();
         this.selectedSoldier = null;
         this.selectedMinigunner = null;
+        /// do grupowego zaznaczania
         this.selectedSoldiers = new ArrayList<>();
+        this.selectedBuldierVehicles = new ArrayList<>();
+
         this.selectedBattleVehicle = null;
         this.selectedArtylery = null;
         this.selectedHarvester = null;
@@ -756,19 +759,19 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnSteelMine = new JButton("Steel Mine");
         btnSteelMine.setBounds(10, 130, 120, 30);
         btnSteelMine.setVisible(false);
-        btnSteelMine.setEnabled(false);
+        btnSteelMine.setEnabled(true);
         add(btnSteelMine);
 
         btnBaracks = new JButton("Barracks");
         btnBaracks.setBounds(10, 170, 120, 30);
         btnBaracks.setVisible(false);    // Ukryj na starcie
-        btnBaracks.setEnabled(false);    // Zablokuj kliknięcie na starcie
+        btnBaracks.setEnabled(true);    // Zablokuj kliknięcie na starcie
         add(btnBaracks);
 
         btnFactory = new JButton("Factory");
         btnFactory.setBounds(10, 210, 120, 30);
         btnFactory.setVisible(false);
-        btnFactory.setEnabled(false);
+        btnFactory.setEnabled(true);
         add(btnFactory);
 
 // Logika dla Power Plant
@@ -2216,23 +2219,36 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     @Override
     public void mouseReleased(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e) && selectionRectangle != null) {
-            // Zaznacz jednostki w prostokącie
+            // Zaznacz żołnierzy
             for (Soldier soldier : soldiers) {
                 if (selectionRectangle.intersects(new Rectangle(soldier.getX(), soldier.getY(), 20, 20))) {
                     soldier.setSelected(true);
-                    selectedSoldiers.add(soldier); // Dodaj żołnierza do listy zaznaczonych
+                    selectedSoldiers.add(soldier);
                 }
             }
 
-            // Zakończ rysowanie prostokąta zaznaczenia
+            // Zaznacz BuilderVehicle
+            for (BuilderVehicle builder : builderVehicles) {
+                if (selectionRectangle.intersects(new Rectangle(builder.getX(), builder.getY(), 20, 20))) {
+                    builder.setSelected(true);
+                    selectedBuldierVehicles.add(builder);
+                }
+            }
+
             selectionRectangle = null;
             startPoint = null;
         } else if (SwingUtilities.isRightMouseButton(e)) {
-            // Odznacz wszystkie zaznaczone jednostki
+            // Odznacz żołnierzy
             for (Soldier soldier : selectedSoldiers) {
                 soldier.setSelected(false);
             }
-            selectedSoldiers.clear(); // Wyczyszczenie listy zaznaczonych żołnierzy
+            selectedSoldiers.clear();
+
+            // Odznacz BuilderVehicle
+            for (BuilderVehicle builder : selectedBuldierVehicles) {
+                builder.setSelected(false);
+            }
+            selectedBuldierVehicles.clear();
         }
 
         repaint();
@@ -2241,18 +2257,22 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     @Override
     public void mouseClicked(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e)) {
-            // Jeśli zaznaczono jakichś żołnierzy, ustaw cel ruchu dla wszystkich
-            if (!selectedSoldiers.isEmpty()) {
-                Point target = e.getPoint();
-                for (Soldier soldier : selectedSoldiers) {
-                    soldier.setTarget(target); // Ustaw cel dla każdego zaznaczonego żołnierza
-                    soldier.setSelected(true); // Zachowaj zaznaczenie dla każdego żołnierza
-                }
+            Point target = e.getPoint();
+
+            for (Soldier soldier : selectedSoldiers) {
+                soldier.setTarget(target);
+                soldier.setSelected(true);
+            }
+
+            for (BuilderVehicle builder : selectedBuldierVehicles) {
+                builder.setTarget(target);
+                builder.setSelected(true);
             }
         }
 
         repaint();
     }
+
 
 
 //    // Obsługuje kliknięcia myszy z terraBionX1

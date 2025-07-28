@@ -352,7 +352,7 @@ public class SoldierBot {
     }
 
     public void draw(Graphics g) {
-        g.setColor(new Color(0, 0, 250)); // Bordowy
+        g.setColor(new Color(0, 0, 250));
         g.fillRect(x, y, width, height);
 
         int maxHealth = 3; // Maksymalne zdrowie przeciwnika

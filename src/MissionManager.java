@@ -14,6 +14,8 @@ public class MissionManager {
         // 🎯 Misja 1: Zniszcz wszystkie Hive
         Mission mission1 = new Mission("First Encounter");
         mission1.soldierPositions.add(new Point(200, 300));
+        mission1.powerPlantPositions.add(new Point(100, 330));
+        mission1.powerPlantPositions.add(new Point(100, 430));
         mission1.builderPositions.add(new Point(220, 330));
         mission1.resourcesPositions.add(new Point(350, 400));
         mission1.resourcesPositions.add(new Point(850, 600));

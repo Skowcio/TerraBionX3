@@ -35,7 +35,7 @@ public class Factory {
     private final int SPAWN_INTERVAL = 5000; // 30 sekund
 
     private ArrayList<SoldierBot> producedBots = new ArrayList<>();
-    private int maxBots = 1; // Domyślnie 1, ale można zwiększyć przyciskiem
+    private int maxBots = 0; // Domyślnie 1, ale można zwiększyć przyciskiem
     private int patrolSize = 3000; // zasieg obszaru patrolowania
 
 

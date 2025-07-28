@@ -31,13 +31,13 @@ public class MiniMapPanel extends JPanel {
         double scaleY = (double) minimapHeight / mapHeight;
 
         // Jednostki: żołnierze - niebiescy
-        g2d.setColor(Color.BLUE);
+        g2d.setColor(new Color(0, 180, 250));
         for (Soldier soldier : gamePanel.getSoldiers()) {
             int x = (int) (soldier.getX() * scaleX);
             int y = (int) (soldier.getY() * scaleY);
             g2d.fillRect(x, y, 2, 2);
         }
-        g2d.setColor(Color.BLUE);
+        g2d.setColor(new Color(0, 180, 250));
         for (SoldierBot soldierBot : gamePanel.getSoldierBots()) {
             int x = (int) (soldierBot.getX() * scaleX);
             int y = (int) (soldierBot.getY() * scaleY);
@@ -55,6 +55,12 @@ public class MiniMapPanel extends JPanel {
         for (EnemyShooter enemyShooter : gamePanel.getenemyShooters()) {
             int x = (int) (enemyShooter.getX() * scaleX);
             int y = (int) (enemyShooter.getY() * scaleY);
+            g2d.fillRect(x, y, 2, 2);
+        }
+        g2d.setColor(new Color(150, 0, 80));
+        for (EnemyToo enemyToo : gamePanel.getenemyToos()) {
+            int x = (int) (enemyToo.getX() * scaleX);
+            int y = (int) (enemyToo.getY() * scaleY);
             g2d.fillRect(x, y, 2, 2);
         }
         g2d.setColor(Color.RED);
@@ -76,6 +82,18 @@ public class MiniMapPanel extends JPanel {
         for (Factory factory : gamePanel.getFactories()) {
             int x = (int) (factory.getX() * scaleX);
             int y = (int) (factory.getY() * scaleY);
+            g2d.fillRect(x, y, 3, 3);
+        }
+        g2d.setColor(Color.WHITE);
+        for (PowerPlant powerPlant : gamePanel.getPowerPlants()) {
+            int x = (int) (powerPlant.getX() * scaleX);
+            int y = (int) (powerPlant.getY() * scaleY);
+            g2d.fillRect(x, y, 3, 3);
+        }
+        g2d.setColor(Color.LIGHT_GRAY);
+        for (SteelMine steelMine : gamePanel.getSteelMines()) {
+            int x = (int) (steelMine.getX() * scaleX);
+            int y = (int) (steelMine.getY() * scaleY);
             g2d.fillRect(x, y, 3, 3);
         }
 
