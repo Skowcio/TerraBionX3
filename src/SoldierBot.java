@@ -2,17 +2,9 @@ import java.awt.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
-import java.awt.*;
-import java.util.ArrayList;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Point;
-import javax.swing.*;
 import javax.imageio.ImageIO;
-import java.awt.Image;        // Do reprezentacji obrazów
-import java.io.IOException;   // Do obsługi wyjątków podczas ładowania obrazów
-// soldierBot uzywa bullet do strzelania
-
+import java.awt.Image;
+import java.io.IOException;
 
 public class SoldierBot {
     private int x, y;
@@ -22,7 +14,7 @@ public class SoldierBot {
     private int speed = 4;
     private final int shootCooldown = 600; // Czas odnowienia strzału (ms)
     private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
-    private long lastShotTime = 0; // Czas ostatniego strzału
+    private long lastShotTime = 0;
     private Random random = new Random();
 
     private int wanderDirX = 0;
@@ -33,14 +25,33 @@ public class SoldierBot {
 
     private Rectangle patrolArea; // obszar działania bota
 
+    private boolean dead = false;
+
+    private String currentDirection = "down"; // Domyślny kierunek
+    private Image imgUp, imgDown, imgLeft, imgRight;
+    private Image imgUpLeft, imgUpRight, imgDownLeft, imgDownRight;
 
     public SoldierBot(int x, int y, Rectangle patrolArea) {
         this.x = x;
         this.y = y;
         this.patrolArea = patrolArea;
+
+        try {
+            imgUp = ImageIO.read(getClass().getResource("/APC/APC3.png"));
+            imgDown = ImageIO.read(getClass().getResource("/APC/APC2.png"));
+            imgLeft = ImageIO.read(getClass().getResource("/APC/APC4.png"));
+            imgRight = ImageIO.read(getClass().getResource("/APC/APC1.png"));
+            imgUpLeft = ImageIO.read(getClass().getResource("/APC/APCupleft.png"));
+            imgUpRight = ImageIO.read(getClass().getResource("/APC/APCupright.png"));
+            imgDownLeft = ImageIO.read(getClass().getResource("/APC/APCdownleft.png"));
+            imgDownRight = ImageIO.read(getClass().getResource("/APC/APCdownright.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-    public SoldierBot(int x, int y) { // kontruktor pomocniczy
-        this(x, y, new Rectangle(x - 200, y - 200, 400, 400)); // domyślny obszar jeśli nie podano
+
+    public SoldierBot(int x, int y) {
+        this(x, y, new Rectangle(x - 200, y - 200, 400, 400));
     }
 
     public int getX() {
@@ -58,24 +69,33 @@ public class SoldierBot {
     public boolean takeDamage() {
         health--;
         if (health <= 0) {
-            markAsDead();  // ustawia dead = true
+            markAsDead();
             return true;
         }
         return false;
     }
+
     public Point getPosition() {
         return new Point(x, y);
     }
-
 
     public boolean isDead() {
         return dead;
     }
 
-    private boolean dead = false;
-
     public void markAsDead() {
         this.dead = true;
+    }
+
+    private void updateDirection(int dx, int dy) {
+        if (dx > 0 && dy > 0) currentDirection = "downRight";
+        else if (dx > 0 && dy < 0) currentDirection = "upRight";
+        else if (dx < 0 && dy > 0) currentDirection = "downLeft";
+        else if (dx < 0 && dy < 0) currentDirection = "upLeft";
+        else if (dx > 0) currentDirection = "right";
+        else if (dx < 0) currentDirection = "left";
+        else if (dy > 0) currentDirection = "down";
+        else if (dy < 0) currentDirection = "up";
     }
 
 
@@ -312,7 +332,11 @@ public class SoldierBot {
         int dx = tx - x;
         int dy = ty - y;
         double distance = Math.sqrt(dx * dx + dy * dy);
-// tu jest dystans na jaki sie zblizy do przeciwnika
+
+        // 🔽 AKTUALIZUJ KIERUNEK RUCHU
+        if (distance != 0) updateDirection(dx, dy);
+
+        // tu jest dystans na jaki się zbliży do przeciwnika
         if (distance > 100) {
             int nextX = x + (int) (speed * dx / distance);
             int nextY = y + (int) (speed * dy / distance);
@@ -337,6 +361,9 @@ public class SoldierBot {
             lastWanderDirectionChange = now;
         }
 
+        // 🔽 AKTUALIZUJ KIERUNEK RUCHU
+        updateDirection(wanderDirX, wanderDirY);
+
         int nextX = x + wanderDirX * wanderSpeed;
         int nextY = y + wanderDirY * wanderSpeed;
 
@@ -352,17 +379,28 @@ public class SoldierBot {
     }
 
     public void draw(Graphics g) {
-        g.setColor(new Color(0, 0, 250));
-        g.fillRect(x, y, width, height);
+        Image imgToDraw = switch (currentDirection) {
+            case "up" -> imgUp;
+            case "down" -> imgDown;
+            case "left" -> imgLeft;
+            case "right" -> imgRight;
+            case "upLeft" -> imgUpLeft;
+            case "upRight" -> imgUpRight;
+            case "downLeft" -> imgDownLeft;
+            case "downRight" -> imgDownRight;
+            default -> imgDown;
+        };
 
-        int maxHealth = 3; // Maksymalne zdrowie przeciwnika
-        int healthBarWidth = 25; // Stała długość paska zdrowia
+        if (imgToDraw != null) {
+            g.drawImage(imgToDraw, x, y, width, height, null);
+        }
+
+        int maxHealth = 3;
+        int healthBarWidth = 25;
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);
-        g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
-
-        // Rysowanie obramowania paska zdrowia
+        g.fillRect(x, y - 5, currentHealthWidth, 3);
         g.setColor(Color.BLACK);
         g.drawRect(x, y - 5, healthBarWidth, 3);
     }
