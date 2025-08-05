@@ -14,12 +14,17 @@ public class MissionManager {
         // 🎯 Misja 1: Zniszcz wszystkie Hive
         Mission mission1 = new Mission("First Encounter");
         mission1.soldierPositions.add(new Point(200, 300));
+        mission1.crystalPositions.add(new Point(280, 550));
+        mission1.crystalPositions.add(new Point(580, 590));
+        mission1.crystalPositions.add(new Point(880, 900));
+        mission1.crystalPositions.add(new Point(800, 1050));
         mission1.powerPlantPositions.add(new Point(100, 330));
         mission1.powerPlantPositions.add(new Point(100, 430));
         mission1.builderPositions.add(new Point(220, 330));
         mission1.resourcesPositions.add(new Point(350, 400));
         mission1.resourcesPositions.add(new Point(850, 600));
         mission1.enemyPositions.add(new Point(1000, 1200));
+
         mission1.randomHiveCount = 5;
         mission1.hiveSpawnArea = new Rectangle(1800, 1200, 1000, 1000);
         mission1.requiredHivesDestroyed = 5;
@@ -74,12 +79,15 @@ public class MissionManager {
         mission2.soldierPositions.add(new Point(300, 400));
         mission2.builderPositions.add(new Point(320, 430));
         mission2.builderPositions.add(new Point(380, 450));
+        mission2.enemyPositions.add(new Point(1400, 1500));
         mission2.enemyPositions.add(new Point(1200, 1300));
         mission2.resourcesPositions.add(new Point(550, 400));
         mission2.resourcesPositions.add(new Point(590, 450));
         mission2.resourcesPositions.add(new Point(1550, 1400));
+        mission2.hiveTooPositions.add(new Point(1950, 1500));
         mission2.randomHiveCount = 30;
         mission2.hiveSpawnArea = new Rectangle(1800, 1400, 800, 800);
+        mission2.enemyPositions.add(new Point(1800, 1300));
         mission2.requiredHivesDestroyed = 0;
         mission2.objectiveType = Mission.ObjectiveType.DEFEND_FOR_TIME; // <- inny typ celu
         missions.add(mission2);

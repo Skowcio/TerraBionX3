@@ -95,7 +95,7 @@ public class Hive {
             int shootersToSpawn = MAX_ENEMY_SHOOTER - currentShooterCount;
 
             if (shootersToSpawn > 0) {
-                int spawnCount = 1 + random.nextInt(3); // 1–3 losowo
+                int spawnCount = 1 + random.nextInt(4); // 1–3 losowo
                 spawnCount = Math.min(spawnCount, shootersToSpawn);
                 for (int i = 0; i < spawnCount; i++) {
                     int spawnX = random.nextInt(size * 8) + x - size;

@@ -38,9 +38,22 @@ public class MiniMapPanel extends JPanel {
             g2d.fillRect(x, y, 2, 2);
         }
         g2d.setColor(new Color(0, 180, 250));
+        for (BuilderVehicle builderVehicle : gamePanel.getBuldierVehgicle()) {
+            int x = (int) (builderVehicle.getX() * scaleX);
+            int y = (int) (builderVehicle.getY() * scaleY);
+            g2d.fillRect(x, y, 2, 2);
+        }
+
+        g2d.setColor(new Color(0, 180, 250));
         for (SoldierBot soldierBot : gamePanel.getSoldierBots()) {
             int x = (int) (soldierBot.getX() * scaleX);
             int y = (int) (soldierBot.getY() * scaleY);
+            g2d.fillRect(x, y, 2, 2);
+        }
+        g2d.setColor(new Color(150, 80, 150));
+        for (Crystal crystal : gamePanel.getCrystals()) {
+            int x = (int) (crystal.getX() * scaleX);
+            int y = (int) (crystal.getY() * scaleY);
             g2d.fillRect(x, y, 2, 2);
         }
 

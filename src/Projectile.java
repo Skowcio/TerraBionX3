@@ -58,6 +58,11 @@ public class Projectile {
         Rectangle artyleryRect = new Rectangle(battleVehicle.getX(), battleVehicle.getY(), 20, 20);
         return projectileRect.intersects(artyleryRect);
     }
+    public boolean checkCollision(Factory factory) {
+        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
+        Rectangle artyleryRect = new Rectangle(factory.getX(), factory.getY(), 20, 20);
+        return projectileRect.intersects(artyleryRect);
+    }
 
 
     public boolean checkCollision(Artylery artylery) {

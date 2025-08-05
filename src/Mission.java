@@ -9,6 +9,8 @@ public class Mission {
     public ArrayList<Point> enemyPositions = new ArrayList<>();
     public ArrayList<Point> resourcesPositions = new ArrayList<>();
     public ArrayList<Point> powerPlantPositions = new ArrayList<>();
+    public ArrayList<Point> crystalPositions = new ArrayList<>();
+    public ArrayList<Point> hiveTooPositions = new ArrayList<>();
 
     public int randomHiveCount = 0;
     public Rectangle hiveSpawnArea;

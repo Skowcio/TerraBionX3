@@ -30,6 +30,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Minigunner> minigunners;
     private ArrayList<BattleVehicle> battleVehicles;
     private ArrayList<Artylery> artylerys;
+    private ArrayList<Crystal> crystals;
 
     /// to jest do zaznaczania grupowego jednostek
     private ArrayList<Soldier> selectedSoldiers;
@@ -51,6 +52,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Hive> hives;
     private ArrayList<HiveToo> hiveToos;
     private ArrayList<SteelMine> steelMines;
+
+
     private Soldier selectedSoldier;
     private Minigunner selectedMinigunner;
     private BattleVehicle selectedBattleVehicle;
@@ -72,8 +75,14 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public List<Soldier> getSoldiers() {
         return soldiers;
     }
+    public List<BuilderVehicle> getBuldierVehgicle() {
+        return builderVehicles;
+    }
     public List<SoldierBot> getSoldierBots() {
         return soldierBots;
+    }
+    public List<Crystal> getCrystals(){
+        return crystals;
     }
     public List<Enemy> getEnemies() {
         return enemies;
@@ -200,6 +209,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         hives.clear();
         resources.clear();
         powerPlants.clear();
+        crystals.clear();
 
         System.out.println("🔄 Resetuję licznik Hive. Przed: " + destroyedHiveCount);
         destroyedHiveCount = 0;
@@ -216,6 +226,14 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Point p : mission.powerPlantPositions){
             powerPlants.add(new PowerPlant(p.x, p.y));
         }
+        for (Point p : mission.crystalPositions){
+            crystals.add(new Crystal(p.x, p.y));
+        }
+
+        for (Point p : mission.hiveTooPositions){
+            hiveToos.add(new HiveToo(p.x, p.y));
+        }
+
 
         for (Point p : mission.enemyPositions) {
             enemies.add(new Enemy(p.x, p.y));
@@ -298,6 +316,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     // do czyszczenia mapy przed nowa misja
     private void clearAllUnitsAndEnemies() {
         soldiers.clear();
+        crystals.clear();
         soldierBots.clear();
         cryopits.clear();
         minigunners.clear();
@@ -518,6 +537,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.factories = new ArrayList<>();
         this.steelMines = new ArrayList<>();
         this.buldings = new ArrayList<>();
+
+        this.crystals = new ArrayList<>();
 
 
         timer = new Timer(1000 / 60, this); // Wywołanie actionPerformed co ~16 ms
@@ -1321,7 +1342,22 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     break;
                 }
             }
+            Iterator<Factory> factoryIterator = factories.iterator();
 
+            while (factoryIterator.hasNext()) {
+                Factory factory = factoryIterator.next();
+
+                if (projectile.checkCollision(factory)) {
+                    toRemove.add(projectile);
+
+                    if (factory.takeDamage()) {
+                        Factory.decreaseFactoryCount(); // 🟢 odejmuje 1
+                        factoryIterator.remove();       // 🧹 usuwa z listy
+                    }
+
+                    break;
+                }
+            }
 
             for (BattleVehicle battleVehicle : battleVehicles) {
                 if (projectile.checkCollision(battleVehicle)) {
@@ -1724,27 +1760,23 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         // 🔍 Sprawdzenie MissionManager i obecnej misji
         if (missionManager == null) {
-            System.out.println("❌ missionManager jest null");
+
             return;
         }
 
         Mission current = missionManager.getCurrentMission();
 
         if (current == null) {
-            System.out.println("❌ current mission jest null");
+
             return;
         }
 
-        System.out.println("📋 Obecna misja: " + current.name);
-        System.out.println("🎯 Typ celu misji: " + current.objectiveType);
-        System.out.println("🔥 Hive zniszczone: " + destroyedHiveCount + " / wymagane: " + current.requiredHivesDestroyed);
+
 
         // ✅ Logika sprawdzająca warunek zakończenia misji
         if (!missionCompleted) {
             if (current.objectiveType == Mission.ObjectiveType.DESTROY_ALL_HIVES) {
-                System.out.println("🔍 Sprawdzam warunek zniszczenia wszystkich Hive...");
-                System.out.println("🧪 DEBUG | destroyedHiveCount = " + destroyedHiveCount);
-                System.out.println("🧪 DEBUG | current.requiredHivesDestroyed = " + current.requiredHivesDestroyed);
+
 
                 if (destroyedHiveCount >= current.requiredHivesDestroyed) {
                     System.out.println("✅ Warunek spełniony — wywołuję onMissionCompleted()");
@@ -1917,6 +1949,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
                 for (SteelMine mine : steelMines)
                     if (mine.getBounds().intersects(newBuilding)) collision = true;
+                for (Crystal crystal : crystals)
+                    if (crystal.getBounds().intersects(newBuilding)) collision = true;
 
                 for (Baracks barack : baracks)
                     if (barack.getBounds().intersects(newBuilding)) collision = true;
@@ -2363,6 +2397,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             b.draw(g);
         }
 
+
         for (int i = explosions.size() - 1; i >= 0; i--) {
             Explosion explosion = explosions.get(i);
             explosion.draw(g);
@@ -2388,9 +2423,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (SteelMine steelMine : steelMines) {
             steelMine.draw(g);
         }
-//        for (Factory factory : factories) {
-//            factory.draw(g);
-//        }
+        for (Crystal crystal : crystals){
+            crystal.draw(g);
+        }
+
         for (Harvester harvester : harvesters) {
             harvester.draw(g);
         }
@@ -2540,7 +2576,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         for (EnemyShooter enemyShooter : enemyShooters){
             enemyShooter.draw(g);
-            enemyShooter.shoot(g, projectiles, soldiers, soldierBots, battleVehicles, powerPlants);
+            enemyShooter.shoot(g, projectiles, soldiers, soldierBots, battleVehicles, factories, powerPlants);
         }
         //budowniczy
         for (BuilderVehicle builderVehicle :builderVehicles) {

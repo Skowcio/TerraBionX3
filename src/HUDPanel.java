@@ -23,6 +23,8 @@ public class HUDPanel extends JPanel {
         g2d.setColor(Color.WHITE);
         g2d.drawString("Steel Collected: " + gamePanel.getCollectedSteel(), 20, 30);
         g2d.drawString("Power: " + gamePanel.getTotalPower(), 20, 60);
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("Factories: " + Factory.getTotalFactories(), 20, 120);
 
         // 🔹 Wyświetlanie czasu obrony (jeśli to misja DEFEND_FOR_TIME)
         if (gamePanel.getMissionManager() != null) {

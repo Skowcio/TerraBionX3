@@ -9,7 +9,7 @@ import java.io.IOException;
 public class SoldierBot {
     private int x, y;
     private final int range = 150; // Zasięg strzelania w pikselach
-    private final int width = 25, height = 25;
+    private final int width = 50, height = 50;
     private int health = 3;
     private int speed = 4;
     private final int shootCooldown = 600; // Czas odnowienia strzału (ms)
@@ -27,9 +27,14 @@ public class SoldierBot {
 
     private boolean dead = false;
 
-    private String currentDirection = "down"; // Domyślny kierunek
+
     private Image imgUp, imgDown, imgLeft, imgRight;
     private Image imgUpLeft, imgUpRight, imgDownLeft, imgDownRight;
+
+    private Image dir0, dir1, dir2, dir3, dir4, dir5, dir6, dir7;
+    private Image dir8, dir9, dir10, dir11, dir12, dir13, dir14, dir15;
+
+    private int currentDirection = 0; // 0 - 15
 
     public SoldierBot(int x, int y, Rectangle patrolArea) {
         this.x = x;
@@ -37,14 +42,22 @@ public class SoldierBot {
         this.patrolArea = patrolArea;
 
         try {
-            imgUp = ImageIO.read(getClass().getResource("/APC/APC3.png"));
-            imgDown = ImageIO.read(getClass().getResource("/APC/APC2.png"));
-            imgLeft = ImageIO.read(getClass().getResource("/APC/APC4.png"));
-            imgRight = ImageIO.read(getClass().getResource("/APC/APC1.png"));
-            imgUpLeft = ImageIO.read(getClass().getResource("/APC/APCupleft.png"));
-            imgUpRight = ImageIO.read(getClass().getResource("/APC/APCupright.png"));
-            imgDownLeft = ImageIO.read(getClass().getResource("/APC/APCdownleft.png"));
-            imgDownRight = ImageIO.read(getClass().getResource("/APC/APCdownright.png"));
+            dir0 = ImageIO.read(getClass().getResource("/jet/jet0.png"));
+            dir1 = ImageIO.read(getClass().getResource("/jet/jet15.png"));
+            dir2 = ImageIO.read(getClass().getResource("/jet/jet14.png"));
+            dir3 = ImageIO.read(getClass().getResource("/jet/jet13.png"));
+            dir4 = ImageIO.read(getClass().getResource("/jet/jet12.png"));
+            dir5 = ImageIO.read(getClass().getResource("/jet/jet11.png"));
+            dir6 = ImageIO.read(getClass().getResource("/jet/jet10.png"));
+            dir7 = ImageIO.read(getClass().getResource("/jet/jet9.png"));
+            dir8 = ImageIO.read(getClass().getResource("/jet/jet8.png"));
+            dir9 = ImageIO.read(getClass().getResource("/jet/jet7.png"));
+            dir10 = ImageIO.read(getClass().getResource("/jet/jet6.png"));
+            dir11 = ImageIO.read(getClass().getResource("/jet/jet5.png"));
+            dir12 = ImageIO.read(getClass().getResource("/jet/jet4.png"));
+            dir13 = ImageIO.read(getClass().getResource("/jet/jet3.png"));
+            dir14 = ImageIO.read(getClass().getResource("/jet/jet2.png"));
+            dir15 = ImageIO.read(getClass().getResource("/jet/jet1.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -88,14 +101,13 @@ public class SoldierBot {
     }
 
     private void updateDirection(int dx, int dy) {
-        if (dx > 0 && dy > 0) currentDirection = "downRight";
-        else if (dx > 0 && dy < 0) currentDirection = "upRight";
-        else if (dx < 0 && dy > 0) currentDirection = "downLeft";
-        else if (dx < 0 && dy < 0) currentDirection = "upLeft";
-        else if (dx > 0) currentDirection = "right";
-        else if (dx < 0) currentDirection = "left";
-        else if (dy > 0) currentDirection = "down";
-        else if (dy < 0) currentDirection = "up";
+        if (dx == 0 && dy == 0) return;
+
+        double angle = Math.atan2(-dy, dx); // -dy bo Y idzie w dół
+        angle = Math.toDegrees(angle);
+        if (angle < 0) angle += 360;
+
+        currentDirection = (int) Math.round(angle / 22.5) % 16;
     }
 
 
@@ -380,15 +392,23 @@ public class SoldierBot {
 
     public void draw(Graphics g) {
         Image imgToDraw = switch (currentDirection) {
-            case "up" -> imgUp;
-            case "down" -> imgDown;
-            case "left" -> imgLeft;
-            case "right" -> imgRight;
-            case "upLeft" -> imgUpLeft;
-            case "upRight" -> imgUpRight;
-            case "downLeft" -> imgDownLeft;
-            case "downRight" -> imgDownRight;
-            default -> imgDown;
+            case 0 -> dir0;
+            case 1 -> dir1;
+            case 2 -> dir2;
+            case 3 -> dir3;
+            case 4 -> dir4;
+            case 5 -> dir5;
+            case 6 -> dir6;
+            case 7 -> dir7;
+            case 8 -> dir8;
+            case 9 -> dir9;
+            case 10 -> dir10;
+            case 11 -> dir11;
+            case 12 -> dir12;
+            case 13 -> dir13;
+            case 14 -> dir14;
+            case 15 -> dir15;
+            default -> dir0;
         };
 
         if (imgToDraw != null) {
@@ -396,7 +416,7 @@ public class SoldierBot {
         }
 
         int maxHealth = 3;
-        int healthBarWidth = 25;
+        int healthBarWidth = 50;
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);

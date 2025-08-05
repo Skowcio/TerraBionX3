@@ -17,7 +17,15 @@ public class Factory {
     private boolean spawnTimerActive = false;
     private SoldierBot producedBot = null;
     private boolean upgrading = false;
+    private int health = 10;
     private int upgradeSecondsLeft = 0;
+    /// // do licznika wyswietlanego w HUD
+    private static int totalFactories = 0;
+
+    public static int getTotalFactories() {
+        return totalFactories;
+    }
+    ///
 /// //////////////////////////////////////////////////////////////
 // to bedzie do przyciskow gettery i setter by np zwiekrzac zasieg patrolu soldierbot itp
     public int getPatrolSize() {
@@ -51,6 +59,16 @@ public class Factory {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        totalFactories++; // ← dodaj to
+    }
+    public static void decreaseFactoryCount() {
+        if (totalFactories > 0) {
+            totalFactories--;
+        }
+    }
+    public boolean takeDamage() {
+        health--;
+        return health <= 0;
     }
     public int getWidth() {
         return width;
@@ -151,7 +169,7 @@ public class Factory {
     public void upgradeBotLimit() {
         if (!upgrading && maxBots < 6) {
             upgrading = true;
-            upgradeSecondsLeft = 30; // np. 30 sekund upgradu
+            upgradeSecondsLeft = 3; // np. 30 sekund upgradu
         }
     }
 
@@ -242,6 +260,18 @@ public class Factory {
             g.setColor(Color.GREEN);
             g.drawString("Upgrade time: " + upgradeSecondsLeft + "s", x + 5, y - 44);
         }
+        int maxHealth = 10; // Maksymalne zdrowie przeciwnika
+        int healthBarWidth = 110; // Stała długość paska zdrowia
+        int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
+
+        g.setColor(Color.GREEN);
+        g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
+
+        // Rysowanie obramowania paska zdrowia
+        g.setColor(Color.BLACK);
+        g.drawRect(x, y - 5, healthBarWidth, 3);
+
+        g.setColor(Color.BLACK);
     }
 
     public boolean contains(int px, int py) {
