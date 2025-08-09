@@ -17,7 +17,7 @@ public class Factory {
     private boolean spawnTimerActive = false;
     private SoldierBot producedBot = null;
     private boolean upgrading = false;
-    private int health = 10;
+    private int health = 20;
     private int upgradeSecondsLeft = 0;
     /// // do licznika wyswietlanego w HUD
     private static int totalFactories = 0;
@@ -260,7 +260,7 @@ public class Factory {
             g.setColor(Color.GREEN);
             g.drawString("Upgrade time: " + upgradeSecondsLeft + "s", x + 5, y - 44);
         }
-        int maxHealth = 10; // Maksymalne zdrowie przeciwnika
+        int maxHealth = 20; // Maksymalne zdrowie
         int healthBarWidth = 110; // Stała długość paska zdrowia
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 

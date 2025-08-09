@@ -1752,11 +1752,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     //update co się dzieje w grze gdy trafi w cos dany pocisk ?
     private void updateGame() {
-        // 🔄 Ogólna aktywność
-        System.out.println("⏱️ updateGame() działa");
 
-        // 🔄 Status misji
-        System.out.println("🟡 updateGame() | missionCompleted = " + missionCompleted);
+
+
+
 
         // 🔍 Sprawdzenie MissionManager i obecnej misji
         if (missionManager == null) {
@@ -1787,7 +1786,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 long elapsedTime = System.currentTimeMillis() - missionStartTime;
                 long remaining = defendDurationMillis - elapsedTime;
 
-                System.out.println("🕒 Pozostały czas: " + (remaining / 1000) + " sekund");
+
 
                 if (elapsedTime >= defendDurationMillis) {
                     System.out.println("✅ Czas przetrwania upłynął — misja zakończona!");

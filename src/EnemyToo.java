@@ -174,9 +174,13 @@ public class EnemyToo {
             explosions.add(new Explosion(pp.getX(), pp.getY())); // 💥 eksplozja!
             System.out.println("EnemyToo zaatakował PowerPlant i usunął go z gry!");
         } else if (target instanceof Factory f && bounds.intersects(f.getBounds())) {
-            list.remove(f);
-            explosions.add(new Explosion(f.getX(), f.getY())); // 💥 eksplozja!
-            System.out.println("EnemyToo zaatakował Factory i usunął go z gry!");
+            boolean destroyed = f.takeDamage(); // Zadaj 1 punkt obrażeń
+            if (destroyed) {
+                list.remove(f);
+                Factory.decreaseFactoryCount();  // zmniejsz licznik
+                explosions.add(new Explosion(f.getX(), f.getY())); // efekt wybuchu
+                System.out.println("EnemyToo zniszczył Factory!");
+            }
         }
     }
 

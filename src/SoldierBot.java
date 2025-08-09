@@ -263,7 +263,44 @@ public class SoldierBot {
         } else {
             wander(allBots);
         }
+        resolveHardOverlap(allBots);
     }
+
+    /// /// to jest do tego by soldierBot zostal przesuniety gdy naszedl na siebie
+
+    private void resolveHardOverlap(List<SoldierBot> allBots) {
+        for (SoldierBot other : allBots) {
+            if (this == other) continue;
+            if (this.getBounds().intersects(other.getBounds())) {
+
+                int offset = 50;
+                int dir = random.nextInt(8); // 0-7 (8 kierunków)
+
+                int nx = x;
+                int ny = y;
+
+                switch (dir) {
+                    case 0 -> ny -= offset;       // góra
+                    case 1 -> { ny -= offset; nx += offset; } // góra-prawo
+                    case 2 -> nx += offset;       // prawo
+                    case 3 -> { ny += offset; nx += offset; } // dół-prawo
+                    case 4 -> ny += offset;       // dół
+                    case 5 -> { ny += offset; nx -= offset; } // dół-lewo
+                    case 6 -> nx -= offset;       // lewo
+                    case 7 -> { ny -= offset; nx -= offset; } // góra-lewo
+                }
+
+                // Jeżeli nowa pozycja jest w obszarze patrolu i nie koliduje z innymi
+                if (patrolArea.contains(new Rectangle(nx, ny, width, height)) &&
+                        !isCollidingWithOtherBots(nx, ny, allBots)) {
+                    x = nx;
+                    y = ny;
+                }
+            }
+        }
+    }
+
+
 
     private Point getTargetPosition(Object target) {
         if (target instanceof Enemy e) return e.getPosition();
