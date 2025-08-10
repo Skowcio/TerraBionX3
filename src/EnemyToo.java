@@ -6,6 +6,7 @@ public class EnemyToo {
     private int width = 30, height = 30;
     private int speed = 4; // prędkość poruszania
     private int health = 20;
+    private boolean dead = false;
 
     public EnemyToo(int x, int y) {
         this.x = x;
@@ -41,7 +42,18 @@ public class EnemyToo {
     }
     public boolean takeDamage() {
         health--;
-        return health <= 0; // Zwraca true, jeśli Enemy zostało zniszczone
+        if (health <= 0) {
+            markAsDead();
+            return true;
+        }
+        return false;
+    }
+    public boolean isDead() {
+        return dead;
+    }
+
+    public void markAsDead() {
+        this.dead = true;
     }
     public Point getPosition() {
         return new Point(x, y);
@@ -54,22 +66,22 @@ public class EnemyToo {
 
     public void update(List<Soldier> soldiers, List<Harvester> harvesters, List<Baracks> baracks,
                        List<BuilderVehicle> builderVehicles, List<Artylery> artylerys,
-                       List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants,
+                       List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants, List<SoldierBot> soldierBots,
                        List<Factory> factorys, List<Explosion> explosions) {
 
         Object closest = getClosestTarget(soldiers, harvesters, baracks, builderVehicles,
-                artylerys, battleVehicles, powerPlants, factorys);
+                artylerys, battleVehicles, powerPlants, soldierBots, factorys);
 
         moveTowardsTarget(closest);
         attackIfInRange(closest, resolveListForTarget(closest,
                 soldiers, harvesters, baracks, builderVehicles,
-                artylerys, battleVehicles, powerPlants, factorys), explosions);
+                artylerys, battleVehicles, powerPlants, soldierBots, factorys), explosions);
     }
 
 
     private Object getClosestTarget(List<Soldier> soldiers, List<Harvester> harvesters, List<Baracks> baracks,
                                     List<BuilderVehicle> builderVehicles, List<Artylery> artylerys,
-                                    List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants,
+                                    List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants, List<SoldierBot> soldierBots,
                                     List<Factory> factorys) {
 
         Object closest = null;
@@ -103,6 +115,10 @@ public class EnemyToo {
             double dist = p.getPosition().distance(x, y);
             if (dist < minDistance) { minDistance = dist; closest = p; }
         }
+        for (SoldierBot sb : soldierBots) {
+            double dist = sb.getPosition().distance(x, y);
+            if (dist < minDistance) { minDistance = dist; closest = sb; }
+        }
         for (Factory f : factorys) {
             double dist = f.getPosition().distance(x, y);
             if (dist < minDistance) { minDistance = dist; closest = f; }
@@ -131,7 +147,11 @@ public class EnemyToo {
             tx = bv.getX(); ty = bv.getY();
         } else if (target instanceof PowerPlant p) {
             tx = p.getX(); ty = p.getY();
-        } else if (target instanceof Factory f) {
+        }
+        else if (target instanceof SoldierBot sb) {
+            tx = sb.getX(); ty = sb.getY();
+        }
+        else if (target instanceof Factory f) {
             tx = f.getX(); ty = f.getY();
         }
 
@@ -153,33 +173,39 @@ public class EnemyToo {
 
         if (target instanceof Soldier s && bounds.intersects(s.getBounds())) {
             list.remove(s);
-            System.out.println("EnemyToo zaatakował Soldier i usunął go z gry!");
+
         } else if (target instanceof Harvester h && bounds.intersects(h.getBounds())) {
             list.remove(h);
-            System.out.println("EnemyToo zaatakował Harvester i usunął go z gry!");
+
         } else if (target instanceof Baracks b && bounds.intersects(b.getBounds())) {
             list.remove(b);
-            System.out.println("EnemyToo zaatakował Baracks i usunął go z gry!");
+
         } else if (target instanceof BuilderVehicle bv && bounds.intersects(bv.getBounds())) {
             list.remove(bv);
-            System.out.println("EnemyToo zaatakował Builder i usunął go z gry!");
+
         } else if (target instanceof Artylery a && bounds.intersects(a.getBounds())) {
             list.remove(a);
-            System.out.println("EnemyToo zaatakował Artylery i usunął go z gry!");
+
         } else if (target instanceof BattleVehicle bv && bounds.intersects(bv.getBounds())) {
             list.remove(bv);
-            System.out.println("EnemyToo zaatakował BattleVehicle i usunął go z gry!");
+
         } else if (target instanceof PowerPlant pp && bounds.intersects(pp.getBounds())) {
             list.remove(pp);
-            explosions.add(new Explosion(pp.getX(), pp.getY())); // 💥 eksplozja!
-            System.out.println("EnemyToo zaatakował PowerPlant i usunął go z gry!");
-        } else if (target instanceof Factory f && bounds.intersects(f.getBounds())) {
+            explosions.add(new Explosion(pp.getX(), pp.getY())); //
+
+        }
+        else if (target instanceof SoldierBot sb && bounds.intersects(sb.getBounds())) {
+            boolean destroyed = sb.takeDamage();
+            if (destroyed){
+                list.remove(sb);
+            }
+        }
+        else if (target instanceof Factory f && bounds.intersects(f.getBounds())) {
             boolean destroyed = f.takeDamage(); // Zadaj 1 punkt obrażeń
             if (destroyed) {
                 list.remove(f);
                 Factory.decreaseFactoryCount();  // zmniejsz licznik
                 explosions.add(new Explosion(f.getX(), f.getY())); // efekt wybuchu
-                System.out.println("EnemyToo zniszczył Factory!");
             }
         }
     }
@@ -193,6 +219,7 @@ public class EnemyToo {
                                          List<Artylery> artylerys,
                                          List<BattleVehicle> battleVehicles,
                                          List<PowerPlant> powerPlants,
+                                         List<SoldierBot> soldierBots,
                                          List<Factory> factorys) {
         if (target instanceof Soldier) return soldiers;
         if (target instanceof Harvester) return harvesters;
@@ -201,6 +228,7 @@ public class EnemyToo {
         if (target instanceof Artylery) return artylerys;
         if (target instanceof BattleVehicle) return battleVehicles;
         if (target instanceof PowerPlant) return powerPlants;
+        if (target instanceof SoldierBot) return soldierBots;
         if (target instanceof Factory) return factorys;
         return List.of(); // pusta lista, fallback
     }

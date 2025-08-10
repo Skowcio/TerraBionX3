@@ -76,6 +76,11 @@ public class HiveToo {
 
     public void spawnEnemiesToo(Graphics g, ArrayList<EnemyToo> enemiesToo, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters) {
 //        int numEnemies = random.nextInt(13) + 8; // Losowa liczba między 8 a 20
+
+
+        enemiesToo.removeIf(EnemyToo::isDead);
+        enemyShooters.removeIf(EnemyShooter::isDead);
+
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
             for (int i = 0; i < 0; i++) {

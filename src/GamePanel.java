@@ -206,7 +206,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         soldiers.clear();
         builderVehicles.clear();
         enemies.clear();
+        soldierBots.clear();
+        hiveToos.clear();
+        enemyHunters.clear();
+        enemiesToo.clear();
         hives.clear();
+        projectiles.clear();
+        bullets.clear();
         resources.clear();
         powerPlants.clear();
         crystals.clear();
@@ -1316,12 +1322,14 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     break; // zakończ pętlę po trafieniu
                 }
             }
-            for (BuilderVehicle builderVehicle : builderVehicles) {
-                if (projectile.checkCollision(builderVehicle)) {
+            Iterator<BuilderVehicle> it = builderVehicles.iterator();
+            while(it.hasNext()) {
+                BuilderVehicle bv = it.next();
+                if (projectile.checkCollision(bv)) {
                     toRemove.add(projectile);
-                    if (builderVehicle.takeDamage()) {
-                        builderVehicles.remove(builderVehicle);
-                    } // Usuń żołnierza po trafieniu
+                    if (bv.takeDamage()) {
+                        it.remove();
+                    }
                     break;
                 }
             }
@@ -1679,16 +1687,18 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     }
 
                 }
-                for (EnemyShooter enemyShooter : enemyShooters) {
+                Iterator<EnemyShooter> enemyShooterIterator = enemyShooters.iterator();
+                while (enemyShooterIterator.hasNext()) {
+                    EnemyShooter enemyShooter = enemyShooterIterator.next();
                     if (bullet.checkCollision(enemyShooter)) {
                         bulletsToRemove.add(bullet);
-
                         if (enemyShooter.takeDamage()) {
-                            enemyShooters.remove(enemyShooter);
+                            enemyShooterIterator.remove();
                         }
                         break;
                     }
                 }
+
                 for (EnemyHunter enemyHunter : enemyHunters) {
                     if (bullet.checkCollision(enemyHunter)) {
                         bulletsToRemove.add(bullet);
@@ -1701,17 +1711,18 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 }
 
                 // Sprawdzanie kolizji z EnemyToo
-                for (EnemyToo enemyToo : enemiesToo) {
+                Iterator<EnemyToo> enemyTooIterator = enemiesToo.iterator();
+                while (enemyTooIterator.hasNext()) {
+                    EnemyToo enemyToo = enemyTooIterator.next();
                     if (bullet.checkCollision(enemyToo)) {
                         bulletsToRemove.add(bullet);
                         if (enemyToo.takeDamage2()) {
-                            enemiesToo.remove(enemyToo);
+                            enemyTooIterator.remove();
                         }
                         break;
                     }
-
-
                 }
+
             }
         }
         bullets.removeAll(bulletsToRemove);
@@ -1753,10 +1764,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     //update co się dzieje w grze gdy trafi w cos dany pocisk ?
     private void updateGame() {
 
-
-
-
-
         // 🔍 Sprawdzenie MissionManager i obecnej misji
         if (missionManager == null) {
 
@@ -1769,8 +1776,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
             return;
         }
-
-
 
         // ✅ Logika sprawdzająca warunek zakończenia misji
         if (!missionCompleted) {
@@ -1807,10 +1812,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
 
-        for (EnemyToo enemyToo : enemiesToo) {
-            enemyToo.update(soldiers, harvesters, baracks, builderVehicles, artylerys, battleVehicles, powerPlants, factories, explosions); // Przekazuje listę żołnierzy do śledzenia
-        }
 
+        for (EnemyToo enemyToo : enemiesToo) {
+            enemyToo.update(soldiers, harvesters, baracks, builderVehicles, artylerys, battleVehicles, powerPlants,soldierBots, factories, explosions); // Przekazuje listę żołnierzy do śledzenia
+        }
 
         for (EnemyShooter enemyShooter : enemyShooters) {
             enemyShooter.update(soldierBots,soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories);
@@ -1824,6 +1829,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Enemy enemy : enemies) {
             enemy.move();
         }
+
+
 
                 repaint();
     }

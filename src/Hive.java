@@ -68,6 +68,10 @@ public class Hive {
                                 ArrayList<EnemyShooter> enemyShooters
 //                                ,ArrayList<EnemyHunter> enemyHunters
     ) {
+
+        enemiesToo.removeIf(EnemyToo::isDead);
+        enemyShooters.removeIf(EnemyShooter::isDead);
+
         if (!activated) return;
 
         long currentTime = System.currentTimeMillis();

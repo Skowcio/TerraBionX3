@@ -12,6 +12,7 @@ public class EnemyShooter {
     private final int shootCooldown = 1100; // Czas odnowienia strzału (ms)
     private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
     private long lastShotTime = 0; // Czas ostatniego strzału
+    private boolean dead = false;
     private Random random = new Random();
 
     public EnemyShooter(int x, int y) {
@@ -37,7 +38,18 @@ public class EnemyShooter {
 
     public boolean takeDamage() {
         health--;
-        return health <= 0; // Zwraca true, jeśli Enemy zostało zniszczone
+        if (health <= 0) {
+            markAsDead();
+            return true;
+        }
+        return false;
+    }
+    public boolean isDead() {
+        return dead;
+    }
+
+    public void markAsDead() {
+        this.dead = true;
     }
 
     public boolean isInRange(Soldier soldier) {
