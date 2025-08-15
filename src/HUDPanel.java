@@ -28,7 +28,7 @@ public class HUDPanel extends JPanel {
 
         // 🔹 Wyświetlanie czasu obrony (jeśli to misja DEFEND_FOR_TIME)
         if (gamePanel.getMissionManager() != null) {
-            Mission current = gamePanel.getMissionManager().getCurrentMission();
+            Mission current = gamePanel.getMissionManager().getCurrentMission(); // t osie rozni i chyba powoduje blad jak jest Mission current = gamePanel.getCurrentMission(); i sie nie laduje mijsa nowa
             if (current != null && current.objectiveType == Mission.ObjectiveType.DEFEND_FOR_TIME) {
                 long elapsed = System.currentTimeMillis() - gamePanel.getMissionStartTime();
                 long remaining = gamePanel.getDefendDurationMillis() - elapsed;
@@ -47,4 +47,3 @@ public class HUDPanel extends JPanel {
         }
     }
 }
-

@@ -1832,7 +1832,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
 
-                repaint();
+        repaint();
     }
 
 
@@ -1936,7 +1936,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public void keyTyped(KeyEvent e) {
         // Niepotrzebne tutaj
     }
-// tu jest to jak budynki moga byc budowane
+    // tu jest to jak budynki moga byc budowane
     @Override
     public void mousePressed(MouseEvent e) {
         if (isPlacingBuilding && selectedBuilderVehicle != null && SwingUtilities.isLeftMouseButton(e)) {
