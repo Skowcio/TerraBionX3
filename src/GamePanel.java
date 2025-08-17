@@ -114,6 +114,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JButton btnSteelMine;
     private JButton btnBaracks;
     private JButton btnFactory;
+    private JButton btnArtylery2;
 
     private JButton btnSoldier;
 
@@ -150,7 +151,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     //do budowania elektrowni
     private enum BuildingType {
-        POWER_PLANT, STEEL_MINE, BARRACKS, FACTORY
+        POWER_PLANT, STEEL_MINE, BARRACKS, FACTORY,ARTYLERY
     }
 
     private boolean isPlacingBuilding = false;
@@ -807,8 +808,22 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnFactory.setEnabled(true);
         add(btnFactory);
 
+        btnArtylery2 = new JButton("Artyley Tower");
+        btnArtylery2.setBounds(10, 250, 170,30);
+        btnArtylery2.setVisible(false);
+        btnArtylery2.setEnabled(true);
+        add(btnArtylery2);
+
 // Logika dla Power Plant
 
+        btnArtylery2.addActionListener(e -> {
+            if (selectedBuilderVehicle != null && collectedSteel >= 500 && totalPower >= 50) {
+                isPlacingBuilding = true;
+                buildingToPlace = BuildingType.ARTYLERY;
+                placingBuildingType = "ARTYLERY";
+                System.out.println("Wybierz miejsce budowy artyleria.");
+            }
+        });
         btnPowerPlant.addActionListener(e -> {
             if (selectedBuilderVehicle != null && collectedSteel >= 1000) {
                 isPlacingBuilding = true;
@@ -1185,6 +1200,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnSteelMine.setVisible(showBuilderMenu);
         btnBaracks.setVisible(showBuilderMenu);
         btnFactory.setVisible(showBuilderMenu);
+        btnArtylery2.setVisible(showBuilderMenu);
         repaint(); // Odśwież panel
     }
 
@@ -1966,6 +1982,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
                 for (Baracks barack : baracks)
                     if (barack.getBounds().intersects(newBuilding)) collision = true;
+                for (Artylery artylery : artylerys)
+                    if (artylery.getBounds().intersects(newBuilding))
+                        collision = true;
+
 
 //                for (Factory factory : factories)
 //                    if (factory.getBounds().intersects(newBuilding)) collision = true;
@@ -2001,6 +2021,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                             btnBaracks.setEnabled(true);
                             btnFactory.setVisible(true);
                             btnFactory.setEnabled(true);
+                            btnArtylery2.setVisible(true);
+                            btnArtylery2.setEnabled(true);
                             break;
                         case STEEL_MINE:
                             steelMines.add(new SteelMine(mouseX, mouseY));
@@ -2017,6 +2039,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                             collectedSteel -= 2500;
                             totalPower -= 150;
                             break;
+                        case ARTYLERY:
+                            artylerys.add(new Artylery(mouseX, mouseY));
+                            collectedSteel -= 500;
+                                    totalPower -= 50;
+                            break;
+
+
                     }
 
                     isPlacingBuilding = false;
@@ -2682,11 +2711,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             Point viewPos = viewport.getViewPosition();
             int screenX = viewPos.x;
             int screenY = viewPos.y;
-
+/// / tu amsz przyciski by poruszaly sie razem z ekranem
             btnPowerPlant.setLocation(screenX + 10, screenY + 90);
             btnSteelMine.setLocation(screenX + 10, screenY + 130);
             btnBaracks.setLocation(screenX + 10, screenY + 170);
             btnFactory.setLocation(screenX + 10, screenY + 210);
+            btnArtylery2.setLocation(screenX + 10, screenY + 250);
 
             // Dodaj te:
             btnHarvester.setLocation(screenX + 10, screenY + 90);
