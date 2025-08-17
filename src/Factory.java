@@ -70,6 +70,9 @@ public class Factory {
         health--;
         return health <= 0;
     }
+    public static void resetFactoryCount() {
+        totalFactories = 0;
+    }
     public int getWidth() {
         return width;
     }

@@ -207,6 +207,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         builderVehicles.clear();
         enemies.clear();
         soldierBots.clear();
+        enemyShooters.clear();
         hiveToos.clear();
         enemyHunters.clear();
         enemiesToo.clear();
@@ -220,6 +221,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         System.out.println("🔄 Resetuję licznik Hive. Przed: " + destroyedHiveCount);
         destroyedHiveCount = 0;
         System.out.println("🔄 Po resecie: " + destroyedHiveCount);
+
+        // ✅ Reset fabryk
+        System.out.println("🔄 Resetuję licznik fabryk. Przed: " + Factory.getTotalFactories());
+        Factory.resetFactoryCount();
+        System.out.println("🔄 Po resecie: " + Factory.getTotalFactories());
         missionCompleted = false;
 
         for (Point p : mission.soldierPositions) {
