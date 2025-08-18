@@ -185,6 +185,7 @@ public class EnemyToo {
 
         } else if (target instanceof Artylery a && bounds.intersects(a.getBounds())) {
             list.remove(a);
+            Artylery.decreaseArtysCount(); // zmniejsza licznik ilosci arty tower
 
         } else if (target instanceof BattleVehicle bv && bounds.intersects(bv.getBounds())) {
             list.remove(bv);

@@ -1368,10 +1368,15 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     break;
                 }
             }
-            for (Artylery artylery : artylerys) {
+            Iterator<Artylery> artyleryIterator = artylerys.iterator();
+
+            while (artyleryIterator.hasNext()) {
+                Artylery artylery = artyleryIterator.next();
+
                 if (projectile.checkCollision(artylery)) {
                     toRemove.add(projectile);
-                    artylerys.remove(artylery); // Usuń artea po trafieniu
+                    Artylery.decreaseArtysCount();
+                    artyleryIterator.remove(); // 🧹 usuwa z listy po trafieniu
                     break;
                 }
             }
