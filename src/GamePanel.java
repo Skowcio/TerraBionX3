@@ -223,10 +223,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         destroyedHiveCount = 0;
         System.out.println("🔄 Po resecie: " + destroyedHiveCount);
 
-        // ✅ Reset fabryk
+        //  fabryk
         System.out.println("🔄 Resetuję licznik fabryk. Przed: " + Factory.getTotalFactories());
         Factory.resetFactoryCount();
+
         System.out.println("🔄 Po resecie: " + Factory.getTotalFactories());
+        System.out.println("reset licznik arty tower" + Artylery.getTotalArtys());
+        Artylery.resetArtysCount();
         missionCompleted = false;
 
         for (Point p : mission.soldierPositions) {
@@ -809,7 +812,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         add(btnFactory);
 
         btnArtylery2 = new JButton("Artyley Tower");
-        btnArtylery2.setBounds(10, 250, 170,30);
+        btnArtylery2.setBounds(10, 250, 120,30);
         btnArtylery2.setVisible(false);
         btnArtylery2.setEnabled(true);
         add(btnArtylery2);

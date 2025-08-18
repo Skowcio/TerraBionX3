@@ -25,8 +25,8 @@ public class Factory {
     public static int getTotalFactories() {
         return totalFactories;
     }
-    ///
-/// //////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////
 // to bedzie do przyciskow gettery i setter by np zwiekrzac zasieg patrolu soldierbot itp
     public int getPatrolSize() {
         return patrolSize;

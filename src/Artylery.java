@@ -23,6 +23,21 @@ public class Artylery implements Serializable {
         this.y = y;
         this.selected = false;
         this.target = null;
+        totalArtys++; // ← dodaj to
+    }
+    public static void decreaseArtysCount() {
+        if (totalArtys > 0) {
+            totalArtys--;
+        }
+    }
+
+    private static int totalArtys = 0;
+
+    public static int getTotalArtys() {
+        return totalArtys;
+    }
+    public static void resetArtysCount() {
+        totalArtys = 0;
     }
     public Rectangle getBounds() {
         return new Rectangle(x, y,width, height); // width i height to wymiary żołnierza
