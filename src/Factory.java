@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 public class Factory {
     private int x, y;
-    private int width = 110, height = 110;
+    private int width = 140, height = 140;
     private final int size = 140;
     private boolean selected;
     private boolean producing = false;
@@ -264,7 +264,7 @@ public class Factory {
             g.drawString("Upgrade time: " + upgradeSecondsLeft + "s", x + 5, y - 44);
         }
         int maxHealth = 20; // Maksymalne zdrowie
-        int healthBarWidth = 110; // Stała długość paska zdrowia
+        int healthBarWidth = 140; // Stała długość paska zdrowia
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);

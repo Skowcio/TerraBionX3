@@ -7,9 +7,10 @@ import javax.imageio.ImageIO;
 
 public class Baracks {
     private int x, y; // Pozycja na mapie
-    private int width = 80, height = 80;
+    private int width = 140, height = 140;
     private boolean selected; // Czy koszary są zaznaczone
     private BufferedImage baracImage;
+    private int health = 40;
 
     public Baracks(int x, int y) {
         this.x = x;
@@ -21,6 +22,10 @@ public class Baracks {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public boolean takeDamage() {
+        health--;
+        return health <= 0;
     }
 
     // Gettery
@@ -64,9 +69,21 @@ public class Baracks {
 //        g.fillRect(x, y, 50, 50); // Koszary są kwadratem 50x50
 
         if (selected) {
-            g.setColor(Color.RED); // Obramowanie dla zaznaczonych koszar
-            g.drawRect(x - 2, y - 2, 84, 84); // Obramowanie o 2px większe
+            g.setColor(Color.WHITE); // Obramowanie dla zaznaczonych koszar
+            g.drawRect(x - 2, y - 2, 144, 144); // Obramowanie o 2px większe
         }
+        int maxHealth = 40; // Maksymalne zdrowie
+        int healthBarWidth = 140; // Stała długość paska zdrowia
+        int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
+
+        g.setColor(Color.GREEN);
+        g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
+
+        // Rysowanie obramowania paska zdrowia
+        g.setColor(Color.BLACK);
+        g.drawRect(x, y - 5, healthBarWidth, 3);
+
+        g.setColor(Color.BLACK);
     }
 
     // Sprawdzanie, czy punkt (px, py) znajduje się wewnątrz koszar

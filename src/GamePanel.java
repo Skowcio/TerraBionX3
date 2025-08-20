@@ -574,7 +574,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 // tu masz przyciski gdy zaznaczysz Buldiera
         setLayout(null); // Ustawienie ręcznego układu dla dodania przycisków
 
-        btnSoldier = new JButton("soldier");
+        btnSoldier = new JButton("Phenix Drone");
         btnSoldier.setBounds(10, 50, 120, 30); // Pozycja i rozmiar
         btnSoldier.setVisible(false); // Ukryj przycisk na starcie
         add(btnSoldier);
@@ -584,11 +584,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             if (selectedBaracks != null) {
                 if (collectedSteel >= 1000) {
                     // Oblicz pozycję jednostki obok Baracks
-                    int soldierX = selectedBaracks.getX() + 90;
-                    int soldierY = selectedBaracks.getY();
+                    int buldierX = selectedBaracks.getX() + 90;
+                    int buldierY = selectedBaracks.getY();
 
                     // Dodaj jednostkę Soldier
-                    soldiers.add(new Soldier(soldierX, soldierY));
+                    builderVehicles.add(new BuilderVehicle(buldierX, buldierY));
                     // Zmniejsz stal o 500 jednostek
                     collectedSteel -= 1000;
                     System.out.println("Dodano Soldier.");
@@ -2725,6 +2725,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             btnBaracks.setLocation(screenX + 10, screenY + 170);
             btnFactory.setLocation(screenX + 10, screenY + 210);
             btnArtylery2.setLocation(screenX + 10, screenY + 250);
+
+            btnSoldier.setLocation(screenX + 10, screenY + 90);
 
             // Dodaj te:
             btnHarvester.setLocation(screenX + 10, screenY + 90);

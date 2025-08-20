@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 
 public class PowerPlant {
     private int x, y;
-    private int width = 80, height = 80;
+    private int width = 100, height = 100;
     private static final int POWER = 10; // Moc dostarczana przez elektrownię
     private int health = 10;
     private BufferedImage powerImage;
@@ -57,7 +57,7 @@ public class PowerPlant {
             g.drawString("P", x + width / 2 - 5, y + height / 2 + 5);
         }
         int maxHealth = 10; // Maksymalne zdrowie przeciwnika
-        int healthBarWidth = 80; // Stała długość paska zdrowia
+        int healthBarWidth = 100; // Stała długość paska zdrowia
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);
