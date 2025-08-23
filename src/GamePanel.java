@@ -2043,9 +2043,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                             totalPower -= 100;
                             break;
                         case FACTORY:
-                            factories.add(new Factory(mouseX, mouseY));
-                            collectedSteel -= 2500;
-                            totalPower -= 150;
+                            if (Factory.getFactoryCount() < Factory.getMaxFactories()) {
+                                factories.add(new Factory(mouseX, mouseY));
+                                collectedSteel -= 2500;
+                                totalPower -= 150;
+                            } else {
+                                System.out.println("Nie można zbudować więcej fabryk! Limit osiągnięty.");
+                            }
                             break;
                         case ARTYLERY:
                             artylerys.add(new Artylery(mouseX, mouseY));

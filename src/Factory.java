@@ -20,7 +20,9 @@ public class Factory {
     private int health = 20;
     private int upgradeSecondsLeft = 0;
     /// // do licznika wyswietlanego w HUD
+    // i LIMIT FABRYK
     private static int totalFactories = 0;
+    private static int MAX_FACTORIES = 8;
 
     public static int getTotalFactories() {
         return totalFactories;
@@ -50,6 +52,10 @@ public class Factory {
     private Random random = new Random();
 
     public Factory(int x, int y) {
+        if (totalFactories >= MAX_FACTORIES) {
+            throw new IllegalStateException("Osiągnięto limit " + MAX_FACTORIES + " fabryk!");
+        }
+
         this.x = x;
         this.y = y;
         this.selected = false;
@@ -59,19 +65,34 @@ public class Factory {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        totalFactories++; // ← dodaj to
+
+        totalFactories++; // zwiększamy globalny licznik
     }
+    public static int getMaxFactories() {
+        return MAX_FACTORIES;
+    }
+    public static int getFactoryCount() {
+        return totalFactories;
+    }
+    public static void increaseMaxFactories(int amount) {
+        MAX_FACTORIES += amount;
+    }
+
+    // 🚮 Metoda do usuwania fabryki (np. jak zniszczysz budynek)
     public static void decreaseFactoryCount() {
         if (totalFactories > 0) {
             totalFactories--;
         }
     }
+
+    // 🚀 Reset liczby fabryk np. przy nowej misji
+    public static void resetFactoryCount() {
+        totalFactories = 0;
+        MAX_FACTORIES = 8; // reset do domyślnego limitu
+    }
     public boolean takeDamage() {
         health--;
         return health <= 0;
-    }
-    public static void resetFactoryCount() {
-        totalFactories = 0;
     }
     public int getWidth() {
         return width;
