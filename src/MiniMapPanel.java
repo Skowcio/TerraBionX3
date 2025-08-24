@@ -103,12 +103,19 @@ public class MiniMapPanel extends JPanel {
             int y = (int) (powerPlant.getY() * scaleY);
             g2d.fillRect(x, y, 3, 3);
         }
+        g2d.setColor(Color.WHITE);
+        for (ResearchCenter researchCenter : gamePanel.getResearchCenters()) {
+            int x = (int) (researchCenter.getX() * scaleX);
+            int y = (int) (researchCenter.getY() * scaleY);
+            g2d.fillRect(x, y, 3, 3);
+        }
         g2d.setColor(Color.LIGHT_GRAY);
         for (SteelMine steelMine : gamePanel.getSteelMines()) {
             int x = (int) (steelMine.getX() * scaleX);
             int y = (int) (steelMine.getY() * scaleY);
             g2d.fillRect(x, y, 3, 3);
         }
+
 
         // Obszar widoku (viewport)
         Rectangle viewRect = scrollPane.getViewport().getViewRect();

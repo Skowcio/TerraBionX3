@@ -11,6 +11,7 @@ public class ResearchCenter {
     private int x, y;
     private int width = 120, height = 120;
     private BufferedImage image;
+    private boolean selected;
 
     public ResearchCenter(int x, int y) {
         this.x = x;
@@ -25,6 +26,34 @@ public class ResearchCenter {
         // 🚀 bonus – po zbudowaniu dodajemy limit fabryk
         Factory.increaseMaxFactories(2);
         System.out.println("Zbudowano Research Center! Limit fabryk zwiększony do: " + Factory.getMaxFactories());
+    }
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public Point getPosition() {
+        return new Point(x, y);
+    }
+
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
     public void draw(Graphics g) {

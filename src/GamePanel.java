@@ -48,6 +48,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Object> occupiedTargets = new ArrayList<>();
     private ArrayList<Baracks> baracks;
     private ArrayList<Factory> factories;
+    private ArrayList<ResearchCenter> researchCenters;
     private ArrayList<Bulding> buldings;
     private ArrayList<Hive> hives;
     private ArrayList<HiveToo> hiveToos;
@@ -96,6 +97,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public List<Factory> getFactories() {return factories;}
     public List<PowerPlant> getPowerPlants() {return powerPlants;}
     public List<SteelMine> getSteelMines() {return steelMines;}
+    public List<ResearchCenter> getResearchCenters() {return researchCenters;}
 
 
     private Timer movementTimer;
@@ -115,6 +117,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JButton btnBaracks;
     private JButton btnFactory;
     private JButton btnArtylery2;
+    private JButton btnResearch;
 
     private JButton btnSoldier;
 
@@ -149,10 +152,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private boolean showFactorysMenu = false;
 
 
-    //do budowania elektrowni
+    //do budowania
     private enum BuildingType {
-        POWER_PLANT, STEEL_MINE, BARRACKS, FACTORY,ARTYLERY
-    }
+        POWER_PLANT, STEEL_MINE, BARRACKS, FACTORY,ARTYLERY,RESEARCH    }
 
     private boolean isPlacingBuilding = false;
     private BuildingType buildingToPlace = null;
@@ -351,6 +353,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         minigunnerBullets.clear();
         artBullets.clear();
         baracks.clear();
+        researchCenters.clear();
         factories.clear();
         buldings.clear();
         hives.clear();
@@ -552,6 +555,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.baracks = new ArrayList<>();
         this.factories = new ArrayList<>();
         this.steelMines = new ArrayList<>();
+        this.researchCenters = new ArrayList<>();
         this.buldings = new ArrayList<>();
 
         this.crystals = new ArrayList<>();
@@ -811,13 +815,27 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnFactory.setEnabled(true);
         add(btnFactory);
 
-        btnArtylery2 = new JButton("Artyley Tower");
+        btnArtylery2 = new JButton("Artylery Tower");
         btnArtylery2.setBounds(10, 250, 120,30);
         btnArtylery2.setVisible(false);
         btnArtylery2.setEnabled(true);
         add(btnArtylery2);
 
+        btnResearch = new JButton("Research Center");
+        btnResearch.setBounds(10, 290, 120, 30);
+        btnResearch.setVisible(false);
+        btnResearch.setEnabled(true);
+        add(btnResearch);
+
 // Logika dla Power Plant
+        btnResearch.addActionListener(e -> {
+            if (selectedBuilderVehicle != null && collectedSteel >= 500 && totalPower >= 100) {
+                isPlacingBuilding = true;
+                buildingToPlace = BuildingType.RESEARCH;
+                placingBuildingType = "Research Center";
+                System.out.println("Wybierz miejsce budowy");
+            }
+        });
 
         btnArtylery2.addActionListener(e -> {
             if (selectedBuilderVehicle != null && collectedSteel >= 500 && totalPower >= 50) {
@@ -1204,6 +1222,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnBaracks.setVisible(showBuilderMenu);
         btnFactory.setVisible(showBuilderMenu);
         btnArtylery2.setVisible(showBuilderMenu);
+        btnResearch.setVisible(showBuilderMenu);
         repaint(); // Odśwież panel
     }
 
@@ -2031,6 +2050,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                             btnFactory.setEnabled(true);
                             btnArtylery2.setVisible(true);
                             btnArtylery2.setEnabled(true);
+                            btnResearch.setVisible(true);
+                            btnResearch.setEnabled(true);
                             break;
                         case STEEL_MINE:
                             steelMines.add(new SteelMine(mouseX, mouseY));
@@ -2042,6 +2063,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                             collectedSteel -= 1500;
                             totalPower -= 100;
                             break;
+                        case RESEARCH:
+                            researchCenters.add(new ResearchCenter(mouseX, mouseY));
+                            collectedSteel -= 3000;
+                            totalPower -= 200;
+                            break;
+
                         case FACTORY:
                             if (Factory.getFactoryCount() < Factory.getMaxFactories()) {
                                 factories.add(new Factory(mouseX, mouseY));
@@ -2483,6 +2510,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Harvester harvester : harvesters) {
             harvester.draw(g);
         }
+        for (ResearchCenter researchCenter : researchCenters)
+        {
+            researchCenter.draw(g);
+        }
         for (Factory factory : factories) {
             factory.draw(g);
             factory.spawnBots(g, soldierBots,
@@ -2729,6 +2760,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             btnBaracks.setLocation(screenX + 10, screenY + 170);
             btnFactory.setLocation(screenX + 10, screenY + 210);
             btnArtylery2.setLocation(screenX + 10, screenY + 250);
+            btnResearch.setLocation(screenX + 10, screenY + 290);
 
             btnSoldier.setLocation(screenX + 10, screenY + 90);
 
@@ -2738,6 +2770,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             btnBattleVehicle.setLocation(screenX + 10, screenY + 170);
             btnBuilderVehicle.setLocation(screenX + 10, screenY + 210);
             btnDroneBot.setLocation(screenX + 10, screenY + 290);
+
         }
         if (miniMapPanel != null) {
             miniMapPanel.repaint();
