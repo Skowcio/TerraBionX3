@@ -16,9 +16,13 @@ public class Artylery implements Serializable {
     private final int shootCooldown = 4500; // Czas odnowienia strzału (ms)
     private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
     private long lastShotTime = 0; // Czas ostatniego strzału
-
+    private static int MAX_ARTYLERYS = 8;
+    private static int totalArtys = 0;
 
     public Artylery(int x, int y) {
+        if (totalArtys >= MAX_ARTYLERYS) {
+            throw new IllegalStateException("Osiągnięto limit " + MAX_ARTYLERYS + " fabryk!");
+        }
         this.x = x;
         this.y = y;
         this.selected = false;
@@ -31,13 +35,15 @@ public class Artylery implements Serializable {
         }
     }
 
-    private static int totalArtys = 0;
-
     public static int getTotalArtys() {
         return totalArtys;
     }
+    public static int getMaxArtylerys() {
+        return MAX_ARTYLERYS;
+    }
     public static void resetArtysCount() {
         totalArtys = 0;
+        MAX_ARTYLERYS = 8; // reset do domyślnego limitu
     }
     public Rectangle getBounds() {
         return new Rectangle(x, y,width, height); // width i height to wymiary żołnierza

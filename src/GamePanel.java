@@ -2079,12 +2079,14 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                             }
                             break;
                         case ARTYLERY:
-                            artylerys.add(new Artylery(mouseX, mouseY));
-                            collectedSteel -= 500;
-                                    totalPower -= 50;
+                            if (Artylery.getTotalArtys() < Artylery.getMaxArtylerys()) {
+                                artylerys.add(new Artylery(mouseX, mouseY));
+                                collectedSteel -= 500;
+                                totalPower -= 50;
+                            } else {
+                                System.out.println("❌ Nie można zbudować więcej artylerii! Limit osiągnięty.");
+                            }
                             break;
-
-
                     }
 
                     isPlacingBuilding = false;
