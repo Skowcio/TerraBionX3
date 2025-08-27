@@ -127,6 +127,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JButton btnBuilderVehicle;
     private JButton btnDroneBot;
 
+    private JButton btnDestructionFactory;
+
 
     // to do wskazywania miejsca gdzie budowac np powerplant itp na przyszlosc
     private Rectangle placementCursor;
@@ -614,6 +616,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnHarvester.setVisible(false);
         add(btnHarvester);
 
+        btnDestructionFactory = new JButton("DESTRUCTION");
+        btnDestructionFactory.setBounds(10, 380, 120, 30);
+        btnDestructionFactory.setVisible(false);
+        add(btnDestructionFactory);
+
         btnArtylery = new JButton("Artylery");
         btnArtylery.setBounds(10, 130, 120, 30);
         btnArtylery.setVisible(false);
@@ -649,6 +656,18 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     factory.upgradeBotLimit();
                 }
             }
+        });
+
+        btnDestructionFactory.addActionListener(e -> {
+            for (Factory factory : factories) {
+                if (factory.isSelected()) {
+                    factory.destroy();            // zabija fabrykę
+                    Factory.decreaseFactoryCount(); // zmniejsza licznik
+                }
+            }
+
+            // Usuń martwe fabryki z listy
+            factories.removeIf(factory -> factory.getBounds().isEmpty() || factory.takeDamage());
         });
 
 
@@ -1245,6 +1264,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnBattleVehicle.setVisible((showFactorysMenu));
         btnBuilderVehicle.setVisible((showFactorysMenu));
         btnDroneBot.setVisible((showFactorysMenu));
+        btnDestructionFactory.setVisible((showFactorysMenu));
         repaint();
     }
 
@@ -2772,6 +2792,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             btnBattleVehicle.setLocation(screenX + 10, screenY + 170);
             btnBuilderVehicle.setLocation(screenX + 10, screenY + 210);
             btnDroneBot.setLocation(screenX + 10, screenY + 290);
+            btnDestructionFactory.setLocation(screenX + 10, screenY + 380);
+
+
 
         }
         if (miniMapPanel != null) {

@@ -20,6 +20,7 @@ public class MissionManager {
         mission1.crystalPositions.add(new Point(800, 1050));
         mission1.powerPlantPositions.add(new Point(100, 330));
         mission1.powerPlantPositions.add(new Point(100, 430));
+        mission1.powerPlantPositions.add(new Point(100, 530));
         mission1.builderPositions.add(new Point(220, 330));
         mission1.resourcesPositions.add(new Point(350, 400));
         mission1.resourcesPositions.add(new Point(850, 600));

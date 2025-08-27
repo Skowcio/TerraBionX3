@@ -22,7 +22,7 @@ public class Factory {
     /// // do licznika wyswietlanego w HUD
     // i LIMIT FABRYK
     private static int totalFactories = 0;
-    private static int MAX_FACTORIES = 8;
+    private static int MAX_FACTORIES = 4;
 
     public static int getTotalFactories() {
         return totalFactories;
@@ -88,7 +88,7 @@ public class Factory {
     // 🚀 Reset liczby fabryk np. przy nowej misji
     public static void resetFactoryCount() {
         totalFactories = 0;
-        MAX_FACTORIES = 8; // reset do domyślnego limitu
+        MAX_FACTORIES = 4; // reset do domyślnego limitu
     }
     public boolean takeDamage() {
         health--;
@@ -100,6 +100,9 @@ public class Factory {
 
     public int getHeight() {
         return height;
+    }
+    public void destroy() {
+        health = 0;
     }
 
     public Point getPosition() {
