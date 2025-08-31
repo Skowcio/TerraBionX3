@@ -288,18 +288,18 @@ public class Factory {
             g.drawString("Upgrade time: " + upgradeSecondsLeft + "s", x + 5, y - 44);
         }
         int maxHealth = 20; // Maksymalne zdrowie
-        int healthBarWidth = 140; // Stała długość paska zdrowia
-        int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
+    int healthBarWidth = 140; // Stała długość paska zdrowia
+    int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);
         g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
 
-        // Rysowanie obramowania paska zdrowia
+    // Rysowanie obramowania paska zdrowia
         g.setColor(Color.BLACK);
         g.drawRect(x, y - 5, healthBarWidth, 3);
 
         g.setColor(Color.BLACK);
-    }
+}
 
     public boolean contains(int px, int py) {
         return px >= x && px <= x + width && py >= y && py <= y + height;

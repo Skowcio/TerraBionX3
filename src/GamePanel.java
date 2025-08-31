@@ -128,6 +128,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JButton btnDroneBot;
 
     private JButton btnDestructionFactory;
+    private JButton btnDestructionArty;
 
 
     // to do wskazywania miejsca gdzie budowac np powerplant itp na przyszlosc
@@ -152,6 +153,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private boolean showBuilderMenu = false;
     private boolean showBaracksMenu = false;
     private boolean showFactorysMenu = false;
+    private boolean showArtysMenu = false;
 
 
     //do budowania
@@ -372,6 +374,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         selectedHarvester = null;
         selectedBuilderVehicle = null;
         selectedBaracks = null;
+
         selectedSteelMines = null;
         selectedFactories = null;
 
@@ -585,7 +588,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnSoldier.setVisible(false); // Ukryj przycisk na starcie
         add(btnSoldier);
 
-
         btnSoldier.addActionListener(e -> {
             if (selectedBaracks != null) {
                 if (collectedSteel >= 1000) {
@@ -609,6 +611,29 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             }
         });
 
+//        btnDestructionArty.addActionListener(e ->{
+//            if (selectedArtylery != null) {
+//                if
+//            }
+//        });
+
+        btnDestructionArty = new JButton("DESTRUCTION");
+        btnDestructionArty.setBounds(10, 380, 120, 30);
+        btnDestructionArty.setVisible(false);
+        add(btnDestructionArty);
+
+        btnDestructionArty.addActionListener(e -> {
+            for (Artylery artylery : artylerys) {
+                if (artylery.isSelected()) {
+                    artylery.destroy();            // niszczya fabrykę
+                    Artylery.decreaseArtysCount(); // zmniejsza licznik
+                }
+            }
+
+            // Usuń martwe fabryki z listy
+            artylerys.removeIf(artylery -> artylery.getBounds().isEmpty() || artylery.takeDamage());
+        });
+
         setLayout(null);
 
         btnHarvester = new JButton("Harvester");
@@ -620,6 +645,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnDestructionFactory.setBounds(10, 380, 120, 30);
         btnDestructionFactory.setVisible(false);
         add(btnDestructionFactory);
+
+
+
 
         btnArtylery = new JButton("Artylery");
         btnArtylery.setBounds(10, 130, 120, 30);
@@ -661,7 +689,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnDestructionFactory.addActionListener(e -> {
             for (Factory factory : factories) {
                 if (factory.isSelected()) {
-                    factory.destroy();            // zabija fabrykę
+                    factory.destroy();            // niszczya fabrykę
                     Factory.decreaseFactoryCount(); // zmniejsza licznik
                 }
             }
@@ -1144,7 +1172,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             moveBattleVehicle();
             moveHarvesters();
             moveBuilderVeicle();
-            moveArtylery();
+//            moveArtylery();
             updateGame();
             shootEnemiesart();
             shootEnemies();
@@ -1265,6 +1293,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnBuilderVehicle.setVisible((showFactorysMenu));
         btnDroneBot.setVisible((showFactorysMenu));
         btnDestructionFactory.setVisible((showFactorysMenu));
+        repaint();
+    }
+
+    private void  updateArtysMenu(){
+        btnDestructionArty.setVisible((showArtysMenu));
         repaint();
     }
 
@@ -1414,8 +1447,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
                 if (projectile.checkCollision(artylery)) {
                     toRemove.add(projectile);
-                    Artylery.decreaseArtysCount();
-                    artyleryIterator.remove(); // 🧹 usuwa z listy po trafieniu
+
+                    if (artylery.takeDamage()) {
+                        Factory.decreaseFactoryCount(); // 🟢 odejmuje 1
+                        artyleryIterator.remove();       // 🧹 usuwa z listy
+                    }
                     break;
                 }
             }
@@ -2174,9 +2210,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             for (Artylery artylery : artylerys) {
                 artylery.setSelected(false);
 
-                if (new Rectangle(artylery.getX(), artylery.getY(), 20,20).contains(e.getPoint())) {
+                if (new Rectangle(artylery.getX(), artylery.getY(), 40,40).contains(e.getPoint())) {
                     selectedArtylery = artylery;
                     artylery.setSelected(true);
+                    showArtysMenu = true;
+                    updateArtysMenu();
                     return;
                 }
                 else  {
@@ -2191,6 +2229,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 if (new Rectangle(harvester.getX(), harvester.getY(), 30, 30).contains(e.getPoint())) {
                     selectedHarvester = harvester;
                     harvester.setSelected(true);
+
                     return;
 
                 } else {
@@ -2299,11 +2338,21 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 updateFactorysMenu();
                 selectedFactories = null;
             }
+            if (selectedArtylery != null){
+//            selectedArtylery.setTarget(e.getPoint());
+                selectedArtylery.setSelected(false);
+                showArtysMenu = false;
+                updateArtysMenu();
+                selectedArtylery = null;
+
+            }
             for (Soldier soldier : soldiers) {
                 soldier.setSelected(false);
             }
 
         }
+
+
         if (selectedHarvester != null && SwingUtilities.isLeftMouseButton(e)){
             selectedHarvester.setTarget(e.getPoint());
             selectedHarvester.setSelected(true);
@@ -2318,10 +2367,6 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             selectedBuilderVehicle.setTarget(e.getPoint());
             selectedBuilderVehicle.setSelected(true);
 
-        }
-        if (selectedArtylery != null && SwingUtilities.isLeftMouseButton(e)){
-            selectedArtylery.setTarget(e.getPoint());
-            selectedArtylery.setSelected(true);
         }
 
         // Jeśli wybrano żołnierza, ustaw cel
@@ -2793,6 +2838,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             btnBuilderVehicle.setLocation(screenX + 10, screenY + 210);
             btnDroneBot.setLocation(screenX + 10, screenY + 290);
             btnDestructionFactory.setLocation(screenX + 10, screenY + 380);
+
+            btnDestructionArty.setLocation(screenX + 10, screenY + 90);
 
 
 

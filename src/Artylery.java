@@ -12,16 +12,17 @@ public class Artylery implements Serializable {
     private boolean selected;
     private Point target;
     private final int range = 440;
-    private int width = 25, height = 25;
+    private int width = 40, height = 40;
     private final int shootCooldown = 4500; // Czas odnowienia strzału (ms)
     private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
+    private int health = 10;
     private long lastShotTime = 0; // Czas ostatniego strzału
     private static int MAX_ARTYLERYS = 8;
     private static int totalArtys = 0;
 
     public Artylery(int x, int y) {
         if (totalArtys >= MAX_ARTYLERYS) {
-            throw new IllegalStateException("Osiągnięto limit " + MAX_ARTYLERYS + " fabryk!");
+            throw new IllegalStateException("Osiągnięto limit " + MAX_ARTYLERYS + " artylerys!");
         }
         this.x = x;
         this.y = y;
@@ -65,6 +66,15 @@ public class Artylery implements Serializable {
     public void setPosition(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public boolean takeDamage() {
+        health--;
+        return health <= 0;
+    }
+
+    public void destroy() {
+        health = 0;
     }
 
     public void setSelected(boolean selected) {
@@ -188,12 +198,24 @@ public class Artylery implements Serializable {
 
 
     public void draw(Graphics g) {
-        g.setColor(new Color(65, 25, 139)); // Granatowy
-        g.fillRect(x, y, 20, 20);
+        g.setColor(new Color(65, 25, 139));
+        g.fillRect(x, y, 42, 42);
         g.drawString("Ar", x + width / 2 - 5, y + height / 2 + 5);
         if (selected) {
             g.setColor(Color.GRAY);
-            g.drawRect(x - 2, y - 2, 25, 25);
+            g.drawRect(x - 2, y - 2, 45, 45);
         }
+        int maxHealth = 10; // Maksymalne zdrowie
+        int healthBarWidth = 40; // Stała długość paska zdrowia
+        int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
+
+        g.setColor(Color.GREEN);
+        g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
+
+        // Rysowanie obramowania paska zdrowia
+        g.setColor(Color.BLACK);
+        g.drawRect(x, y - 5, healthBarWidth, 3);
+
+        g.setColor(Color.BLACK);
     }
 }
