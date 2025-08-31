@@ -625,8 +625,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnDestructionArty.addActionListener(e -> {
             for (Artylery artylery : artylerys) {
                 if (artylery.isSelected()) {
-                    artylery.destroy();            // niszczya fabrykę
+                    artylery.destroy();            // niszczya aarte
                     Artylery.decreaseArtysCount(); // zmniejsza licznik
+                    showArtysMenu = false;
+                    updateArtysMenu();
+                    repaint();
                 }
             }
 
@@ -691,6 +694,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 if (factory.isSelected()) {
                     factory.destroy();            // niszczya fabrykę
                     Factory.decreaseFactoryCount(); // zmniejsza licznik
+                    showFactorysMenu = false;
+                    updateFactorysMenu();
+                    repaint(); // Odśwież panel
                 }
             }
 
@@ -2305,10 +2311,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 selectedMinigunner.setSelected(false);
                 selectedMinigunner = null;
             }
-            if (selectedArtylery != null) {
-                selectedArtylery.setSelected(false);
-                selectedArtylery = null;
-            }
+
 
 
             if (selectedBattleVehicle != null) {
