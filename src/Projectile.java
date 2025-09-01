@@ -47,6 +47,11 @@ public class Projectile {
         Rectangle soldierRect = new Rectangle(soldier.getX(), soldier.getY(), 20, 20);
         return projectileRect.intersects(soldierRect);
     }
+    public boolean checkCollision(Baracks baracks) {
+        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
+        Rectangle barackRect = new Rectangle(baracks.getX(), baracks.getY(), 20, 20);
+        return projectileRect.intersects(barackRect);
+    }
     public boolean checkCollision(SoldierBot soldierBot) {
         Rectangle projectileRect = new Rectangle(x, y, 8, 8);
         Rectangle soldierRect = new Rectangle(soldierBot.getX(), soldierBot.getY(), 20, 20);

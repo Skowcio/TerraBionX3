@@ -1414,6 +1414,17 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     break;
                 }
             }
+            Iterator<Baracks> iterator2 = baracks.iterator();
+            while (iterator2.hasNext()) {
+                Baracks baracks = iterator2.next();
+                if (projectile.checkCollision(baracks)){
+                    toRemove.add(projectile);
+                    if (baracks.takeDamage()){
+                        iterator2.remove();
+                    }
+                    break;
+                }
+            }
             Iterator<SoldierBot> iterator = soldierBots.iterator();
             while (iterator.hasNext()) {
                 SoldierBot soldierBot = iterator.next();
@@ -2730,7 +2741,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         for (EnemyShooter enemyShooter : enemyShooters){
             enemyShooter.draw(g);
-            enemyShooter.shoot(g, projectiles, soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles);
+            enemyShooter.shoot(g, projectiles, soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys);
         }
         //budowniczy
         for (BuilderVehicle builderVehicle :builderVehicles) {

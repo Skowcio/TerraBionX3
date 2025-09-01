@@ -82,6 +82,11 @@ public class EnemyShooter {
         int dy = powerPlant.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    public boolean isInRange(Artylery artylery){
+        int dx = artylery.getX() - x;
+        int dy = artylery.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
 
 
     private void chooseTarget(
@@ -90,7 +95,8 @@ public class EnemyShooter {
             ArrayList<BattleVehicle> battleVehicles,
             ArrayList<Factory> factories,
             ArrayList<PowerPlant> powerPlants,
-            ArrayList<BuilderVehicle> builderVehicles // 🆕 BuilderVehicle
+            ArrayList<BuilderVehicle> builderVehicles, // 🆕 BuilderVehicle
+            ArrayList<Artylery> artyleries
     )
     {
         currentTarget = null;
@@ -131,6 +137,12 @@ public class EnemyShooter {
                 currentTarget = builderVehicle;
                 return; }
         }
+        for (Artylery artylery : artyleries) {
+            if (isInRange(artylery)){
+                currentTarget = artylery;
+                return;
+            }
+        }
     }
 
     public void shoot(
@@ -141,7 +153,10 @@ public class EnemyShooter {
             ArrayList<BattleVehicle> battleVehicles,
             ArrayList<Factory> factories,
             ArrayList<PowerPlant> powerPlants,
-            ArrayList<BuilderVehicle> builderVehicles )// 🆕 BuilderVehicle
+            ArrayList<BuilderVehicle> builderVehicles,
+            ArrayList<Artylery> artyleries
+            )// 🆕 BuilderVehicle
+
     {
         long currentTime = System.currentTimeMillis();
 
@@ -154,19 +169,20 @@ public class EnemyShooter {
                 (currentTarget instanceof PowerPlant && !powerPlants.contains(currentTarget)) ||
                 (currentTarget instanceof BuilderVehicle && !builderVehicles.contains(currentTarget)) // 🆕
                 ||
+                (currentTarget instanceof Artylery && !artyleries.contains(currentTarget))||
 
 
-//                (currentTarget instanceof Hive && !hives.contains(currentTarget)) ||
                 !(currentTarget instanceof Soldier soldier && isInRange(soldier)) &&
                         !(currentTarget instanceof SoldierBot soldierBot&& isInRange(soldierBot)) &&
                         !(currentTarget instanceof BattleVehicle battleVehicle && isInRange(battleVehicle)) &&
                         !(currentTarget instanceof Factory factory && isInRange(factory)) &&
         !(currentTarget instanceof PowerPlant powerPlant && isInRange(powerPlant)) &&
-                        !(currentTarget instanceof BuilderVehicle builderVehicle && isInRange(builderVehicle))
+                        !(currentTarget instanceof BuilderVehicle builderVehicle && isInRange(builderVehicle)) &&
+                !(currentTarget instanceof Artylery artylery && isInRange(artylery))
 
         )
         {
-            chooseTarget(soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles); // Wybierz nowy cel
+            chooseTarget(soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artyleries); // Wybierz nowy cel
         }
 
         // Jeśli mamy ważny cel, strzelaj
@@ -198,6 +214,12 @@ public class EnemyShooter {
             if (currentTarget instanceof BuilderVehicle builderVehicle ) { // 🆕
                 if (isInRange(builderVehicle)) {
                     projectiles.add(new Projectile(x + 15, y + 15, builderVehicle.getX() + 15, builderVehicle.getY() + 15));
+                    lastShotTime = currentTime;
+                }
+            }
+            if (currentTarget instanceof Artylery artylery){
+                if (isInRange(artylery)){
+                    projectiles.add(new Projectile(x + 15, y + 15, artylery.getX() + 15, artylery.getY() + 15));
                     lastShotTime = currentTime;
                 }
             }
