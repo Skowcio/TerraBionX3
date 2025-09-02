@@ -87,6 +87,11 @@ public class EnemyShooter {
         int dy = artylery.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    public boolean isInRange(Baracks baracks){
+        int dx = baracks.getX() - x;
+        int dy = baracks.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
 
 
     private void chooseTarget(
@@ -96,7 +101,8 @@ public class EnemyShooter {
             ArrayList<Factory> factories,
             ArrayList<PowerPlant> powerPlants,
             ArrayList<BuilderVehicle> builderVehicles, // 🆕 BuilderVehicle
-            ArrayList<Artylery> artyleries
+            ArrayList<Artylery> artyleries,
+            ArrayList<Baracks> baracks
     )
     {
         currentTarget = null;
@@ -132,6 +138,7 @@ public class EnemyShooter {
                 return;
             }
         }
+
         for (BuilderVehicle builderVehicle : builderVehicles) {  // 🆕 BuilderVehicle
             if (isInRange(builderVehicle)) {
                 currentTarget = builderVehicle;
@@ -140,6 +147,12 @@ public class EnemyShooter {
         for (Artylery artylery : artyleries) {
             if (isInRange(artylery)){
                 currentTarget = artylery;
+                return;
+            }
+        }
+        for (Baracks b : baracks) {
+            if (isInRange(b)) {
+                currentTarget = b;
                 return;
             }
         }
@@ -154,8 +167,9 @@ public class EnemyShooter {
             ArrayList<Factory> factories,
             ArrayList<PowerPlant> powerPlants,
             ArrayList<BuilderVehicle> builderVehicles,
-            ArrayList<Artylery> artyleries
-            )// 🆕 BuilderVehicle
+            ArrayList<Artylery> artyleries,
+    ArrayList<Baracks> baracks)
+            // 🆕 BuilderVehicle
 
     {
         long currentTime = System.currentTimeMillis();
@@ -170,6 +184,7 @@ public class EnemyShooter {
                 (currentTarget instanceof BuilderVehicle && !builderVehicles.contains(currentTarget)) // 🆕
                 ||
                 (currentTarget instanceof Artylery && !artyleries.contains(currentTarget))||
+                (currentTarget instanceof Baracks && !baracks.contains(currentTarget))||
 
 
                 !(currentTarget instanceof Soldier soldier && isInRange(soldier)) &&
@@ -178,11 +193,12 @@ public class EnemyShooter {
                         !(currentTarget instanceof Factory factory && isInRange(factory)) &&
         !(currentTarget instanceof PowerPlant powerPlant && isInRange(powerPlant)) &&
                         !(currentTarget instanceof BuilderVehicle builderVehicle && isInRange(builderVehicle)) &&
-                !(currentTarget instanceof Artylery artylery && isInRange(artylery))
+                !(currentTarget instanceof Artylery artylery && isInRange(artylery)) &&
+                        !(currentTarget instanceof  Baracks b && isInRange(b))
 
         )
         {
-            chooseTarget(soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artyleries); // Wybierz nowy cel
+            chooseTarget(soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artyleries, baracks); // Wybierz nowy cel
         }
 
         // Jeśli mamy ważny cel, strzelaj
@@ -223,6 +239,12 @@ public class EnemyShooter {
                     lastShotTime = currentTime;
                 }
             }
+            if (currentTarget instanceof Baracks b){
+                if (isInRange(b)){
+                    projectiles.add(new Projectile(x + 15, y + 15, b.getX() + 15, b.getY() + 15));
+                    lastShotTime = currentTime;
+                }
+            }
             else if (currentTarget instanceof BattleVehicle battleVehicle) {
                 if (isInRange(battleVehicle)) {
                     projectiles.add(new Projectile(x + 15, y + 15, battleVehicle.getX() + 15, battleVehicle.getY() + 15));
@@ -243,12 +265,13 @@ public class EnemyShooter {
             List<Harvester> harvesters,
             List<BuilderVehicle> builderVehicles,
             List<Artylery> artylerys,
+            List<Baracks> baracks,
             List<BattleVehicle> battleVehicles,
             List<PowerPlant> powerPlants,
             List<Factory> factorys
 
     ) {
-        Object target = getClosestTarget(soldierBots, soldiers, powerPlants, battleVehicles, factorys, builderVehicles);
+        Object target = getClosestTarget(soldierBots, soldiers, powerPlants, battleVehicles, factorys, builderVehicles, artylerys, baracks);
         moveTowardsTarget(target);
     }
 
@@ -258,7 +281,9 @@ public class EnemyShooter {
             List<PowerPlant> powerPlants,
             List<BattleVehicle> battleVehicles,
             List<Factory> factorys,
-            List<BuilderVehicle> builderVehicles
+            List<BuilderVehicle> builderVehicles,
+            List<Artylery> artyleries,
+            List<Baracks> baracks
     ) {
         Object closest = null;
         double minDistance = Double.MAX_VALUE;
@@ -301,6 +326,20 @@ public class EnemyShooter {
                 closest = builderVehicle;
             }
         }
+        for (Baracks baracks1 : baracks){
+            double dist = baracks1.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = baracks1;
+            }
+        }
+        for (Artylery artylery : artyleries){
+            double dist = artylery.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = artylery;
+            }
+        }
 
         for (BattleVehicle vehicle : battleVehicles) {
             double dist = vehicle.getPosition().distance(x, y);
@@ -329,6 +368,14 @@ public class EnemyShooter {
         } else if (target instanceof BattleVehicle bv) {
             tx = bv.getX();
             ty = bv.getY();
+        }
+        else if (target instanceof Artylery a) {
+            tx = a.getX();
+            ty = a.getY();
+        }
+        else if (target instanceof Baracks b) {
+            tx = b.getX();
+            ty = b.getY();
         }
         else if (target instanceof Factory f) {
             tx = f.getX();

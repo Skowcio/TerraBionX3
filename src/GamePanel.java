@@ -1940,7 +1940,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
 
         for (EnemyShooter enemyShooter : enemyShooters) {
-            enemyShooter.update(soldierBots,soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories);
+            enemyShooter.update(soldierBots,soldiers, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories);
         }
         for (SoldierBot soldierBot : new ArrayList<>(soldierBots)) {
             soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots);
@@ -2741,7 +2741,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         for (EnemyShooter enemyShooter : enemyShooters){
             enemyShooter.draw(g);
-            enemyShooter.shoot(g, projectiles, soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys);
+            enemyShooter.shoot(g, projectiles, soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
         }
         //budowniczy
         for (BuilderVehicle builderVehicle :builderVehicles) {
