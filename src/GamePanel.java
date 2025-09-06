@@ -1,5 +1,8 @@
 
 import Bulding.*;
+import flora.*;
+
+import flora.Flora.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,6 +35,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Artylery> artylerys;
     private ArrayList<Crystal> crystals;
 
+    private ArrayList<Flora> floras;
+    ArrayList<Flora> obstacles = new ArrayList<>();
+
     /// to jest do zaznaczania grupowego jednostek
     private ArrayList<Soldier> selectedSoldiers;
     private ArrayList<BuilderVehicle> selectedBuldierVehicles;
@@ -41,6 +47,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<EnemyShooter> enemyShooters;
     private ArrayList<BuilderVehicle> builderVehicles;
     private ArrayList<EnemyToo> enemiesToo; // Nowa lista dla EnemyToo
+    private ArrayList<Marsh> marshes;
     private ArrayList<EnemyHunter> enemyHunters;
     private ArrayList<Bullet> bullets; // Lista pocisków
     private ArrayList<MinigunnerBullet> minigunnerBullets;
@@ -251,6 +258,23 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Point p : mission.crystalPositions){
             crystals.add(new Crystal(p.x, p.y));
         }
+
+        for (int i = 0; i < mission.floraPositions.size(); i++) {
+            Point p = mission.floraPositions.get(i);
+            String type = mission.floraTypes.get(i);
+
+            Flora flora = switch (type.toLowerCase()) {
+                case "marsh" -> new Marsh(p.x, p.y);
+
+//                case "tree" -> new Tree(p.x, p.y);
+                default -> null;
+            };
+
+            if (flora != null) {
+                obstacles.add(flora);
+            }
+        }
+
 
         for (Point p : mission.hiveTooPositions){
             hiveToos.add(new HiveToo(p.x, p.y));
@@ -2086,6 +2110,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     if (artylery.getBounds().intersects(newBuilding))
                         collision = true;
 
+                for (Flora obstacle : obstacles) {
+                    if (obstacle.getBounds().intersects(newBuilding)) {
+                        collision = true;
+                        break; // wystarczy jedna kolizja
+                    }
+                }
+
 
 //                for (Factory factory : factories)
 //                    if (factory.getBounds().intersects(newBuilding)) collision = true;
@@ -2587,6 +2618,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Crystal crystal : crystals){
             crystal.draw(g);
         }
+        for (Flora flora : obstacles) {
+            flora.draw(g);
+        }
 
         for (Harvester harvester : harvesters) {
             harvester.draw(g);
@@ -2752,6 +2786,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (EnemyToo enemyToo : enemiesToo) {
             enemyToo.draw(g);
         }
+
 
         for (MinigunnerBullet minigunnerBullet : minigunnerBullets){
             minigunnerBullet.draw(g);

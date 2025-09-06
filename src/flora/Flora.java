@@ -1,0 +1,39 @@
+package flora;
+
+import java.awt.image.BufferedImage;
+import java.awt.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Random;
+import javax.imageio.ImageIO;
+
+public abstract class Flora {
+    protected int x, y;
+    protected int width, height;
+    protected BufferedImage image;
+
+    public Flora(int x, int y, int width, int height, BufferedImage image) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.image = image;
+    }
+
+    public void draw(Graphics g) {
+        if (image != null) {
+            g.drawImage(image, x, y, width, height, null);
+        }
+    }
+
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, width, height);
+    }
+
+    public int getX() { return x; }
+    public int getY() { return y; }
+    public int getWidth() { return width; }
+    public int getHeight() { return height; }
+}

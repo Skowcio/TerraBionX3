@@ -11,6 +11,9 @@ public class Mission {
     public ArrayList<Point> powerPlantPositions = new ArrayList<>();
     public ArrayList<Point> crystalPositions = new ArrayList<>();
     public ArrayList<Point> hiveTooPositions = new ArrayList<>();
+    public ArrayList<Point> floraPositions = new ArrayList<>();
+
+    public ArrayList<String> floraTypes = new ArrayList<>(); // do wyboru typu np. "marsh", "Tree"
 
     public int randomHiveCount = 0;
     public Rectangle hiveSpawnArea;
