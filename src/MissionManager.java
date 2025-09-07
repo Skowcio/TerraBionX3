@@ -21,6 +21,12 @@ public class MissionManager {
         mission1.floraPositions.add(new Point(400, 400));
         mission1.floraTypes.add("marsh");
 
+        mission1.floraPositions.add(new Point(700,700));
+        mission1.floraTypes.add("marsh2");
+
+        mission1.floraPositions.add(new Point(900,700));
+        mission1.floraTypes.add("marsh3");
+
         mission1.crystalPositions.add(new Point(800, 1050));
         mission1.powerPlantPositions.add(new Point(100, 330));
         mission1.powerPlantPositions.add(new Point(100, 430));

@@ -47,7 +47,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<EnemyShooter> enemyShooters;
     private ArrayList<BuilderVehicle> builderVehicles;
     private ArrayList<EnemyToo> enemiesToo; // Nowa lista dla EnemyToo
-    private ArrayList<Marsh> marshes;
+//    private ArrayList<Marsh> marshes;
     private ArrayList<EnemyHunter> enemyHunters;
     private ArrayList<Bullet> bullets; // Lista pocisków
     private ArrayList<MinigunnerBullet> minigunnerBullets;
@@ -266,7 +266,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             Flora flora = switch (type.toLowerCase()) {
                 case "marsh" -> new Marsh(p.x, p.y);
 
-//                case "tree" -> new Tree(p.x, p.y);
+                case "marsh2" -> new Marsh2(p.x, p.y);
+                case "marsh3" -> new Marsh3(p.x, p.y);
                 default -> null;
             };
 
