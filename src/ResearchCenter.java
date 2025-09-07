@@ -52,6 +52,10 @@ public class ResearchCenter {
     public static int getBuiltCount() {
         return builtCount;
     }
+    public static void resetCounts() {
+        builtCount = 0;
+        researchCount = 0;
+    }
 
     public int getWidth() { return width; }
     public int getHeight() { return height; }

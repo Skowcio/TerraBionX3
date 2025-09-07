@@ -331,6 +331,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         updateGame(); // od razu sprawdzanie celu
         missionStartTime = System.currentTimeMillis();
+        ResearchCenter.resetCounts();
     }
 
 
