@@ -1492,8 +1492,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     toRemove.add(projectile);
 
                     if (artylery.takeDamage()) {
-                        Factory.decreaseFactoryCount(); // 🟢 odejmuje 1
+                        Artylery.decreaseArtysCount(); // 🟢 odejmuje 1
                         artyleryIterator.remove();       // 🧹 usuwa z listy
+                        explosions.add(new Explosion(artylery.getX(), artylery.getY()));
+
                     }
                     break;
                 }
@@ -1509,6 +1511,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     if (factory.takeDamage()) {
                         Factory.decreaseFactoryCount(); // 🟢 odejmuje 1
                         factoryIterator.remove();       // 🧹 usuwa z listy
+                        explosions.add(new Explosion(factory.getX(), factory.getY()));
                     }
 
                     break;
@@ -1653,15 +1656,32 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 if (Math.abs(dx) > speed) dx = dx > 0 ? speed : -speed;
                 if (Math.abs(dy) > speed) dy = dy > 0 ? speed : -speed;
 
-                builderVehicle.setPosition(builderVehicle.getX() + dx, builderVehicle.getY() + dy);
+                int nextX = builderVehicle.getX() + dx;
+                int nextY = builderVehicle.getY() + dy;
 
-                if (dx == 0 && dy == 0) {
-                    builderVehicle.setTarget(null);
+                Rectangle futureBounds = builderVehicle.getAllowedBounds(nextX, nextY);
+                boolean canMove = true;
+
+                for (BuilderVehicle other : builderVehicles) {
+                    if (builderVehicle == other) continue;
+
+                    if (futureBounds.intersects(other.getAllowedBounds())) {
+                        canMove = false; // nie przesuwamy w tej klatce, ale target pozostaje
+                        break;
+                    }
                 }
+
+                if (canMove) {
+                    builderVehicle.setPosition(nextX, nextY);
+                }
+
+                // Twarda kolizja → teleport
+                builderVehicle.resolveHardOverlap(builderVehicles);
             }
         }
         repaint();
     }
+
 
     private void moveArtylery() {
         for (Artylery artylery : artylerys) {

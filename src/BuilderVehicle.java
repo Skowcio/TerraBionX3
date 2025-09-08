@@ -83,9 +83,85 @@ public class BuilderVehicle {
         }
     }
 
+
+    public Rectangle getAllowedBounds(int px, int py) {
+        int w = (int)(width * 0.67);
+        int h = (int)(height * 0.67);
+        int offsetX = (width - w) / 2;
+        int offsetY = (height - h) / 2;
+        return new Rectangle(px + offsetX, py + offsetY, w, h);
+    }
+
+
+
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
     }
+
+    // 🔹 pełny hitbox (strict)
+    public Rectangle getStrictBounds() {
+        return new Rectangle(x, y, width, height);
+    }
+
+    // 🔹 mniejszy hitbox (allowed overlap – mogą na siebie nachodzić)
+    public Rectangle getAllowedBounds() {
+        int collisionW = (int)(width * 0.67);   // 2/3 szerokości
+        int collisionH = (int)(height * 0.67);  // 2/3 wysokości
+        int offsetX = (width - collisionW) / 2;
+        int offsetY = (height - collisionH) / 2;
+
+        return new Rectangle(x + offsetX, y + offsetY, collisionW, collisionH);
+    }
+    public void resolveHardOverlap(java.util.List<BuilderVehicle> allVehicles) {
+        for (BuilderVehicle other : allVehicles) {
+            if (this == other) continue;
+
+            // mogą na siebie nachodzić w 2/3
+            if (getAllowedBounds().intersects(other.getAllowedBounds())) {
+                // ❌ ale jeśli pełne hitboxy też się stykają → teleport
+                if (getStrictBounds().intersects(other.getStrictBounds())) {
+                    teleportAway(allVehicles);
+                }
+            }
+        }
+    }
+
+    private void teleportAway(java.util.List<BuilderVehicle> allVehicles) {
+        int offset = 50;
+        int dir = (int)(Math.random() * 8);
+
+        int nx = x;
+        int ny = y;
+
+        switch (dir) {
+            case 0 -> ny -= offset;
+            case 1 -> { ny -= offset; nx += offset; }
+            case 2 -> nx += offset;
+            case 3 -> { ny += offset; nx += offset; }
+            case 4 -> ny += offset;
+            case 5 -> { ny += offset; nx -= offset; }
+            case 6 -> nx -= offset;
+            case 7 -> { ny -= offset; nx -= offset; }
+        }
+
+        Rectangle newBounds = new Rectangle(nx, ny, width, height);
+
+        // 🔹 sprawdzamy czy nowe miejsce nie koliduje z innymi
+        boolean collision = false;
+        for (BuilderVehicle other : allVehicles) {
+            if (this == other) continue;
+            if (newBounds.intersects(other.getStrictBounds())) {
+                collision = true;
+                break;
+            }
+        }
+
+        if (!collision) {
+            x = nx;
+            y = ny;
+        }
+    }
+
 
     public boolean isInRange(Enemy enemy) {
         int dx = enemy.getX() - x;
