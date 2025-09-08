@@ -14,7 +14,7 @@ public class BuilderVehicle {
     private double hoverTime = 0;             // Czas do animacji unoszenia
     private final double hoverSpeed = 0.005;  // Im mniejsze, tym wolniejsze falowanie
     private final int hoverAmplitude = 4;     // Jak bardzo w górę/dół się unosi
-    private int width = 45, height = 45;
+    private int width = 50, height = 50;
     private int speed = 2;
     private boolean selected;
     private BufferedImage vehicleImage;
@@ -278,7 +278,7 @@ public class BuilderVehicle {
 
         // Pasek zdrowia
         int maxHealth = 10;
-        int healthBarWidth = 45;
+        int healthBarWidth = 50;
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);

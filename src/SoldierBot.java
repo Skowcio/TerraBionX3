@@ -143,17 +143,45 @@ public class SoldierBot {
         int dx = enemyToos.getX() - x;
         int dy = enemyToos.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
+
     }
+
     private boolean isCollidingWithOtherBots(int targetX, int targetY, List<SoldierBot> allBots) {
-        Rectangle futureBounds = new Rectangle(targetX, targetY, width, height);
+        // Kolizja tylko na 2/3 szerokości i wysokości
+        int collisionW = (int)(width * 0.67);   // np. 33px przy 50px
+        int collisionH = (int)(height * 0.67);
+        int offsetX = (width - collisionW) / 2;
+        int offsetY = (height - collisionH) / 2;
+
+        Rectangle futureBounds = new Rectangle(targetX + offsetX, targetY + offsetY, collisionW, collisionH);
+
         for (SoldierBot other : allBots) {
-            if (this == other) continue; // Nie sprawdzaj samego siebie
-            if (futureBounds.intersects(other.getBounds())) {
-                return true;
+            if (this == other) continue;
+
+            Rectangle otherBounds = new Rectangle(
+                    other.x + offsetX,
+                    other.y + offsetY,
+                    collisionW,
+                    collisionH
+            );
+
+            if (futureBounds.intersects(otherBounds)) {
+                return true; // kolizja dopiero gdy przekroczą te 2/3
             }
         }
         return false;
     }
+
+//    private boolean isCollidingWithOtherBots(int targetX, int targetY, List<SoldierBot> allBots) {
+//        Rectangle futureBounds = new Rectangle(targetX, targetY, width, height);
+//        for (SoldierBot other : allBots) {
+//            if (this == other) continue; // Nie sprawdzaj samego siebie
+//            if (futureBounds.intersects(other.getBounds())) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     public void shoot(
             Graphics g,
@@ -268,37 +296,88 @@ public class SoldierBot {
 
     /// /// to jest do tego by soldierBot zostal przesuniety gdy naszedl na siebie
 
+
     private void resolveHardOverlap(List<SoldierBot> allBots) {
+        int collisionW = (int)(width * 0.67);   // strefa dozwolonego zachodzenia
+        int collisionH = (int)(height * 0.67);
+        int offsetX = (width - collisionW) / 2;
+        int offsetY = (height - collisionH) / 2;
+
+        Rectangle thisAllowed = new Rectangle(x + offsetX, y + offsetY, collisionW, collisionH);
+        Rectangle thisStrict = new Rectangle(x, y, width, height); // pełny hitbox
+
         for (SoldierBot other : allBots) {
             if (this == other) continue;
-            if (this.getBounds().intersects(other.getBounds())) {
 
-                int offset = 50;
-                int dir = random.nextInt(8); // 0-7 (8 kierunków)
+            Rectangle otherAllowed = new Rectangle(other.x + offsetX, other.y + offsetY, collisionW, collisionH);
+            Rectangle otherStrict = new Rectangle(other.x, other.y, width, height);
 
-                int nx = x;
-                int ny = y;
-
-                switch (dir) {
-                    case 0 -> ny -= offset;       // góra
-                    case 1 -> { ny -= offset; nx += offset; } // góra-prawo
-                    case 2 -> nx += offset;       // prawo
-                    case 3 -> { ny += offset; nx += offset; } // dół-prawo
-                    case 4 -> ny += offset;       // dół
-                    case 5 -> { ny += offset; nx -= offset; } // dół-lewo
-                    case 6 -> nx -= offset;       // lewo
-                    case 7 -> { ny -= offset; nx -= offset; } // góra-lewo
-                }
-
-                // Jeżeli nowa pozycja jest w obszarze patrolu i nie koliduje z innymi
-                if (patrolArea.contains(new Rectangle(nx, ny, width, height)) &&
-                        !isCollidingWithOtherBots(nx, ny, allBots)) {
-                    x = nx;
-                    y = ny;
+            // jeśli dotykają się tylko w "allowed" → ignorujemy
+            if (thisAllowed.intersects(otherAllowed)) {
+                // jeśli pełne hitboxy też się przecinają → to już za dużo, teleport
+                if (thisStrict.intersects(otherStrict)) {
+                    teleportAway(allBots);
                 }
             }
         }
     }
+
+    private void teleportAway(List<SoldierBot> allBots) {
+        int offset = 50;
+        int dir = random.nextInt(8);
+
+        int nx = x;
+        int ny = y;
+
+        switch (dir) {
+            case 0 -> ny -= offset;
+            case 1 -> { ny -= offset; nx += offset; }
+            case 2 -> nx += offset;
+            case 3 -> { ny += offset; nx += offset; }
+            case 4 -> ny += offset;
+            case 5 -> { ny += offset; nx -= offset; }
+            case 6 -> nx -= offset;
+            case 7 -> { ny -= offset; nx -= offset; }
+        }
+
+        Rectangle newPos = new Rectangle(nx, ny, width, height);
+
+        if (patrolArea.contains(newPos) && !isCollidingWithOtherBots(nx, ny, allBots)) {
+            x = nx;
+            y = ny;
+        }
+    }
+//    private void resolveHardOverlap(List<SoldierBot> allBots) {
+//        for (SoldierBot other : allBots) {
+//            if (this == other) continue;
+//            if (this.getBounds().intersects(other.getBounds())) {
+//
+//                int offset = 50;
+//                int dir = random.nextInt(8); // 0-7 (8 kierunków)
+//
+//                int nx = x;
+//                int ny = y;
+//
+//                switch (dir) {
+//                    case 0 -> ny -= offset;       // góra
+//                    case 1 -> { ny -= offset; nx += offset; } // góra-prawo
+//                    case 2 -> nx += offset;       // prawo
+//                    case 3 -> { ny += offset; nx += offset; } // dół-prawo
+//                    case 4 -> ny += offset;       // dół
+//                    case 5 -> { ny += offset; nx -= offset; } // dół-lewo
+//                    case 6 -> nx -= offset;       // lewo
+//                    case 7 -> { ny -= offset; nx -= offset; } // góra-lewo
+//                }
+//
+//                // Jeżeli nowa pozycja jest w obszarze patrolu i nie koliduje z innymi
+//                if (patrolArea.contains(new Rectangle(nx, ny, width, height)) &&
+//                        !isCollidingWithOtherBots(nx, ny, allBots)) {
+//                    x = nx;
+//                    y = ny;
+//                }
+//            }
+//        }
+//    }
 
 
 

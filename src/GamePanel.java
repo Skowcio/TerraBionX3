@@ -2579,6 +2579,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 }
             }
         }
+        for (Flora flora : obstacles) {
+            flora.draw(g);
+        }
 
         // Usunięcie wyczerpanych złóż
         resources.removeIf(ResourcesSteel::isDepleted);
@@ -2617,13 +2620,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (SteelMine steelMine : steelMines) {
             steelMine.draw(g);
         }
+
+
         for (Crystal crystal : crystals){
             crystal.draw(g);
         }
-        for (Flora flora : obstacles) {
-            flora.draw(g);
-        }
-
         for (Harvester harvester : harvesters) {
             harvester.draw(g);
         }

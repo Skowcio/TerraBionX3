@@ -42,7 +42,7 @@ public class MissionManager {
         mission1.objectiveType = Mission.ObjectiveType.DESTROY_ALL_HIVES;
 
         // 🔧 Dodaj Hive w unikalnych miejscach bez kolizji
-        int hiveSize = 80; // ustaw na prawdziwy rozmiar Hive (np. szerokość/grafika)
+        int hiveSize = 100; // ustaw na prawdziwy rozmiar Hive (np. szerokość/grafika)
         ArrayList<Point> hivePositions = new ArrayList<>();
         Random rand = new Random();
 
