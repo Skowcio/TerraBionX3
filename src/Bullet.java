@@ -31,7 +31,7 @@ public class Bullet { // Bullet jest używany przez Soldier
     }
     private void playShootSound(int cameraX, int cameraY, int screenWidth, int screenHeight) {
         try {
-            File soundFile = new File("F:\\projekty JAVA\\TerraBionX3\\src\\shoot\\shoot5.wav");
+            File soundFile = new File("F:\\projekty JAVA\\TerraBionX3\\src\\shoot\\shoot3.wav");
             if (!soundFile.exists()) {
                 System.err.println("Nie znaleziono pliku dźwięku: " + soundFile.getAbsolutePath());
                 return;

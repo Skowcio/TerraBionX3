@@ -5,7 +5,7 @@ public class ArtBullet {
     private int targetX, targetY; // Punkt docelowy
     private double x, y; // Aktualna pozycja pocisku (double dla większej precyzji)
     private double time; // Zmienna czasu do generowania trajektorii
-    private final double flightDuration = 0.15; // Czas, jaki zajmuje dotarcie pocisku (0.2 sekundy)
+    private final double flightDuration = 0.15; // Czas, jaki zajmuje dotarcie pocisku (0.15 sekundy)
     private final int width = 5, height = 5; // Rozmiar pocisku
     private boolean reachedTarget = false; // Flaga, czy pocisk dotarł do celu
 

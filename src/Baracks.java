@@ -12,6 +12,14 @@ public class Baracks {
     private BufferedImage baracImage;
     private int health = 40;
 
+    // do produkcji i strzalu
+
+    // --- NOWE ZMIENNE ---
+    private int availableShells = 0;        // ile gotowych pocisków mamy
+    private boolean producing = false;      // czy trwa produkcja
+    private long productionStartTime;       // czas rozpoczęcia produkcji
+    private final int productionTime = 5000; // ms -> 5 sekund
+
     public Baracks(int x, int y) {
         this.x = x;
         this.y = y;
@@ -27,6 +35,53 @@ public class Baracks {
         health--;
         return health <= 0;
     }
+
+    // do obslugi pocisku
+
+    public void startProducingShell() {
+        if (!producing) {
+            producing = true;
+            productionStartTime = System.currentTimeMillis();
+        }
+    }
+
+    public void updateProduction() {
+        if (producing) {
+            long now = System.currentTimeMillis();
+            if (now - productionStartTime >= productionTime) {
+                availableShells++;
+                producing = false; // produkcja zakończona
+                System.out.println("Wyprodukowano pocisk. Dostępne pociski: " + availableShells);
+            }
+        }
+    }
+
+    public boolean useShell() {
+        if (availableShells > 0) {
+            availableShells--;
+            return true;
+        }
+        return false;
+    }
+
+    public int getAvailableShells() {
+        return availableShells;
+    }
+
+
+    public boolean isProducing() {
+        return producing;
+    }
+    public int getRemainingProductionTime() {
+        if (producing) {
+            long now = System.currentTimeMillis();
+            long remaining = productionTime - (now - productionStartTime);
+            return (int) Math.max(0, remaining / 1000); // zwracamy sekundy
+        }
+        return 0;
+    }
+
+    /// /////////////////////////////////////////////////////
 
     // Gettery
     public int getX() {
@@ -75,6 +130,14 @@ public class Baracks {
         int maxHealth = 40; // Maksymalne zdrowie
         int healthBarWidth = 140; // Stała długość paska zdrowia
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
+        // --- INFO o pociskach ---
+        g.setColor(Color.YELLOW);
+        g.drawString("Pociski: " + availableShells, x, y + height + 15);
+
+        if (producing) {
+            g.setColor(Color.RED);
+            g.drawString("Produkcja: " + getRemainingProductionTime() + "s", x, y + height + 30);
+        }
 
         g.setColor(Color.GREEN);
         g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem

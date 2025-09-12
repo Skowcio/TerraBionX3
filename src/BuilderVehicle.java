@@ -25,8 +25,8 @@ public class BuilderVehicle {
     private int health = 10;
     private Point target;
 
-    private final int range = 180;
-    private final int shootCooldown = 500; // Czas odnowienia strzału (ms)
+    private final int range = 190;
+    private final int shootCooldown = 600; // Czas odnowienia strzału (ms)
     private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
     private long lastShotTime = 0; // Czas ostatniego strzału
 

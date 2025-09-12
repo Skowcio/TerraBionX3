@@ -5,7 +5,7 @@ import java.util.Random;
 
 public class EnemyShooter {
     private int x, y;
-    private final int range = 140; // Zasięg strzelania w pikselach
+    private final int range = 170; // Zasięg strzelania w pikselach
     private final int width = 25, height = 25;
     private int health = 3;
     private int speed = 3;

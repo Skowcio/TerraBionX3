@@ -8,11 +8,11 @@ import java.io.IOException;
 
 public class SoldierBot {
     private int x, y;
-    private final int range = 150; // Zasięg strzelania w pikselach
+    private final int range = 180; // Zasięg strzelania w pikselach
     private final int width = 50, height = 50;
     private int health = 3;
-    private int speed = 4;
-    private final int shootCooldown = 600; // Czas odnowienia strzału (ms)
+    private int speed = 5;
+    private final int shootCooldown = 900; // Czas odnowienia strzału (ms)
     private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
     private long lastShotTime = 0;
     private Random random = new Random();
