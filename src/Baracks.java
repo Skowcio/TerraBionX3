@@ -39,7 +39,7 @@ public class Baracks {
     // do obslugi pocisku
 
     public void startProducingShell() {
-        if (!producing) {
+        if (!producing && availableShells < 5) { // ✅ nie zaczynaj, jeśli pełny magazyn
             producing = true;
             productionStartTime = System.currentTimeMillis();
         }
@@ -49,9 +49,11 @@ public class Baracks {
         if (producing) {
             long now = System.currentTimeMillis();
             if (now - productionStartTime >= productionTime) {
-                availableShells++;
-                producing = false; // produkcja zakończona
-                System.out.println("Wyprodukowano pocisk. Dostępne pociski: " + availableShells);
+                if (availableShells < 5) { // ✅ dodaj tylko jeśli mniej niż 5
+                    availableShells++;
+                    System.out.println("Wyprodukowano pocisk. Dostępne pociski: " + availableShells);
+                }
+                producing = false; // zawsze kończ produkcję
             }
         }
     }
@@ -133,6 +135,10 @@ public class Baracks {
         // --- INFO o pociskach ---
         g.setColor(Color.YELLOW);
         g.drawString("Pociski: " + availableShells, x, y + height + 15);
+        if (availableShells >= 5) {
+            g.setColor(Color.ORANGE);
+            g.drawString("Magazyn pełny!", x, y + height + 45);
+        }
 
         if (producing) {
             g.setColor(Color.RED);
