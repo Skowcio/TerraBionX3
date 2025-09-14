@@ -174,6 +174,7 @@ public class BuilderVehicle {
         int dy = enemyShooter.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    /// /////efekt unoszenia i opadania /////////////////////////////////////////////////////////////
     public void update(long deltaTime) {
         // 🔁 Aktualizacja efektu "unoszenia się"
         hoverTime += deltaTime;

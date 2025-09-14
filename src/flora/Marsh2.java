@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class Marsh2 extends Flora {
     public Marsh2(int x, int y) {
-        super(x, y, 200, 220, loadImage());
+        super(x, y, 256, 171, loadImage());
     }
 
     private static java.awt.image.BufferedImage loadImage() {

@@ -9,7 +9,7 @@ public class Marsh4 extends Flora {
 
     private static java.awt.image.BufferedImage loadImage() {
         try {
-            return ImageIO.read(Marsh.class.getResource("/flora/Trees3.png"));
+            return ImageIO.read(Marsh.class.getResource("/flora/rock1.png"));
         } catch (IOException e) {
             e.printStackTrace();
             return null;

@@ -274,6 +274,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 case "marsh2" -> new Marsh2(p.x, p.y);
                 case "marsh3" -> new Marsh3(p.x, p.y);
                 case "marsh4" -> new Marsh4(p.x, p.y);
+                case "marsh5" -> new Marsh5(p.x, p.y);
                 default -> null;
             };
 
@@ -285,6 +286,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         for (Point p : mission.hiveTooPositions){
             hiveToos.add(new HiveToo(p.x, p.y));
+        }
+        for ( Point p : mission.barackPositions){
+            baracks.add(new Baracks(p.x, p.y));
         }
 
 
@@ -2393,7 +2397,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             for (Baracks baracks : baracks){
                 baracks.setSelected(false);
 
-                if (new Rectangle(baracks.getX(), baracks.getY(), 80, 80 ).contains(e.getPoint())){
+                if (new Rectangle(baracks.getX(), baracks.getY(), 140, 140 ).contains(e.getPoint())){
                     selectedBaracks = baracks;
                     baracks.setSelected(true);
                     System.out.println("Zaznaczono baracks");

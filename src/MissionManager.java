@@ -13,31 +13,34 @@ public class MissionManager {
     private void loadMissions() {
         // 🎯 Misja 1: Zniszcz wszystkie Hive
         Mission mission1 = new Mission("First Encounter");
-        mission1.soldierPositions.add(new Point(200, 300));
-        mission1.crystalPositions.add(new Point(280, 550));
-        mission1.crystalPositions.add(new Point(580, 590));
+//        mission1.soldierPositions.add(new Point(200, 300));
+
         mission1.crystalPositions.add(new Point(880, 900));
 
-        mission1.floraPositions.add(new Point(400, 400));
+        mission1.floraPositions.add(new Point(400, 20));
         mission1.floraTypes.add("marsh");
-
-        mission1.floraPositions.add(new Point(700,700));
+        mission1.floraPositions.add(new Point(900,230));
         mission1.floraTypes.add("marsh2");
-
-        mission1.floraPositions.add(new Point(900,700));
+        mission1.floraPositions.add(new Point(1000,1700));
         mission1.floraTypes.add("marsh3");
-
         mission1.floraPositions.add(new Point(1200,800));
         mission1.floraTypes.add("marsh4");
+        mission1.floraPositions.add(new Point(150,550));
+        mission1.floraTypes.add("marsh5");
 
-        mission1.crystalPositions.add(new Point(800, 1050));
-        mission1.powerPlantPositions.add(new Point(100, 330));
-        mission1.powerPlantPositions.add(new Point(100, 430));
-        mission1.powerPlantPositions.add(new Point(100, 530));
-        mission1.powerPlantPositions.add(new Point(100, 630));
-        mission1.builderPositions.add(new Point(220, 330));
-        mission1.resourcesPositions.add(new Point(350, 400));
+
+        mission1.powerPlantPositions.add(new Point(450, 300));
+        mission1.powerPlantPositions.add(new Point(450, 410));
+        mission1.powerPlantPositions.add(new Point(450, 520));
+        mission1.powerPlantPositions.add(new Point(450, 630));
+        mission1.builderPositions.add(new Point(720, 370));
+        mission1.barackPositions.add(new Point(660,  200));
+
+        mission1.resourcesPositions.add(new Point(700, 450));
         mission1.resourcesPositions.add(new Point(850, 600));
+
+
+
         mission1.enemyPositions.add(new Point(1000, 1200));
 
         mission1.randomHiveCount = 5;
