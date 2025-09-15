@@ -27,6 +27,35 @@ public class HUDPanel extends JPanel {
         g2d.drawString("Factories: " + Factory.getTotalFactories() + " / " + Factory.getMaxFactories(), 650, 30);
         g2d.drawString("Towers: " + Artylery.getTotalArtys() + " / " + Artylery.getMaxArtylerys(), 850, 30);
         g2d.drawString("Drones: " + gamePanel.getBuilderVehicles().size() + " / 5", 1050, 30);
+        /// //////////////////////////////////////ta forma jest szybsza gamePanel.getBuilderVehicles w praktyce.... na maszynach z lat 90 byla by roznica///////
+
+        // do obslugi wyswietlania paska Drony budownicze
+        int currentDrones = gamePanel.getBuilderVehicles().size();
+        int maxDrones = 5;
+
+// Tekst
+        g2d.setColor(Color.WHITE);
+        g2d.drawString("Drones: " + currentDrones + " / " + maxDrones, 1050, 30);
+
+// Pasek postępu
+        int barX = 1050;
+        int barY = 45;
+        int barWidth = 90;
+        int barHeight = 10;
+
+        double progress = (double) currentDrones / maxDrones;
+        int fillWidth = (int) (barWidth * progress);
+
+        g2d.setColor(Color.GRAY);
+        g2d.fillRect(barX, barY, barWidth, barHeight);
+
+        g2d.setColor(Color.CYAN);
+        g2d.fillRect(barX, barY, fillWidth, barHeight);
+
+        g2d.setColor(Color.WHITE);
+        g2d.drawRect(barX, barY, barWidth, barHeight);
+        /// ///////////////////////////////////////////////////
+        /// /////////////////////////////////////////////////////
 
         // 🔹 Wyświetlanie czasu obrony (jeśli to misja DEFEND_FOR_TIME)
         if (gamePanel.getMissionManager() != null) {
