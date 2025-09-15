@@ -275,6 +275,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 case "marsh3" -> new Marsh3(p.x, p.y);
                 case "marsh4" -> new Marsh4(p.x, p.y);
                 case "marsh5" -> new Marsh5(p.x, p.y);
+                case "marsh6" -> new Marsh6(p.x, p.y);
+                case "marsh7" -> new Marsh7(p.x, p.y);
+                case "marsh8" -> new Marsh8(p.x, p.y);
+                case "marsh9" -> new Marsh9(p.x, p.y);
+                case "marsh10" -> new Marsh10(p.x, p.y);
                 default -> null;
             };
 
@@ -2751,6 +2756,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (SoldierBot soldierBot : soldierBots){
             soldierBot.draw(g);
             Rectangle viewRect = getVisibleRect();
+            soldierBot.updateFly(deltaTime);
             soldierBot.shoot(g,
 
                     bullets,
@@ -2770,7 +2776,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         //budowniczy
         for (BuilderVehicle builderVehicle :builderVehicles) {
             builderVehicle.draw(g);
-            builderVehicle.update(deltaTime);
+            builderVehicle.update(deltaTime); //// to do unoszenia i opadania efektu lotu
             Rectangle viewRect = getVisibleRect();
 
             // Używamy instancji `minigunner`, NIE klasy!

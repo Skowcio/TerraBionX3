@@ -8,6 +8,10 @@ import java.io.IOException;
 
 public class SoldierBot {
     private int x, y;
+    private double hoverOffset = 0;           // Przesunięcie do rysowania w pionie
+    private double hoverTime = 0;             // Czas do animacji unoszenia
+    private final double hoverSpeed = 0.003;  // Im mniejsze, tym wolniejsze falowanie
+    private final int hoverAmplitude = 4;
     private final int range = 180; // Zasięg strzelania w pikselach
     private final int width = 50, height = 50;
     private int health = 3;
@@ -283,6 +287,13 @@ public class SoldierBot {
             }
         }
     }
+    public void updateFly(long deltaTime) {
+        // 🔁 Aktualizacja efektu "unoszenia się"
+        hoverTime += deltaTime;
+        hoverOffset = Math.sin(hoverTime * hoverSpeed) * hoverAmplitude;
+
+    }
+    /// ///////////update laduje w GamePanel.update//////
     public void update(List<Enemy> enemies, List<EnemyShooter> enemyShooters, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos, List<SoldierBot> allBots) {
         Object target = getClosestTarget(enemies, enemyShooters, enemyToos, hives, hiveToos);
 
@@ -505,9 +516,9 @@ public class SoldierBot {
             lastWanderDirectionChange = 0;
         }
     }
-
-    public void draw(Graphics g) {
-        Image imgToDraw = switch (currentDirection) {
+    /// /////////////////////// to jest dzial rysowania obiektu //////////////////////
+    private Image getCurrentImage() {
+        return switch (currentDirection) {
             case 0 -> dir0;
             case 1 -> dir1;
             case 2 -> dir2;
@@ -526,20 +537,27 @@ public class SoldierBot {
             case 15 -> dir15;
             default -> dir0;
         };
+    }
 
-        if (imgToDraw != null) {
-            g.drawImage(imgToDraw, x, y, width, height, null);
+    public void draw(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+
+        Image currentImg = getCurrentImage();
+        if (currentImg != null) {
+            int drawX = x;
+            int drawY = (int)(y + hoverOffset); // ✨ tu efekt unoszenia
+
+            g2d.drawImage(currentImg, drawX, drawY, width, height, null);
         }
 
+        // Pasek życia
+        g.setColor(Color.GREEN);
         int maxHealth = 3;
         int healthBarWidth = 50;
-        int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
-
-        g.setColor(Color.GREEN);
-        g.fillRect(x, y - 5, currentHealthWidth, 3);
-        g.setColor(Color.BLACK);
-        g.drawRect(x, y - 5, healthBarWidth, 3);
+        int currentHealthWidth = (int)((health / (double)maxHealth) * healthBarWidth);
+        g.fillRect(x, (int)(y + hoverOffset) - 5, currentHealthWidth, 3);
     }
+
 
 //    public Projectile shootAtNearestSoldier(ArrayList<Soldier> soldiers) {
 //        Soldier nearest = null;
