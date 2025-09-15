@@ -62,6 +62,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<SteelMine> steelMines;
 
 
+
     private Soldier selectedSoldier;
     private Minigunner selectedMinigunner;
     private BattleVehicle selectedBattleVehicle;
@@ -84,6 +85,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         return soldiers;
     }
     public List<BuilderVehicle> getBuldierVehgicle() {
+        return builderVehicles;
+    }
+    ///  ////// do szybszego wyciagania info np. ilsoc dla wysweitlania w HUD
+    public ArrayList<BuilderVehicle> getBuilderVehicles() {
         return builderVehicles;
     }
     public List<SoldierBot> getSoldierBots() {
@@ -632,6 +637,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnSoldier.addActionListener(e -> {
             if (selectedBaracks != null) {
                 if (collectedSteel >= 1000) {
+                    if (builderVehicles.size() >= 5) {
+                        System.out.println("Limit FENIX Drone osiągnięty (max 5).");
+                        return; // Nie buduj więcej
+                    }
                     // Oblicz pozycję jednostki obok Baracks
                     int buldierX = selectedBaracks.getX() + 90;
                     int buldierY = selectedBaracks.getY();
@@ -822,6 +831,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnBuilderVehicle.addActionListener(e -> {
             if (selectedFactories != null) {
                 if (collectedSteel >= 2000) {
+                    /// //////// tu jest limit buldierow
                     if (builderVehicles.size() >= 5) {
                         System.out.println("Limit FENIX Drone osiągnięty (max 5).");
                         return; // Nie buduj więcej

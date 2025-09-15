@@ -128,7 +128,7 @@ public class Factory {
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
-
+/// //// to jest do produkcjiphenix drone
     public void startProduction(int duration) {
         producing = true;
         productionSecondsLeft = duration;
@@ -252,7 +252,7 @@ public class Factory {
 
         if (producing) {
             g.setColor(Color.WHITE);
-            g.drawString(productionSecondsLeft + "s", x + 10, y - 5); // Nad fabryką
+            g.drawString(productionSecondsLeft + "s", x + 10, y + 8); // Nad fabryką
         }
 
         if (selected) {

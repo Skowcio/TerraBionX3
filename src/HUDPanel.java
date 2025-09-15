@@ -26,6 +26,7 @@ public class HUDPanel extends JPanel {
         g2d.setColor(Color.WHITE);
         g2d.drawString("Factories: " + Factory.getTotalFactories() + " / " + Factory.getMaxFactories(), 650, 30);
         g2d.drawString("Towers: " + Artylery.getTotalArtys() + " / " + Artylery.getMaxArtylerys(), 850, 30);
+        g2d.drawString("Drones: " + gamePanel.getBuilderVehicles().size() + " / 5", 1050, 30);
 
         // 🔹 Wyświetlanie czasu obrony (jeśli to misja DEFEND_FOR_TIME)
         if (gamePanel.getMissionManager() != null) {

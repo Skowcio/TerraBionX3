@@ -50,6 +50,7 @@ public class BuilderVehicle {
     }
 
 
+
     public int getX() {
         return x;
     }
