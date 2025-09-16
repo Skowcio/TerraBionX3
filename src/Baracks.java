@@ -12,9 +12,14 @@ public class Baracks {
     private BufferedImage baracImage;
     private int health = 40;
 
+    // produkcja buildera
+    private boolean producingBuilder = false;
+    private long builderStartTime;
+    private final int builderProductionTime = 10000; // 10s
+
     // do produkcji i strzalu
 
-    // --- NOWE ZMIENNE ---
+
     private int availableShells = 0;        // ile gotowych pocisków mamy
     private boolean producing = false;      // czy trwa produkcja
     private long productionStartTime;       // czas rozpoczęcia produkcji
@@ -35,6 +40,7 @@ public class Baracks {
         health--;
         return health <= 0;
     }
+
 
     // do obslugi pocisku
 
@@ -82,6 +88,55 @@ public class Baracks {
         }
         return 0;
     }
+
+    /// ////////////////////////////
+    /// /////////////////////
+    /// //////// do produkcji buldieraow dronow
+    public double getBuilderProgress() {
+        if (producingBuilder) {
+            long now = System.currentTimeMillis();
+            long elapsed = now - builderStartTime;
+            return Math.min(1.0, (double) elapsed / builderProductionTime);
+        }
+        return 0.0;
+    }
+    public void startProducingBuilder() {
+        if (!producingBuilder) {
+            producingBuilder = true;
+            builderStartTime = System.currentTimeMillis();
+            System.out.println("Produkcja Buildera rozpoczęta!");
+        }
+    }
+
+    public void updateBuilderProduction(ArrayList<BuilderVehicle> builderVehicles) {
+        if (producingBuilder) {
+            long now = System.currentTimeMillis();
+            if (now - builderStartTime >= builderProductionTime) {
+                producingBuilder = false;
+
+                // ➕ dodajemy buildera po ukończeniu produkcji
+                int builderX = x + width + 20; // np. obok Baracks
+                int builderY = y;
+                builderVehicles.add(new BuilderVehicle(builderX, builderY));
+
+                System.out.println("Builder wyprodukowany!");
+            }
+        }
+    }
+
+    public int getRemainingBuilderTime() {
+        if (producingBuilder) {
+            long now = System.currentTimeMillis();
+            long remaining = builderProductionTime - (now - builderStartTime);
+            return (int) Math.max(0, remaining / 1000);
+        }
+        return 0;
+    }
+
+    public boolean isProducingBuilder() {
+        return producingBuilder;
+    }
+
 
     /// /////////////////////////////////////////////////////
 
@@ -144,6 +199,37 @@ public class Baracks {
             g.setColor(Color.RED);
             g.drawString("Produkcja: " + getRemainingProductionTime() + "s", x, y + height + 30);
         }
+        if (producingBuilder) {
+            g.setColor(Color.CYAN);
+            g.drawString("Produkcja Buildera: " + getRemainingBuilderTime() + "s", x, y + height + 45);
+        }
+
+
+        /// //pasek postepu budowy
+        if (producingBuilder) {
+            int barX = x;
+            int barY = y + height + 60; // pod budynkiem, niżej niż napis
+            int barWidth = 100;
+            int barHeight = 10;
+
+            // tło
+            g.setColor(Color.GRAY);
+            g.fillRect(barX, barY, barWidth, barHeight);
+
+            // wypełnienie
+            int fillWidth = (int) (barWidth * getBuilderProgress());
+            g.setColor(Color.CYAN);
+            g.fillRect(barX, barY, fillWidth, barHeight);
+
+            // ramka
+            g.setColor(Color.WHITE);
+            g.drawRect(barX, barY, barWidth, barHeight);
+
+            // licznik czasu
+            g.setColor(Color.CYAN);
+            g.drawString("Produkcja Buildera: " + getRemainingBuilderTime() + "s", x, y + height + 45);
+        }
+
 
         g.setColor(Color.GREEN);
         g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem

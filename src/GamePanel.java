@@ -285,6 +285,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 case "marsh8" -> new Marsh8(p.x, p.y);
                 case "marsh9" -> new Marsh9(p.x, p.y);
                 case "marsh10" -> new Marsh10(p.x, p.y);
+                case "marsh11" -> new Marsh11(p.x, p.y);
                 default -> null;
             };
 
@@ -299,6 +300,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         for ( Point p : mission.barackPositions){
             baracks.add(new Baracks(p.x, p.y));
+        }
+        for (Point p : mission.factoryPositions){
+            factories.add(new Factory(p.x, p.y));
         }
 
 
@@ -439,7 +443,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     /// /// /////////////////////////////////////////////////////////////////////////////////////
 
 
-    // to jest odpowiedzalne za to by nie pojawila sie jakas jednostka na sobie
+    //// to jest odpowiedzalne za to by nie pojawila sie jakas jednostka na sobie i chuj i tak na razie tego nigdzie nie uzywam bo tych jednostek  nie bedzie w grze
     private boolean isCollidingWithOthers(int x, int y, ArrayList<Soldier> soldiers, ArrayList<Minigunner> minigunners, ArrayList<BattleVehicle> battleVehicles) {
         Rectangle newSoldierBounds = new Rectangle(x, y, 42, 34); // Wymiary żołnierza
         Rectangle newMinigunerBounds = new Rectangle(x, y, 20, 20);
@@ -624,7 +628,21 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         });
         productionUpdateTimer.start();
 
-
+        /// ogolna  sekcja dla przyciskow ktore wystepuja w grze
+/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// /////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// //////////////////////////////////////////////////////////////////
+/// /////////////////              \/////////////////////////////////////////////
+/// /////////////////  ///////////  ////////////////////////////////
+/// /////////////////  ////////////  //////////////////////////////////////////////////////////////////////////////////
+/// /////////////////  ////////////  ////////////////////////////////////
+/// /////////////////  ///////////  ////////////////////////////////////
+/// /////////////////              /////////////////////////////////
+        /// /////////  //////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// /////////  /////////////////////////////////////////////////////////
+        /// /////////  ///////////////////////////////////////////////////////
+        /// /////////  ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // tu masz przyciski gdy zaznaczysz Buldiera
         setLayout(null); // Ustawienie ręcznego układu dla dodania przycisków
@@ -636,26 +654,17 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         btnSoldier.addActionListener(e -> {
             if (selectedBaracks != null) {
-                if (collectedSteel >= 1000) {
+                if (collectedSteel >= 2000) {
                     if (builderVehicles.size() >= 5) {
                         System.out.println("Limit FENIX Drone osiągnięty (max 5).");
-                        return; // Nie buduj więcej
+                        return;
                     }
-                    // Oblicz pozycję jednostki obok Baracks
-                    int buldierX = selectedBaracks.getX() + 90;
-                    int buldierY = selectedBaracks.getY();
-
-                    // Dodaj jednostkę Soldier
-                    builderVehicles.add(new BuilderVehicle(buldierX, buldierY));
-                    // Zmniejsz stal o 500 jednostek
-                    collectedSteel -= 1000;
-                    System.out.println("Dodano Soldier.");
-                    // Ukryj menu barakow
+                    collectedSteel -= 2000; // zabieramy stal
+                    selectedBaracks.startProducingBuilder(); // start produkcji
                     showBaracksMenu = false;
                     updateBaracksMenu();
-                    repaint(); // Odśwież panel
+                    repaint();
                 } else {
-                    // Poinformuj gracza, że nie ma wystarczającej ilości stali
                     System.out.println("Nie masz wystarczającej ilości stali! Potrzebujesz 1000 Steel.");
                 }
             }
@@ -1263,7 +1272,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 //            updateCryopits(); // Dodane do obsługi rozrostu Cryopit
 
             for (Baracks b : baracks) {
-                b.updateProduction();
+                b.updateProduction(); // pociski
+                b.updateBuilderProduction(builderVehicles); // builder
             }
         });
         movementTimer.start();

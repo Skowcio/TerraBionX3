@@ -19,14 +19,26 @@ public class MissionManager {
 
         mission1.floraPositions.add(new Point(400, 20));
         mission1.floraTypes.add("marsh");
-        mission1.floraPositions.add(new Point(900,230));
+        mission1.floraPositions.add(new Point(900,150));
         mission1.floraTypes.add("marsh2");
         mission1.floraPositions.add(new Point(1000,1700));
         mission1.floraTypes.add("marsh3");
         mission1.floraPositions.add(new Point(1200,800));
         mission1.floraTypes.add("marsh4");
-        mission1.floraPositions.add(new Point(150,550));
+        mission1.floraPositions.add(new Point(70,550));
         mission1.floraTypes.add("marsh5");
+        mission1.floraPositions.add(new Point(220,110));
+        mission1.floraTypes.add("marsh6");
+        mission1.floraPositions.add(new Point(1111,500));
+        mission1.floraTypes.add("marsh7");
+        mission1.floraPositions.add(new Point(1711,350));
+        mission1.floraTypes.add("marsh8");
+        mission1.floraPositions.add(new Point(711,1950));
+        mission1.floraTypes.add("marsh9");
+        mission1.floraPositions.add(new Point(1511,1100));
+        mission1.floraTypes.add("marsh10");
+        mission1.floraPositions.add(new Point(1811,1200));
+        mission1.floraTypes.add("marsh11");
 
 
         mission1.powerPlantPositions.add(new Point(450, 300));
@@ -35,6 +47,7 @@ public class MissionManager {
         mission1.powerPlantPositions.add(new Point(450, 630));
         mission1.builderPositions.add(new Point(720, 370));
         mission1.barackPositions.add(new Point(660,  200));
+        mission1.factoryPositions.add(new Point(950,  420));
 
         mission1.resourcesPositions.add(new Point(700, 450));
         mission1.resourcesPositions.add(new Point(850, 600));

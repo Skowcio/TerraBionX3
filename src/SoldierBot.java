@@ -12,7 +12,7 @@ public class SoldierBot {
     private double hoverTime = 0;             // Czas do animacji unoszenia
     private final double hoverSpeed = 0.003;  // Im mniejsze, tym wolniejsze falowanie
     private final int hoverAmplitude = 4;
-    private final int range = 180; // Zasięg strzelania w pikselach
+    private final int range = 220; // Zasięg strzelania w pikselach
     private final int width = 50, height = 50;
     private int health = 3;
     private int speed = 5;

@@ -2,14 +2,14 @@ package flora;
 import javax.imageio.ImageIO;
 import java.io.IOException;
 
-public class Marsh4 extends Flora {
-    public Marsh4(int x, int y) {
+public class Marsh11 extends Flora {
+    public Marsh11(int x, int y) {
         super(x, y, 384, 256, loadImage());
     }
 
     private static java.awt.image.BufferedImage loadImage() {
         try {
-            return ImageIO.read(Marsh.class.getResource("/flora/rock1.png"));
+            return ImageIO.read(Marsh.class.getResource("/flora/rock2.png"));
         } catch (IOException e) {
             e.printStackTrace();
             return null;
