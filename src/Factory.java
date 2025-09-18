@@ -24,6 +24,13 @@ public class Factory {
     private static int totalFactories = 0;
     private static int MAX_FACTORIES = 4;
 
+    // soldier production
+    private boolean producingSoldier = false;
+    private long soldierStartTime;
+    private final int soldierProductionTime = 20000; // 10s
+
+
+
     public static int getTotalFactories() {
         return totalFactories;
     }
@@ -103,6 +110,49 @@ public class Factory {
     }
     public void destroy() {
         health = 0;
+    }
+
+    /// ///// produkcja soldierow
+    ///
+    public double getSoldierProgress() {
+        if (producingSoldier) {
+            long now = System.currentTimeMillis();
+            long elapsed = now - soldierStartTime;
+            return Math.min(1.0, (double) elapsed / soldierProductionTime);
+        }
+        return 0.0;
+    }
+    public void startProducingSoldier() {
+        if (!producingSoldier) {
+            producingSoldier = true;
+            soldierStartTime = System.currentTimeMillis();
+            System.out.println("Produkcja Buildera rozpoczęta!");
+        }
+    }
+
+    public void updateSoldierProduction(ArrayList<Soldier> soldiers) {
+        if (producingSoldier) {
+            long now = System.currentTimeMillis();
+            if (now - soldierStartTime >= soldierProductionTime) {
+                producingSoldier = false;
+
+                // ➕ dodajemy soldier po ukończeniu produkcji
+                int soldierX = x + width + 20; // np. obok Baracks
+                int soldierY = y;
+                soldiers.add(new Soldier(soldierX, soldierY));
+
+                System.out.println("Builder wyprodukowany!");
+            }
+        }
+    }
+
+    public int getRemainingSoldierTime() {
+        if (producingSoldier) {
+            long now = System.currentTimeMillis();
+            long remaining = soldierProductionTime - (now - soldierStartTime);
+            return (int) Math.max(0, remaining / 1000);
+        }
+        return 0;
     }
 
     public Point getPosition() {
@@ -271,6 +321,34 @@ public class Factory {
             g.setColor(Color.BLUE);
             g.drawRect(patrolX, patrolY, patrolSize, patrolSize); // Obramowanie
         }
+        if (producingSoldier) {
+            g.setColor(Color.CYAN);
+            g.drawString("Produkcja Buildera: " + getRemainingSoldierTime() + "s", x, y + height + 45);
+        }
+        /// //pasek postepu budowy
+        if (producingSoldier) {
+            int barX = x;
+            int barY = y + height + 60; // pod budynkiem, niżej niż napis
+            int barWidth = 100;
+            int barHeight = 10;
+
+            // tło
+            g.setColor(Color.GRAY);
+            g.fillRect(barX, barY, barWidth, barHeight);
+
+            // wypełnienie
+            int fillWidth = (int) (barWidth * getSoldierProgress());
+            g.setColor(Color.CYAN);
+            g.fillRect(barX, barY, fillWidth, barHeight);
+
+            // ramka
+            g.setColor(Color.WHITE);
+            g.drawRect(barX, barY, barWidth, barHeight);
+
+            // licznik czasu
+            g.setColor(Color.CYAN);
+            g.drawString("Produkcja Buildera: " + getRemainingSoldierTime() + "s", x, y + height + 45);
+        }
 
         // Liczba botów i limit
         g.setColor(Color.WHITE);
@@ -292,7 +370,7 @@ public class Factory {
     int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);
-        g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
+        g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek zdrowia
 
     // Rysowanie obramowania paska zdrowia
         g.setColor(Color.BLACK);

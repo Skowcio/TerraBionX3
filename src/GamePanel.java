@@ -661,7 +661,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     }
                     collectedSteel -= 2000; // zabieramy stal
                     selectedBaracks.startProducingBuilder(); // start produkcji
-                    showBaracksMenu = false;
+//                    showBaracksMenu = false;
                     updateBaracksMenu();
                     repaint();
                 } else {
@@ -735,7 +735,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
 
-        btnArtylery = new JButton("Artylery");
+        btnArtylery = new JButton("AX-20M");
         btnArtylery.setBounds(10, 130, 120, 30);
         btnArtylery.setVisible(false);
         add(btnArtylery);
@@ -817,16 +817,17 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             if (selectedFactories != null) {
                 if (collectedSteel >= 2000) {
                     // Oblicz pozycję jednostki obok Factory
-                    int artyleryX = selectedFactories.getX() + 120;
-                    int artyleryY = selectedFactories.getY();
+                    int soldierX = selectedFactories.getX() + 120;
+                    int soldierY = selectedFactories.getY();
 
                     // Dodaj jednostkę arty
-                    artylerys.add(new Artylery(artyleryX, artyleryY));
+
                     // Zmniejsz stal o 500 jednostek
                     collectedSteel -= 2000;
-                    System.out.println("Dodano artylery.");
+                    selectedFactories.startProducingSoldier(); // start produkcji
+                    System.out.println("Dodano AX-20M");
                     // Ukryj menu factory
-                    showFactorysMenu = false;
+//                    showFactorysMenu = false;
                     updateFactorysMenu();
                     repaint(); // Odśwież panel
                 } else {
@@ -1275,6 +1276,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 b.updateProduction(); // pociski
                 b.updateBuilderProduction(builderVehicles); // builder
             }
+            for (Factory f : factories){
+                f.updateSoldierProduction(soldiers); // soldier
+            }
         });
         movementTimer.start();
 
@@ -1413,14 +1417,14 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         // Przycisk zapisu gry
         saveButton.addActionListener(e -> {
-            SaveLoadGame.saveGame(soldiers);  // Wywołanie metody zapisu stanu gry
+//            SaveLoadGame.saveGame(soldiers);  // Wywołanie metody zapisu stanu gry
             System.out.println("Gra została zapisana!");
         });
 
         // Przycisk wczytywania gry
         loadButton.addActionListener(e -> {
             soldiers.clear();  // Czyścimy aktualną listę żołnierzy przed załadowaniem
-            soldiers.addAll(SaveLoadGame.loadGame());  // Ładujemy żołnierzy z zapisanej gry
+//            soldiers.addAll(SaveLoadGame.loadGame());  // Ładujemy żołnierzy z zapisanej gry
             System.out.println("Gra została wczytana!");
         });
 
@@ -1502,8 +1506,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             for (Soldier soldier : soldiers) {
                 if (projectile.checkCollision(soldier)) {
                     toRemove.add(projectile);
-                    soldiers.remove(soldier); // Usuń żołnierza po trafieniu
-                    break;
+                    if (soldier.takeDamage()) {
+                        soldiers.remove(soldier); // Usuń żołnierza po trafieniu
+                        explosions.add(new Explosion(soldier.getX(), soldier.getY()));
+                    }break;
                 }
             }
             Iterator<Baracks> iterator2 = baracks.iterator();
@@ -2336,7 +2342,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             for (Soldier soldier : soldiers) {
                 soldier.setSelected(false);
 
-                if (new Rectangle(soldier.getX(), soldier.getY(), 20, 20).contains(e.getPoint())) {
+                if (new Rectangle(soldier.getX(), soldier.getY(), 50, 50).contains(e.getPoint())) {
                     selectedSoldier = soldier;
                     soldier.setSelected(true);
                     return;
@@ -2757,6 +2763,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Soldier soldier : soldiers) {
             soldier.draw(g);
             Rectangle viewRect = getVisibleRect();
+            soldier.updateFly(deltaTime);
 
             // Używamy instancji `soldier`, NIE klasy!
             soldier.shoot(

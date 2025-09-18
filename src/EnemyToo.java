@@ -182,6 +182,7 @@ public class EnemyToo {
 
         } else if (target instanceof BuilderVehicle bv && bounds.intersects(bv.getBounds())) {
             list.remove(bv);
+            explosions.add(new Explosion(bv.getX(), bv.getY())); // efekt wybuchu
 
         } else if (target instanceof Artylery a && bounds.intersects(a.getBounds())) {
             list.remove(a);
@@ -199,6 +200,7 @@ public class EnemyToo {
             boolean destroyed = sb.takeDamage();
             if (destroyed){
                 list.remove(sb);
+                explosions.add(new Explosion(sb.getX(), sb.getY())); // efekt wybuchu
             }
         }
         else if (target instanceof Factory f && bounds.intersects(f.getBounds())) {

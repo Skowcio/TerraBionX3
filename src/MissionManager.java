@@ -13,7 +13,8 @@ public class MissionManager {
     private void loadMissions() {
         // 🎯 Misja 1: Zniszcz wszystkie Hive
         Mission mission1 = new Mission("First Encounter");
-//        mission1.soldierPositions.add(new Point(200, 300));
+        mission1.soldierPositions.add(new Point(700, 300));
+        mission1.soldierPositions.add(new Point(800, 350));
 
         mission1.crystalPositions.add(new Point(880, 900));
 

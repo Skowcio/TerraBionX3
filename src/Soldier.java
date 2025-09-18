@@ -13,18 +13,25 @@ import java.io.IOException;   // Do obsługi wyjątków podczas ładowania obraz
 public class Soldier {
     private int x, y;
     private boolean selected;
-    private int width = 42, height = 34;
-
+    private int width = 50, height = 50;
+    private int health = 5;
+    private boolean dead = false;
     private Point target;
     private final int range = 180;
-    private final int shootCooldown = 500; // Czas odnowienia strzału (ms)
-    private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
-    private long lastShotTime = 0; // Czas ostatniego strzału
-    private Direction direction; // Kierunek ruchu
-    private String currentDirection = "down"; // Domyślny kierunek
+    private final int shootCooldown = 850;
+    private Object currentTarget;
+    private long lastShotTime = 0;
 
-    // Obrazy dla każdego kierunku
-    private Image imgUp, imgDown, imgLeft, imgRight, imgUpLeft, imgUpRight, imgDownLeft, imgDownRight;
+    private double hoverOffset = 0;           // Przesunięcie do rysowania w pionie
+    private double hoverTime = 0;             // Czas do animacji unoszenia
+    private final double hoverSpeed = 0.003;  // Im mniejsze, tym wolniejsze falowanie
+    private final int hoverAmplitude = 4;
+
+    // --- kierunki ---
+    private Image[] directionSprites = new Image[16]; // 16 sprite’ów co 22,5°
+    private int currentDirectionIndex = 0; // 0–15
+
+
 
 
     public Soldier(int x, int y) {
@@ -32,21 +39,13 @@ public class Soldier {
         this.y = y;
         this.selected = false;
         this.target = null;
-        this.direction = Direction.RIGHT; // Domyślny kierunek
 
-        // Ładowanie grafik
+        // Ładowanie grafik – nazwy plików: APC0.png ... APC15.png
         try {
-            imgUp = ImageIO.read(getClass().getResource("APC/APC3.png"));
-            imgDown = ImageIO.read(getClass().getResource("APC/APC2.png"));
-            imgLeft = ImageIO.read(getClass().getResource("APC/APC4.png"));
-            imgRight = ImageIO.read(getClass().getResource("APC/APC1.png"));
-// tu sa te ukosne
-            imgUpLeft = ImageIO.read(getClass().getResource("/APC/APCupleft.png"));
-            imgUpRight = ImageIO.read(getClass().getResource("/APC/APCupright.png"));
-            imgDownLeft = ImageIO.read(getClass().getResource("/APC/APCdownleft.png"));
-            imgDownRight = ImageIO.read(getClass().getResource("/APC/APCdownright.png"));
-        }
-        catch (IOException e) {
+            for (int i = 0; i < 16; i++) {
+                directionSprites[i] = ImageIO.read(getClass().getResource("/jet/jet" + i + ".png"));
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -55,9 +54,10 @@ public class Soldier {
         return new Rectangle(x, y,width, height); // width i height to wymiary żołnierza
     }
 
-    public String getCurrentDirection() {
-        return currentDirection;
+    public int getCurrentDirection() {
+        return currentDirectionIndex;
     }
+
 
     public int getX() {
         return x;
@@ -65,6 +65,30 @@ public class Soldier {
 
     public int getY() {
         return y;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public boolean takeDamage() {
+        health--;
+        if (health <= 0) {
+            markAsDead();
+            return true;
+        }
+        return false;
+    }
+    public boolean isDead() {
+        return dead;
+    }
+
+    public void markAsDead() {
+        this.dead = true;
     }
 
     // Getter pozycji jako obiekt Point
@@ -94,84 +118,50 @@ public class Soldier {
 //        this.x = x;
 //        this.y = y;
 //    }
-    public void setCurrentDirection(String direction) {
-        this.currentDirection = direction;
-    }// to jest kierunek Soldiera po lodagame - z tego co czaje?
+    public void setCurrentDirection(int directionIndex) {
+        // normalizacja do 0..15
+        directionIndex = ((directionIndex % 16) + 16) % 16;
+        this.currentDirectionIndex = directionIndex;
+    }
 
-    public void setPosition(int x, int y, ArrayList<PowerPlant> powerPlants, ArrayList<Baracks> baracks, ArrayList<Soldier> soldiers, ArrayList<Hive> hives, ArrayList<BattleVehicle> battleVehicles) {
-        for (PowerPlant powerPlant : powerPlants) {
-            // Jeśli docelowa pozycja koliduje z elektrownią, nie wykonuj ruchu
-            if (isCollidingWithPowerPlant(powerPlant, x, y)) {
-                return; // Nie wykonuj ruchu
-            }
-        }
-        for (Soldier soldier : soldiers){
-            if (isCollidingWithSoldier(soldier, x, y)){
-                return;
-            }
-        }
-        for (Baracks barack : baracks){
-            if (isCollidingWithBarack(barack, x, y)){
-                return;
-            }
-        }
-        for (Hive hive : hives) {
-            if(isCollidingWithHive(hive, x, y)){
-                return;
-            }
-        }
-        for (BattleVehicle battleVehicle : battleVehicles) {
-            if (isCollidingWithBattleV(battleVehicle, x, y)){
-                return;
-            }
-        }
-        if (x > this.x) {
-            direction = Direction.RIGHT;
-        }
-        else if (x < this.x) {
-            direction = Direction.LEFT;
-        } else if (y > this.y) {
-            direction = Direction.DOWN;
-        } else if (y < this.y) {
-            direction = Direction.UP;
-        }
+    // to jest kierunek Soldiera po lodagame - z tego co czaje?
+
+    public void setPosition(int x, int y,
+                            ArrayList<PowerPlant> powerPlants,
+                            ArrayList<Baracks> baracks,
+                            ArrayList<Soldier> soldiers,
+                            ArrayList<Hive> hives,
+                            ArrayList<BattleVehicle> battleVehicles) {
+        // Kolizje (zostawiłem tak jak było)
+//        for (PowerPlant p : powerPlants) if (isCollidingWithPowerPlant(p, x, y)) return;
+        for (Soldier s : soldiers) if (isCollidingWithSoldier(s, x, y)) return;
+//        for (Baracks b : baracks) if (isCollidingWithBarack(b, x, y)) return;
+        for (Hive h : hives) if (isCollidingWithHive(h, x, y)) return;
+//        for (BattleVehicle bv : battleVehicles) if (isCollidingWithBattleV(bv, x, y)) return;
 
         this.x = x;
         this.y = y;
     }
 
     public void updateDirection(Point delta) {
-        int dx = delta.x;
-        int dy = delta.y;
+        double angle = Math.atan2(delta.y, delta.x); // -π..π
+        angle = Math.toDegrees(angle); // na stopnie
+        if (angle < 0) angle += 360;   // 0–360
+        currentDirectionIndex = (int)Math.round(angle / 22.5) % 16;
+    }
 
-        if (dx > 0 && dy > 0) {
-            currentDirection = "downRight";
-        } else if (dx > 0 && dy < 0) {
-            currentDirection = "upRight";
-        } else if (dx < 0 && dy > 0) {
-            currentDirection = "downLeft";
-        } else if (dx < 0 && dy < 0) {
-            currentDirection = "upLeft";
-        } else if (dx > 0) {
-            currentDirection = "right";
-        } else if (dx < 0) {
-            currentDirection = "left";
-        } else if (dy > 0) {
-            currentDirection = "down";
-        } else if (dy < 0) {
-            currentDirection = "up";
-        }
+    public void updateFly(long deltaTime) {
+        // 🔁 Aktualizacja efektu "unoszenia się"
+        hoverTime += deltaTime;
+        hoverOffset = Math.sin(hoverTime * hoverSpeed) * hoverAmplitude;
+
     }
 
 
 
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
+    public void setSelected(boolean selected) { this.selected = selected; }
 
-    public boolean isSelected() {
-        return selected;
-    }
+    public boolean isSelected() { return selected; }
     private boolean isCollidingWithPowerPlant(PowerPlant powerPlant, int targetX, int targetY) {
         // Tworzymy prostokąt reprezentujący nową pozycję żołnierza
         Rectangle targetBounds = new Rectangle(targetX, targetY, width, height);
@@ -183,11 +173,25 @@ public class Soldier {
         return targetBounds.intersects(powerPlantBounds);
     }
     private boolean isCollidingWithSoldier(Soldier soldier, int targetX, int targetY) {
-        if (this == soldier) { //
-            return false; // Ignoruj kolizję z samym sobą
-        }
-        Rectangle targetBounds = new Rectangle(targetX, targetY, width, height);
-        Rectangle soldierBounds = soldier.getBounds();
+        if (this == soldier) return false; // ignoruj kolizję z samym sobą
+
+        int allowedOverlap = 10; // maksymalna liczba pikseli, na którą mogą nachodzić
+
+        // Tworzymy prostokąty kolizji, zmniejszając je o allowedOverlap
+        Rectangle targetBounds = new Rectangle(
+                targetX + allowedOverlap,
+                targetY + allowedOverlap,
+                width - 2 * allowedOverlap,
+                height - 2 * allowedOverlap
+        );
+
+        Rectangle soldierBounds = new Rectangle(
+                soldier.getX() + allowedOverlap,
+                soldier.getY() + allowedOverlap,
+                soldier.getWidth() - 2 * allowedOverlap,
+                soldier.getHeight() - 2 * allowedOverlap
+        );
+
         return targetBounds.intersects(soldierBounds);
     }
     private  boolean isCollidingWithHive(Hive hive, int targetX, int targetY){
@@ -195,17 +199,17 @@ public class Soldier {
         Rectangle hiveBounds = hive.getBounds();
         return targetBounds.intersects(hiveBounds);
     }
-    private boolean isCollidingWithBarack(Baracks barack, int targetX, int targetY) {
-
-        Rectangle targetBounds = new Rectangle(targetX, targetY, width, height);
-        Rectangle barackBounds = barack.getBounds();
-        return targetBounds.intersects(barackBounds);
-    }
-    private boolean isCollidingWithBattleV(BattleVehicle battleVehicle, int targetX, int targetY){
-        Rectangle targetBounds = new Rectangle(targetX, targetY, width, height);
-        Rectangle battleBounds = battleVehicle.getBounds();
-        return targetBounds.intersects(battleBounds);
-    }
+//    private boolean isCollidingWithBarack(Baracks barack, int targetX, int targetY) {
+//
+//        Rectangle targetBounds = new Rectangle(targetX, targetY, width, height);
+//        Rectangle barackBounds = barack.getBounds();
+//        return targetBounds.intersects(barackBounds);
+//    }
+//    private boolean isCollidingWithBattleV(BattleVehicle battleVehicle, int targetX, int targetY){
+//        Rectangle targetBounds = new Rectangle(targetX, targetY, width, height);
+//        Rectangle battleBounds = battleVehicle.getBounds();
+//        return targetBounds.intersects(battleBounds);
+//    }
 
 
 
@@ -339,28 +343,36 @@ public class Soldier {
 
 
     public void draw(Graphics g) {
-        Image imgToDraw = switch (currentDirection) {
-            case "up" -> imgUp;
-            case "down" -> imgDown;
-            case "left" -> imgLeft;
-            case "right" -> imgRight;
-            case "upLeft" -> imgUpLeft;
-            case "upRight" -> imgUpRight;
-            case "downLeft" -> imgDownLeft;
-            case "downRight" -> imgDownRight;
-            default -> imgDown; // Domyślny obraz
-        };
+        Graphics2D g2d = (Graphics2D) g;
 
-        g.drawImage(imgToDraw, x, y, width, height, null);
+        // ✨ przesunięcie w osi Y o hoverOffset
+        int drawX = x;
+        int drawY = (int)(y + hoverOffset);
 
-        if (selected) {
-            g.setColor(Color.WHITE);
-            g.drawRect(x - 2, y - 2, 44, 36);
+        // Rysowanie sprite'a
+        Image imgToDraw = directionSprites[currentDirectionIndex];
+        if (imgToDraw != null) {
+            g2d.drawImage(imgToDraw, drawX, drawY, width, height, null);
+        } else {
+            // fallback — obrazek niezaładowany
+            g2d.setColor(Color.MAGENTA);
+            g2d.fillRect(drawX, drawY, width, height);
         }
-    }
 
-    // Enum dla kierunków
-    private enum Direction {
-        UP, DOWN, LEFT, RIGHT
+        // Obrys przy zaznaczeniu
+        if (selected) {
+            g2d.setColor(Color.WHITE);
+            g2d.drawRect(drawX - 2, drawY - 2, width + 4, height + 4);
+        }
+
+        // Pasek życia (nad sprite'em, unoszony razem z nim)
+        g2d.setColor(Color.GREEN);
+        int maxHealth = 5;
+        int healthBarWidth = 50;
+        int currentHealthWidth = (int)((health / (double)maxHealth) * healthBarWidth);
+        g2d.fillRect(drawX, drawY - 5, currentHealthWidth, 3);
     }
 }
+
+
+

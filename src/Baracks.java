@@ -17,6 +17,8 @@ public class Baracks {
     private long builderStartTime;
     private final int builderProductionTime = 10000; // 10s
 
+    // soldier
+
     // do produkcji i strzalu
 
 
@@ -91,7 +93,7 @@ public class Baracks {
 
     /// ////////////////////////////
     /// /////////////////////
-    /// //////// do produkcji buldieraow dronow
+    /// //////// do produkcji buldieraow
     public double getBuilderProgress() {
         if (producingBuilder) {
             long now = System.currentTimeMillis();

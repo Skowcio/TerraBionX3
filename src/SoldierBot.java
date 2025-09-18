@@ -14,7 +14,7 @@ public class SoldierBot {
     private final int hoverAmplitude = 4;
     private final int range = 220; // Zasięg strzelania w pikselach
     private final int width = 50, height = 50;
-    private int health = 3;
+    private int health = 5;
     private int speed = 5;
     private final int shootCooldown = 900; // Czas odnowienia strzału (ms)
     private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
@@ -31,9 +31,6 @@ public class SoldierBot {
 
     private boolean dead = false;
 
-
-    private Image imgUp, imgDown, imgLeft, imgRight;
-    private Image imgUpLeft, imgUpRight, imgDownLeft, imgDownRight;
 
     private Image dir0, dir1, dir2, dir3, dir4, dir5, dir6, dir7;
     private Image dir8, dir9, dir10, dir11, dir12, dir13, dir14, dir15;
@@ -552,7 +549,7 @@ public class SoldierBot {
 
         // Pasek życia
         g.setColor(Color.GREEN);
-        int maxHealth = 3;
+        int maxHealth = 5;
         int healthBarWidth = 50;
         int currentHealthWidth = (int)((health / (double)maxHealth) * healthBarWidth);
         g.fillRect(x, (int)(y + hoverOffset) - 5, currentHealthWidth, 3);
