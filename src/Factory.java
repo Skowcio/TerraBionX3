@@ -347,7 +347,7 @@ public class Factory {
 
             // licznik czasu
             g.setColor(Color.CYAN);
-            g.drawString("Produkcja Buildera: " + getRemainingSoldierTime() + "s", x, y + height + 45);
+            g.drawString("AX-20M : " + getRemainingSoldierTime() + "s", x, y + height + 45);
         }
 
         // Liczba botów i limit

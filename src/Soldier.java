@@ -43,7 +43,7 @@ public class Soldier {
         // Ładowanie grafik – nazwy plików: APC0.png ... APC15.png
         try {
             for (int i = 0; i < 16; i++) {
-                directionSprites[i] = ImageIO.read(getClass().getResource("/jet/jet" + i + ".png"));
+                directionSprites[i] = ImageIO.read(getClass().getResource("/jetBlue/jet" + i + ".png"));
             }
         } catch (IOException e) {
             e.printStackTrace();
