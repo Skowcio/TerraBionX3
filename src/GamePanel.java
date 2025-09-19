@@ -28,6 +28,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JFrame frame; // Referencja do głównego okna
     private ArrayList<Explosion> explosions; // Lista eksplozji
     private ArrayList<Soldier> soldiers;
+
     private ArrayList<SoldierBot> soldierBots;
     private ArrayList<Cryopit> cryopits;
     private ArrayList<Minigunner> minigunners;
@@ -44,11 +45,15 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     private ArrayList<Harvester> harvesters;
     private ArrayList<Enemy> enemies;
+    private ArrayList<EnemyBehemoth> enemyBehemoths;
     private ArrayList<EnemyShooter> enemyShooters;
     private ArrayList<BuilderVehicle> builderVehicles;
+
     private ArrayList<EnemyToo> enemiesToo; // Nowa lista dla EnemyToo
 //    private ArrayList<Marsh> marshes;
     private ArrayList<EnemyHunter> enemyHunters;
+
+
     private ArrayList<Bullet> bullets; // Lista pocisków
     private ArrayList<MinigunnerBullet> minigunnerBullets;
     private ArrayList<ArtBullet> artBullets;
@@ -93,7 +98,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     }
     public ArrayList<Soldier> getSoldier(){ return soldiers;
     }
-
+/// /// to do radaru miniMapPanel
     public List<SoldierBot> getSoldierBots() {
         return soldierBots;
     }
@@ -103,6 +108,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public List<Enemy> getEnemies() {
         return enemies;
     }
+
     public List<EnemyShooter> getenemyShooters() {
         return enemyShooters;
     }
@@ -312,12 +318,15 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Point p : mission.enemyPositions) {
             enemies.add(new Enemy(p.x, p.y));
         }
+        for (Point p : mission.enemyBehemothPositions) {
+            enemyBehemoths.add(new EnemyBehemoth(p.x, p.y));
+        }
 
         for (Point p : mission.resourcesPositions) {
             resources.add(new ResourcesSteel(p.x, p.y));
         }
 
-        // ✅ Hive bez nakładania się
+        // ✅ Hive bez nakładania się, by nie pojawily sie w jednym miejscu
         int hiveSize = 80; // Rozmiar Hive (dostosuj jeśli masz inną grafikę)
         ArrayList<Rectangle> hiveRects = new ArrayList<>();
         Random rand = new Random();
@@ -584,6 +593,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.artylerys = new ArrayList<>();
         this.builderVehicles = new ArrayList<>();
         this.enemies = new ArrayList<>();
+        this.enemyBehemoths = new ArrayList<>();
         this.enemyShooters = new ArrayList<>();
         this.harvesters = new ArrayList<>();
         this.enemiesToo = new ArrayList<>();
@@ -1653,6 +1663,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 if (dx == 0 && dy == 0) {
                     soldier.setTarget(null);
                 }
+                soldier.resolveHardOverlap(soldiers);
             }
         }
         repaint();
@@ -2076,7 +2087,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots);
         }
         for (EnemyHunter enemyHunter : new ArrayList<>(enemyHunters)){
-            enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, enemyHunters);
+            enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters);
+        }
+        for (EnemyBehemoth enemyBehemoth : new ArrayList<>(enemyBehemoths)){
+            enemyBehemoth.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters);
         }
         for (Enemy enemy : enemies) {
             enemy.move();
@@ -2713,6 +2727,15 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Baracks b : baracks) {
             b.draw(g);
 
+        }
+
+        for (EnemyHunter enemyHunter : enemyHunters){
+            enemyHunter.draw(g);
+
+        }
+        for (EnemyBehemoth enemyBehemoth : enemyBehemoths){
+            enemyBehemoth.draw(g);
+            enemyBehemoth.shoot(g, projectiles, soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
         }
 
         for (Artylery artylery : artylerys){

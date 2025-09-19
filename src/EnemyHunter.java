@@ -1,12 +1,16 @@
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class EnemyHunter {
 
     private int x, y;
     private int width = 10, height = 10;
-    private int speed = 4; // prędkość poruszania
-    private int health = 2;
+    private int speed = 3; // prędkość poruszania
+    private int health = 1;
+    private boolean dead = false;
+
+
 
 
 
@@ -47,11 +51,17 @@ public class EnemyHunter {
         health--;
         return health <= 0; // Zwraca true, jeśli Enemy zostało zniszczone
     }
+    public boolean isDead() {
+        return dead;
+    }
 
+    public void markAsDead() {
+        this.dead = true;
+    }
 
-    public void update(List<Soldier> soldiers, List<Harvester> harvesters, List<BuilderVehicle> builderVehicles, List<Artylery> artylerys, List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants, List<Factory> factorys,  List<EnemyHunter> enemies) {
-
-
+/// ////////////////////////////////////////
+    /// ///////// to za czym biega w updatecie w porusznaiu
+    public void update(List<Soldier> soldiers, List<Harvester> harvesters, List<BuilderVehicle> builderVehicles, List<Artylery> artylerys, List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants, List<Factory> factorys, List<SoldierBot> soldierBots,  List<EnemyHunter> enemies) {
 
         moveTowardsSoldier(soldiers);
 
@@ -59,11 +69,13 @@ public class EnemyHunter {
         moveTowardsArtylery(artylerys);
         moveTowardsPowerPlant(powerPlants);
 
+
         moveTowardsHarvester(harvesters);
 
         moveTowardsBuilderVehicle(builderVehicles);
 
         moveTowardsFactory(factorys);
+        moveTowardsSoldierBot(soldierBots);
         attackClosestSoldier(soldiers, enemies);
 
 
@@ -136,6 +148,19 @@ public class EnemyHunter {
         }
         return closest;
     }
+    private SoldierBot getClosestSoldierBot(java.util.List<SoldierBot> soldierBots) {
+        SoldierBot closest = null;
+        double minDistance = Double.MAX_VALUE;
+
+        for (SoldierBot soldierBot : soldierBots) {
+            double distance = soldierBot.getPosition().distance(x, y);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closest = soldierBot;
+            }
+        }
+        return closest;
+    }
 
     private Factory getClosestFactory(java.util.List<Factory> factorys) {
         Factory closest = null;
@@ -157,7 +182,7 @@ public class EnemyHunter {
 
         for (Harvester harvester : harvesters) {
             double distance = harvester.getPosition().distance(x, y);
-            if (distance < minDistance){
+            if (distance < minDistance) {
                 minDistance = distance;
                 closest = harvester;
             }
@@ -171,7 +196,7 @@ public class EnemyHunter {
 
         for (PowerPlant powerPlant : powerPlants) {
             double distance = powerPlant.getPosition().distance(x, y);
-            if (distance < minDistance){
+            if (distance < minDistance) {
                 minDistance = distance;
                 closest = powerPlant;
             }
@@ -232,6 +257,21 @@ public class EnemyHunter {
         if (closestBattleVehicle != null) {
             int dx = closestBattleVehicle.getX() - x;
             int dy = closestBattleVehicle.getY() - y;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > 0) {
+                x += (int) (speed * dx / distance);
+                y += (int) (speed * dy / distance);
+            }
+        }
+
+    }
+    public void moveTowardsSoldierBot(List<SoldierBot> soldierBots) {
+        SoldierBot closestSoldierBot = getClosestSoldierBot(soldierBots);
+
+        if (closestSoldierBot != null) {
+            int dx = closestSoldierBot.getX() - x;
+            int dy = closestSoldierBot.getY() - y;
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 0) {

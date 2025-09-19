@@ -7,6 +7,7 @@ public class Mission {
     public ArrayList<Point> soldierPositions = new ArrayList<>();
     public ArrayList<Point> builderPositions = new ArrayList<>();
     public ArrayList<Point> enemyPositions = new ArrayList<>();
+    public ArrayList<Point> enemyBehemothPositions = new ArrayList<>();
     public ArrayList<Point> resourcesPositions = new ArrayList<>();
     public ArrayList<Point> powerPlantPositions = new ArrayList<>();
     public ArrayList<Point> crystalPositions = new ArrayList<>();

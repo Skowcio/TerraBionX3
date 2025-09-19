@@ -10,7 +10,7 @@ public class EnemyShooter {
     private int health = 3;
     private int speed = 3;
     private final int shootCooldown = 1100; // Czas odnowienia strzału (ms)
-    private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
+    private Object currentTarget; // Aktualny cel
     private long lastShotTime = 0; // Czas ostatniego strzału
     private boolean dead = false;
     private Random random = new Random();

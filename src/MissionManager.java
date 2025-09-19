@@ -54,7 +54,7 @@ public class MissionManager {
         mission1.resourcesPositions.add(new Point(850, 600));
 
 
-
+mission1.enemyBehemothPositions.add(new Point(1100, 1300));
         mission1.enemyPositions.add(new Point(1000, 1200));
 
         mission1.randomHiveCount = 5;
