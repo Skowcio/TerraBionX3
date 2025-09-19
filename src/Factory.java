@@ -323,7 +323,7 @@ public class Factory {
         }
         if (producingSoldier) {
             g.setColor(Color.CYAN);
-            g.drawString("Produkcja Buildera: " + getRemainingSoldierTime() + "s", x, y + height + 45);
+            g.drawString("AX-20M PRODUCTION: " + getRemainingSoldierTime() + "s", x, y + height + 45);
         }
         /// //pasek postepu budowy
         if (producingSoldier) {
@@ -345,9 +345,9 @@ public class Factory {
             g.setColor(Color.WHITE);
             g.drawRect(barX, barY, barWidth, barHeight);
 
-            // licznik czasu
-            g.setColor(Color.CYAN);
-            g.drawString("AX-20M : " + getRemainingSoldierTime() + "s", x, y + height + 45);
+//            // licznik czasu
+//            g.setColor(Color.CYAN);
+//            g.drawString(" : " + getRemainingSoldierTime() + "s", x, y + height + 55);
         }
 
         // Liczba botów i limit

@@ -17,7 +17,7 @@ public class Soldier {
     private int health = 5;
     private boolean dead = false;
     private Point target;
-    private final int range = 180;
+    private final int range = 220;
     private final int shootCooldown = 850;
     private Object currentTarget;
     private long lastShotTime = 0;

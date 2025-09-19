@@ -27,6 +27,7 @@ public class HUDPanel extends JPanel {
         g2d.drawString("Factories: " + Factory.getTotalFactories() + " / " + Factory.getMaxFactories(), 650, 30);
         g2d.drawString("Towers: " + Artylery.getTotalArtys() + " / " + Artylery.getMaxArtylerys(), 850, 30);
         g2d.drawString("Drones: " + gamePanel.getBuilderVehicles().size() + " / 5", 1050, 30);
+        g2d.drawString("AX-2M Fighter: " + gamePanel.getSoldier().size() + " / 8", 1250,30);
         /// //////////////////////////////////////ta forma jest szybsza gamePanel.getBuilderVehicles w praktyce.... na maszynach z lat 90 byla by roznica///////
 
         // do obslugi wyswietlania paska Drony budownicze

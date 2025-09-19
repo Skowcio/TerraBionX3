@@ -91,6 +91,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public ArrayList<BuilderVehicle> getBuilderVehicles() {
         return builderVehicles;
     }
+    public ArrayList<Soldier> getSoldier(){ return soldiers;
+    }
+
     public List<SoldierBot> getSoldierBots() {
         return soldierBots;
     }
@@ -816,6 +819,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnArtylery.addActionListener(e -> {
             if (selectedFactories != null) {
                 if (collectedSteel >= 2000) {
+
+                    /// //maksymalna liczba w grze fighterow kontrolowanych przez gracza
+                    if (soldiers.size() >= 8) {
+                        System.out.println("Limit FENIX Drone osiągnięty (max 5).");
+                        return; // Nie buduj więcej
+                    }
                     // Oblicz pozycję jednostki obok Factory
                     int soldierX = selectedFactories.getX() + 120;
                     int soldierY = selectedFactories.getY();
