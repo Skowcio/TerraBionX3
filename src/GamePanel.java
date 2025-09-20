@@ -2090,7 +2090,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters);
         }
         for (EnemyBehemoth enemyBehemoth : new ArrayList<>(enemyBehemoths)){
-            enemyBehemoth.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters);
+            enemyBehemoth.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters, explosions);
         }
         for (Enemy enemy : enemies) {
             enemy.move();

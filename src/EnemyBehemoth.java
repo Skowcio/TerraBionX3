@@ -7,7 +7,7 @@ public class EnemyBehemoth {
 
     private int x, y;
     private int width = 30, height = 30;
-    private int speed = 2; // prędkość poruszania
+    private int speed = 3; // prędkość poruszania
     private int health = 70;
     private final int shootCooldown = 1100; // Czas odnowienia strzału (ms)
     private final int range = 190; // Zasięg strzelania w pikselach
@@ -313,7 +313,8 @@ public class EnemyBehemoth {
                        List<PowerPlant> powerPlants,
                        List<Factory> factorys,
                        List<SoldierBot> soldierBots,
-                       List<EnemyHunter> enemies) {
+                       List<EnemyHunter> enemies,
+                        List<Explosion> explosions){
 
         // jeśli ktoś jest w aggroRange → atakuj
         Soldier closestSoldier = getClosestSoldier(soldiers);
@@ -330,24 +331,48 @@ public class EnemyBehemoth {
             moveTowardsBuilderVehicle(builderVehicles);
             moveTowardsFactory(factorys);
             moveTowardsSoldierBot(soldierBots);
-            attackClosestSoldier(soldiers, enemies);
+            attackClosestSoldier(soldiers, soldierBots, builderVehicles, explosions);
         } else {
-            // 👣 jeśli nikt nie jest w zasięgu → patrol
+            // jeśli nikt nie jest w zasięgu → patrol
             movePatrol();
         }
     }
-    private void attackClosestSoldier(List<Soldier> soldiers, List<EnemyHunter> enemies) {
+
+    /// ///////////////tu jest to co atakuje jak dotknienb
+    private void attackClosestSoldier(List<Soldier> soldiers, List<SoldierBot> soldierBots,List<BuilderVehicle> builderVehicles, List<Explosion> explosions ) {
         Soldier closestSoldier = getClosestSoldier(soldiers);
+        SoldierBot closestSoldierBot = getClosestSoldierBot(soldierBots);
+        BuilderVehicle closestBuilder = getClosestBuldierVehicle(builderVehicles);
 
         if (closestSoldier != null && getBounds().intersects(closestSoldier.getBounds())) {
-            // Usunięcie żołnierza z listy
-            soldiers.remove(closestSoldier);
-            System.out.println("EnemyHunter zaatakował Soldier i usunął go z gry!");
+            boolean dead = closestSoldier.takeDamage(); // zadaj 1 dmg (albo więcej)
 
-            // Usunięcie EnemyHunter z listy
-            enemies.remove(this);
-            System.out.println("EnemyHunter zginął podczas ataku!");
+            if (dead) {
+                soldiers.remove(closestSoldier);
+                explosions.add(new Explosion(closestSoldier.getX(), closestSoldier.getY()));
+
+            }
         }
+        if (closestSoldierBot != null && getBounds().intersects(closestSoldierBot.getBounds())) {
+            boolean dead = closestSoldierBot.takeDamage(); // zadaj 1 dmg (albo więcej)
+
+            if (dead) {
+                soldierBots.remove(closestSoldierBot);
+                explosions.add(new Explosion(closestSoldierBot.getX(), closestSoldierBot.getY()));
+
+            }
+        }
+        // Atak na BuilderVehicle
+        if (closestBuilder != null && getBounds().intersects(closestBuilder.getBounds())) {
+            boolean dead = closestBuilder.takeDamage();
+
+            if (dead) {
+                builderVehicles.remove(closestBuilder);
+                explosions.add(new Explosion(closestBuilder.getX(), closestBuilder.getY()));
+
+            }
+        }
+
     }
 
     private BuilderVehicle getClosestBuldierVehicle(java.util.List<BuilderVehicle> builderVehicles) {
