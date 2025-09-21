@@ -5,6 +5,7 @@ public class Mission {
     public String name;
 
     public ArrayList<Point> soldierPositions = new ArrayList<>();
+    public ArrayList<Point> valkiriaPositions = new ArrayList<>();
     public ArrayList<Point> builderPositions = new ArrayList<>();
     public ArrayList<Point> enemyPositions = new ArrayList<>();
     public ArrayList<Point> enemyBehemothPositions = new ArrayList<>();

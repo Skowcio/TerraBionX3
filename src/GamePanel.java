@@ -30,6 +30,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Soldier> soldiers;
 
     private ArrayList<SoldierBot> soldierBots;
+    private ArrayList<Valkiria> valkirias;
     private ArrayList<Cryopit> cryopits;
     private ArrayList<Minigunner> minigunners;
     private ArrayList<BattleVehicle> battleVehicles;
@@ -73,6 +74,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private BattleVehicle selectedBattleVehicle;
     private Artylery selectedArtylery;
     private Harvester selectedHarvester;
+    private Valkiria selectedValkiria;
     private BuilderVehicle selectedBuilderVehicle;
     private Baracks selectedBaracks;
     private SteelMine selectedSteelMines;
@@ -267,6 +269,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (Point p : mission.soldierPositions) {
             soldiers.add(new Soldier(p.x, p.y));
         }
+        for (Point p : mission.valkiriaPositions) {
+            valkirias.add(new Valkiria(p.x, p.y));
+        }
 
         for (Point p : mission.builderPositions) {
             builderVehicles.add(new BuilderVehicle(p.x, p.y));
@@ -434,6 +439,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         selectedBattleVehicle = null;
         selectedArtylery = null;
         selectedHarvester = null;
+        selectedValkiria = null;
         selectedBuilderVehicle = null;
         selectedBaracks = null;
 
@@ -588,6 +594,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.steelMines = new ArrayList<>();
         this.soldiers = new ArrayList<>();
         this.soldierBots = new ArrayList<>();
+        this.valkirias = new ArrayList<>();
         this.minigunners = new ArrayList<>();
         this.battleVehicles = new ArrayList<>();
         this.artylerys = new ArrayList<>();
@@ -611,6 +618,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.selectedBattleVehicle = null;
         this.selectedArtylery = null;
         this.selectedHarvester = null;
+        this.selectedValkiria = null;
         this.selectedBuilderVehicle = null;
         this.selectedBaracks = null;
         this.selectedSteelMines = null;
@@ -1279,6 +1287,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         // Timer do płynnego ruchu/////////////////////////////////////////////////////////////////////////////////////////////////
         Timer movementTimer = new Timer(40, e -> {
             moveSoldiers();
+            moveValkirias();
             moveMinigunner();
             moveBattleVehicle();
             moveHarvesters();
@@ -1664,6 +1673,36 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     soldier.setTarget(null);
                 }
                 soldier.resolveHardOverlap(soldiers);
+            }
+        }
+        repaint();
+    }
+
+    private void moveValkirias() {
+        for (Valkiria valkiria : valkirias) {
+            Point target = valkiria.getTarget();
+            if (target != null) {
+                // Oblicz przesunięcie względem celu
+                int dx = target.x - valkiria.getX();
+                int dy = target.y - valkiria.getY();
+                int speed = 3;
+
+                // Ogranicz przesunięcie do maksymalnej prędkości
+                if (Math.abs(dx) > speed) dx = dx > 0 ? speed : -speed;
+                if (Math.abs(dy) > speed) dy = dy > 0 ? speed : -speed;
+
+                // Aktualizacja kierunku na podstawie przesunięcia
+                valkiria.updateDirection(new Point(dx, dy));
+
+
+                // Przesuń żołnierza o obliczone wartości
+                valkiria.setPosition(valkiria.getX() + dx, valkiria.getY() + dy, powerPlants, baracks, valkirias, hives, battleVehicles);
+
+                // Jeśli żołnierz osiągnął punkt docelowy, usuń cel
+                if (dx == 0 && dy == 0) {
+                    valkiria.setTarget(null);
+                }
+                valkiria.resolveHardOverlap(valkirias);
             }
         }
         repaint();
@@ -2420,6 +2459,20 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     harvester.setSelected(false);
                 }
             }
+            for (Valkiria valkiria : valkirias) {
+                valkiria.setSelected(false);
+
+                if (new Rectangle(valkiria.getX(), valkiria.getY(), 30, 30).contains(e.getPoint())) {
+                    selectedValkiria = valkiria;
+                    valkiria.setSelected(true);
+
+                    return;
+
+                } else {
+                    valkiria.setSelected(false);
+                }
+            }
+
             for (BuilderVehicle builderVehicle : builderVehicles){
                 builderVehicle.setSelected(false);
 
@@ -2537,7 +2590,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         if (selectedHarvester != null && SwingUtilities.isLeftMouseButton(e)){
             selectedHarvester.setTarget(e.getPoint());
             selectedHarvester.setSelected(true);
-
+        }
+        if (selectedValkiria != null && SwingUtilities.isLeftMouseButton(e)){
+            selectedValkiria.setTarget(e.getPoint());
+            selectedValkiria.setSelected(true);
         }
         if (selectedBattleVehicle != null && SwingUtilities.isLeftMouseButton(e)){
             selectedBattleVehicle.setTarget(e.getPoint());
@@ -2812,6 +2868,27 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     viewRect.height
             );
         }
+        for (Valkiria valkiria : valkirias){
+            valkiria.draw(g);
+            Rectangle viewRect = getVisibleRect();
+            valkiria.updateFly(deltaTime);
+
+
+            valkiria.shoot(
+                    g,
+                    bullets,
+                    enemies,
+                    enemiesToo,
+                    hives,
+                    enemyShooters,
+                    enemyHunters,
+                    viewRect.x,
+                    viewRect.y,
+                    viewRect.width,
+                    viewRect.height
+            );
+        }
+
         for (SoldierBot soldierBot : soldierBots){
             soldierBot.draw(g);
             Rectangle viewRect = getVisibleRect();

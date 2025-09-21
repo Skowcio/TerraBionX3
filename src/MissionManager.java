@@ -16,6 +16,8 @@ public class MissionManager {
         mission1.soldierPositions.add(new Point(700, 300));
         mission1.soldierPositions.add(new Point(800, 350));
 
+        mission1.valkiriaPositions.add(new Point(850, 400));
+
         mission1.crystalPositions.add(new Point(880, 900));
 
         mission1.floraPositions.add(new Point(400, 20));
