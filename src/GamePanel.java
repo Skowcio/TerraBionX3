@@ -2791,6 +2791,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         for (EnemyBehemoth enemyBehemoth : enemyBehemoths){
             enemyBehemoth.draw(g);
+            enemyBehemoth.updateFly(deltaTime);
             enemyBehemoth.shoot(g, projectiles, soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
         }
 

@@ -1,4 +1,6 @@
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.List;
@@ -6,7 +8,13 @@ import java.util.List;
 public class EnemyBehemoth {
 
     private int x, y;
-    private int width = 30, height = 30;
+
+    private double hoverOffset = 0;           // Przesunięcie do rysowania w pionie
+    private double hoverTime = 0;             // Czas do animacji unoszenia
+    private final double hoverSpeed = 0.003;  // Im mniejsze, tym wolniejsze falowanie
+    private final int hoverAmplitude = 4;
+
+    private int width = 100, height = 100;
     private int speed = 3; // prędkość poruszania
     private int health = 70;
     private final int shootCooldown = 1100; // Czas odnowienia strzału (ms)
@@ -24,6 +32,10 @@ public class EnemyBehemoth {
     private final Random random = new Random();
 
 
+    private Image dir0, dir1, dir2, dir3, dir4, dir5, dir6, dir7;
+    private Image dir8, dir9, dir10, dir11, dir12, dir13, dir14, dir15;
+
+    private int currentDirection = 0; // 0 - 15
 
 
     public EnemyBehemoth (int x, int y) {
@@ -32,7 +44,62 @@ public class EnemyBehemoth {
         this.spawnX = x;
         this.spawnY = y;
         pickNewPatrolTarget(); // ustaw początkowy cel patrolu
+
+        try {
+            dir0 = ImageIO.read(getClass().getResource("/Behemoth/behemoth00.png"));
+            dir1 = ImageIO.read(getClass().getResource("/Behemoth/behemoth15.png"));
+            dir2 = ImageIO.read(getClass().getResource("/Behemoth/behemoth14.png"));
+            dir3 = ImageIO.read(getClass().getResource("/Behemoth/behemoth13.png"));
+            dir4 = ImageIO.read(getClass().getResource("/Behemoth/behemoth12.png"));
+            dir5 = ImageIO.read(getClass().getResource("/Behemoth/behemoth11.png"));
+            dir6 = ImageIO.read(getClass().getResource("/Behemoth/behemoth10.png"));
+            dir7 = ImageIO.read(getClass().getResource("/Behemoth/behemoth09.png"));
+            dir8 = ImageIO.read(getClass().getResource("/Behemoth/behemoth08.png"));
+            dir9 = ImageIO.read(getClass().getResource("/Behemoth/behemoth07.png"));
+            dir10 = ImageIO.read(getClass().getResource("/Behemoth/behemoth06.png"));
+            dir11 = ImageIO.read(getClass().getResource("/Behemoth/behemoth05.png"));
+            dir12 = ImageIO.read(getClass().getResource("/Behemoth/behemoth04.png"));
+            dir13 = ImageIO.read(getClass().getResource("/Behemoth/behemoth03.png"));
+            dir14 = ImageIO.read(getClass().getResource("/Behemoth/behemoth02.png"));
+            dir15 = ImageIO.read(getClass().getResource("/Behemoth/behemoth01.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
+    /// /////////////////////// to jest dzial rysowania obiektu //////////////////////
+    private Image getCurrentImage() {
+        return switch (currentDirection) {
+            case 0 -> dir0;
+            case 1 -> dir1;
+            case 2 -> dir2;
+            case 3 -> dir3;
+            case 4 -> dir4;
+            case 5 -> dir5;
+            case 6 -> dir6;
+            case 7 -> dir7;
+            case 8 -> dir8;
+            case 9 -> dir9;
+            case 10 -> dir10;
+            case 11 -> dir11;
+            case 12 -> dir12;
+            case 13 -> dir13;
+            case 14 -> dir14;
+            case 15 -> dir15;
+            default -> dir0;
+        };
+    }
+
+    private void updateDirection(int dx, int dy) {
+        if (dx == 0 && dy == 0) return;
+
+        double angle = Math.atan2(-dy, dx); // -dy bo Y idzie w dół
+        angle = Math.toDegrees(angle);
+        if (angle < 0) angle += 360;
+
+        currentDirection = (int) Math.round(angle / 22.5) % 16;
+    }
+
 
     private void pickNewPatrolTarget() {
         // Losujemy punkt w obrębie patrolRange od spawn
@@ -48,11 +115,18 @@ public class EnemyBehemoth {
         double distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 5) { // jeszcze daleko do celu
+            updateDirection(dx, dy); // 🔽 tu ustawiamy kierunek
             x += (int) (speed * dx / distance);
             y += (int) (speed * dy / distance);
         } else {
             pickNewPatrolTarget(); // cel osiągnięty → losujemy nowy
         }
+    }
+    public void updateFly(long deltaTime) {
+        // 🔁 Aktualizacja efektu "unoszenia się"
+        hoverTime += deltaTime;
+        hoverOffset = Math.sin(hoverTime * hoverSpeed) * hoverAmplitude;
+
     }
 
     public int getX() {
@@ -69,18 +143,22 @@ public class EnemyBehemoth {
     }
 
     public void draw(Graphics g) {
-        g.setColor(new Color(95, 68, 55)); //
-        g.fillRect(x, y, width, height);
-        int maxHealth = 70; // Maksymalne zdrowie przeciwnika
-        int healthBarWidth = 30; // Stała długość paska zdrowia
-        int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
+        Graphics2D g2d = (Graphics2D) g;
 
+        Image currentImg = getCurrentImage();
+        if (currentImg != null) {
+            int drawX = x;
+            int drawY = (int)(y + hoverOffset); // ✨ tu efekt unoszenia
+
+            g2d.drawImage(currentImg, drawX, drawY, width, height, null);
+        }
+
+        // Pasek życia
         g.setColor(Color.GREEN);
-        g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
-
-        // Rysowanie obramowania paska zdrowia
-        g.setColor(Color.BLACK);
-        g.drawRect(x, y - 5, healthBarWidth, 3);
+        int maxHealth = 70;
+        int healthBarWidth = 100;
+        int currentHealthWidth = (int)((health / (double)maxHealth) * healthBarWidth);
+        g.fillRect(x, (int)(y + hoverOffset) - 5, currentHealthWidth, 3);
     }
     public boolean takeDamage() {
         health--;
@@ -495,6 +573,7 @@ public class EnemyBehemoth {
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 0) {
+                updateDirection(dx, dy); // 🔽 dodaj tutaj
                 x += (int) (speed * dx / distance);
                 y += (int) (speed * dy / distance);
             }
@@ -509,6 +588,7 @@ public class EnemyBehemoth {
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 0) {
+                updateDirection(dx, dy); // 🔽 dodaj tutaj
                 x += (int) (speed * dx / distance);
                 y += (int) (speed * dy / distance);
             }
@@ -526,6 +606,7 @@ public class EnemyBehemoth {
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 0) {
+                updateDirection(dx, dy); // 🔽 dodaj tutaj
                 x += (int) (speed * dx / distance);
                 y += (int) (speed * dy / distance);
             }
@@ -541,6 +622,7 @@ public class EnemyBehemoth {
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 0) {
+                updateDirection(dx, dy); // 🔽 dodaj tutaj
                 x += (int) (speed * dx / distance);
                 y += (int) (speed * dy / distance);
             }
@@ -556,6 +638,7 @@ public class EnemyBehemoth {
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 0) {
+                updateDirection(dx, dy); // 🔽 dodaj tutaj
                 x += (int) (speed * dx / distance);
                 y += (int) (speed * dy / distance);
             }
@@ -572,6 +655,7 @@ public class EnemyBehemoth {
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 0) {
+                updateDirection(dx, dy); // 🔽 dodaj tutaj
                 x += (int) (speed * dx / distance);
                 y += (int) (speed * dy / distance);
             }
@@ -587,6 +671,7 @@ public class EnemyBehemoth {
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 0) {
+                updateDirection(dx, dy); // 🔽 dodaj tutaj
                 x += (int) (speed * dx / distance);
                 y += (int) (speed * dy / distance);
             }
@@ -603,6 +688,7 @@ public class EnemyBehemoth {
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 0) {
+                updateDirection(dx, dy); // 🔽 dodaj tutaj
                 x += (int) (speed * dx / distance);
                 y += (int) (speed * dy / distance);
             }
