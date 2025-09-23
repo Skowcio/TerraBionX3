@@ -18,7 +18,7 @@ public class Valkiria {
     private boolean dead = false;
     private Point target;
     private final int range = 220;
-    private final int shootCooldown = 350;
+    private final int shootCooldown = 250;
     private Object currentTarget;
     private long lastShotTime = 0;
 
@@ -26,7 +26,7 @@ public class Valkiria {
     private int bulletsLeft = magazineSize; // początkowo pełny magazynek
     private boolean reloading = false;
     private long reloadStartTime = 0;
-    private final long reloadTime = 11000; // czas przeładowania w ms (11 sekund)
+    private final long reloadTime = 8000; // czas przeładowania w ms (8 sekund)
 
     private double hoverOffset = 0;           // Przesunięcie do rysowania w pionie
     private double hoverTime = 0;             // Czas do animacji unoszenia

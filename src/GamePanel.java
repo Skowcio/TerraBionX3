@@ -2543,6 +2543,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 selectedMinigunner = null;
             }
 
+            if (selectedValkiria != null){
+                selectedValkiria.setSelected(false);
+                selectedValkiria = null;
+            }
+
 
 
             if (selectedBattleVehicle != null) {
