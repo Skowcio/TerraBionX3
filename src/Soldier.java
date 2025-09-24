@@ -443,7 +443,33 @@ public class Soldier {
         // Obrys przy zaznaczeniu
         if (selected) {
             g2d.setColor(Color.WHITE);
-            g2d.drawRect(drawX - 2, drawY - 2, width + 4, height + 4);
+
+            int cornerSize = 8; // długość ramki narożnika
+            int offset = 2;
+
+            // Lewy górny
+            g2d.drawLine(drawX - offset, drawY - offset,
+                    drawX - offset + cornerSize, drawY - offset);
+            g2d.drawLine(drawX - offset, drawY - offset,
+                    drawX - offset, drawY - offset + cornerSize);
+
+            // Prawy górny
+            g2d.drawLine(drawX + width + offset, drawY - offset,
+                    drawX + width + offset - cornerSize, drawY - offset);
+            g2d.drawLine(drawX + width + offset, drawY - offset,
+                    drawX + width + offset, drawY - offset + cornerSize);
+
+            // Lewy dolny
+            g2d.drawLine(drawX - offset, drawY + height + offset,
+                    drawX - offset + cornerSize, drawY + height + offset);
+            g2d.drawLine(drawX - offset, drawY + height + offset,
+                    drawX - offset, drawY + height + offset - cornerSize);
+
+            // Prawy dolny
+            g2d.drawLine(drawX + width + offset, drawY + height + offset,
+                    drawX + width + offset - cornerSize, drawY + height + offset);
+            g2d.drawLine(drawX + width + offset, drawY + height + offset,
+                    drawX + width + offset, drawY + height + offset - cornerSize);
         }
 
         // Pasek życia (nad sprite'em, unoszony razem z nim)

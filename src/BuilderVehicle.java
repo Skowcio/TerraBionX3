@@ -349,9 +349,33 @@ public class BuilderVehicle {
         }
 
         // Obramowanie przy zaznaczeniu
+        // Obramowanie przy zaznaczeniu
         if (selected) {
-            g.setColor(Color.GRAY);
-            g.drawRect(x - 2, y - 2, width + 4, height + 4);
+            g2d.setColor(Color.WHITE);
+
+            int cornerSize = 10; // długość narożnika
+            int offset = 3;      // odsunięcie od sprite'a
+
+            int left   = x - offset;
+            int right  = x + width + offset;
+            int top    = y - offset;
+            int bottom = y + height + offset;
+
+            // Lewy górny
+            g2d.drawLine(left, top, left + cornerSize, top);
+            g2d.drawLine(left, top, left, top + cornerSize);
+
+            // Prawy górny
+            g2d.drawLine(right, top, right - cornerSize, top);
+            g2d.drawLine(right, top, right, top + cornerSize);
+
+            // Lewy dolny
+            g2d.drawLine(left, bottom, left + cornerSize, bottom);
+            g2d.drawLine(left, bottom, left, bottom - cornerSize);
+
+            // Prawy dolny
+            g2d.drawLine(right, bottom, right - cornerSize, bottom);
+            g2d.drawLine(right, bottom, right, bottom - cornerSize);
         }
 
         // Pasek zdrowia

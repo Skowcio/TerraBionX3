@@ -14,7 +14,10 @@ public class Valkiria {
     private int x, y;
     private boolean selected;
     private int width = 50, height = 50;
-    private int health = 5;
+    private int health = 10;
+    private final int maxHealth = 10;       // maksymalne HP
+    private long lastRegenTime = 0;         // czas ostatniej regeneracji
+    private final long regenCooldown = 20_000; // 10 sekund w ms
     private boolean dead = false;
     private Point target;
     private final int range = 220;
@@ -81,6 +84,7 @@ public class Valkiria {
         return height;
     }
 
+
     public boolean takeDamage() {
         health--;
         if (health <= 0) {
@@ -88,6 +92,13 @@ public class Valkiria {
             return true;
         }
         return false;
+    }
+    private void regenerateHealth() {
+        long currentTime = System.currentTimeMillis();
+        if (health < maxHealth && currentTime - lastRegenTime >= regenCooldown) {
+            health++;
+            lastRegenTime = currentTime;
+        }
     }
     public boolean isDead() {
         return dead;
@@ -225,6 +236,7 @@ public class Valkiria {
         // 🔁 Aktualizacja efektu "unoszenia się"
         hoverTime += deltaTime;
         hoverOffset = Math.sin(hoverTime * hoverSpeed) * hoverAmplitude;
+        regenerateHealth();
 
     }
 
@@ -471,12 +483,38 @@ public class Valkiria {
         // Obrys przy zaznaczeniu
         if (selected) {
             g2d.setColor(Color.WHITE);
-            g2d.drawRect(drawX - 2, drawY - 2, width + 4, height + 4);
+
+            int cornerSize = 8; // długość ramki narożnika
+            int offset = 2;
+
+            // Lewy górny
+            g2d.drawLine(drawX - offset, drawY - offset,
+                    drawX - offset + cornerSize, drawY - offset);
+            g2d.drawLine(drawX - offset, drawY - offset,
+                    drawX - offset, drawY - offset + cornerSize);
+
+            // Prawy górny
+            g2d.drawLine(drawX + width + offset, drawY - offset,
+                    drawX + width + offset - cornerSize, drawY - offset);
+            g2d.drawLine(drawX + width + offset, drawY - offset,
+                    drawX + width + offset, drawY - offset + cornerSize);
+
+            // Lewy dolny
+            g2d.drawLine(drawX - offset, drawY + height + offset,
+                    drawX - offset + cornerSize, drawY + height + offset);
+            g2d.drawLine(drawX - offset, drawY + height + offset,
+                    drawX - offset, drawY + height + offset - cornerSize);
+
+            // Prawy dolny
+            g2d.drawLine(drawX + width + offset, drawY + height + offset,
+                    drawX + width + offset - cornerSize, drawY + height + offset);
+            g2d.drawLine(drawX + width + offset, drawY + height + offset,
+                    drawX + width + offset, drawY + height + offset - cornerSize);
         }
 
         // Pasek życia (nad sprite'em, unoszony razem z nim)
         g2d.setColor(Color.GREEN);
-        int maxHealth = 5;
+        int maxHealth = 10;
         int healthBarWidth = 50;
         int currentHealthWidth = (int)((health / (double)maxHealth) * healthBarWidth);
         g2d.fillRect(drawX, drawY - 5, currentHealthWidth, 3);

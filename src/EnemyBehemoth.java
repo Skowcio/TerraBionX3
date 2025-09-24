@@ -17,6 +17,9 @@ public class EnemyBehemoth {
     private int width = 100, height = 100;
     private int speed = 3; // prędkość poruszania
     private int health = 70;
+    private final int maxHealth = 70;       // maksymalne HP
+    private long lastRegenTime = 0;         // czas ostatniej regeneracji
+    private final long regenCooldown = 10_000; // timer do odnowienia hp 10 sekund w ms
     private final int shootCooldown = 1100; // Czas odnowienia strzału (ms)
     private final int range = 190; // Zasięg strzelania w pikselach
     private Object currentTarget; // Aktualny cel
@@ -169,6 +172,13 @@ public class EnemyBehemoth {
     public boolean takeDamage() {
         health--;
         return health <= 0; // Zwraca true, jeśli Enemy zostało zniszczone
+    }
+    private void regenerateHealth() {
+        long currentTime = System.currentTimeMillis();
+        if (health < maxHealth && currentTime - lastRegenTime >= regenCooldown) {
+            health++;
+            lastRegenTime = currentTime;
+        }
     }
     public boolean isDead() {
         return dead;
@@ -452,6 +462,7 @@ public class EnemyBehemoth {
         } else {
             // jeśli nikt nie jest w zasięgu → patrol
             movePatrol();
+            regenerateHealth();
         }
     }
 

@@ -1715,6 +1715,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             }
         }
         repaint();
+
     }
 
 

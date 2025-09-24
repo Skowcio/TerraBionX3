@@ -183,8 +183,31 @@ public class Baracks {
 //        g.fillRect(x, y, 50, 50); // Koszary są kwadratem 50x50
 
         if (selected) {
-            g.setColor(Color.WHITE); // Obramowanie dla zaznaczonych koszar
-            g.drawRect(x - 2, y - 2, 144, 144); // Obramowanie o 2px większe
+            g.setColor(Color.WHITE);
+
+            int cornerSize = 12; // długość narożników
+            int offset = 3;      // odsunięcie od budynku
+
+            int left   = x - offset;
+            int right  = x + width + offset;
+            int top    = y - offset;
+            int bottom = y + height + offset;
+
+            // Lewy górny
+            g.drawLine(left, top, left + cornerSize, top);
+            g.drawLine(left, top, left, top + cornerSize);
+
+            // Prawy górny
+            g.drawLine(right, top, right - cornerSize, top);
+            g.drawLine(right, top, right, top + cornerSize);
+
+            // Lewy dolny
+            g.drawLine(left, bottom, left + cornerSize, bottom);
+            g.drawLine(left, bottom, left, bottom - cornerSize);
+
+            // Prawy dolny
+            g.drawLine(right, bottom, right - cornerSize, bottom);
+            g.drawLine(right, bottom, right, bottom - cornerSize);
         }
         int maxHealth = 40; // Maksymalne zdrowie
         int healthBarWidth = 140; // Stała długość paska zdrowia

@@ -306,20 +306,41 @@ public class Factory {
         }
 
         if (selected) {
-            // Szare obramowanie
-            g.setColor(Color.GRAY);
-            g.drawRect(x - 2, y - 2, width + 4, height + 4);
+            g.setColor(Color.WHITE);
 
-            // 🔵 Półprzezroczysty niebieski obszar patrolu
+            int cornerSize = 12; // długość każdego narożnika
+            int offset = 3;      // odsunięcie od budynku
 
+            int left   = x - offset;
+            int right  = x + width + offset;
+            int top    = y - offset;
+            int bottom = y + height + offset;
+
+            // Lewy górny róg
+            g.drawLine(left, top, left + cornerSize, top);
+            g.drawLine(left, top, left, top + cornerSize);
+
+            // Prawy górny róg
+            g.drawLine(right, top, right - cornerSize, top);
+            g.drawLine(right, top, right, top + cornerSize);
+
+            // Lewy dolny róg
+            g.drawLine(left, bottom, left + cornerSize, bottom);
+            g.drawLine(left, bottom, left, bottom - cornerSize);
+
+            // Prawy dolny róg
+            g.drawLine(right, bottom, right - cornerSize, bottom);
+            g.drawLine(right, bottom, right, bottom - cornerSize);
+
+            // 🔵 Półprzezroczysty obszar patrolu
             int patrolX = x + width / 2 - patrolSize / 2;
             int patrolY = y + height / 2 - patrolSize / 2;
 
-            g.setColor(new Color(0, 0, 255, 10)); // Przezroczysty niebieski
+            g.setColor(new Color(0, 0, 255, 15)); // lekko bardziej widoczny niebieski
             g.fillRect(patrolX, patrolY, patrolSize, patrolSize);
 
             g.setColor(Color.BLUE);
-            g.drawRect(patrolX, patrolY, patrolSize, patrolSize); // Obramowanie
+            g.drawRect(patrolX, patrolY, patrolSize, patrolSize);
         }
         if (producingSoldier) {
             g.setColor(Color.CYAN);
