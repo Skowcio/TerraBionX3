@@ -97,6 +97,7 @@ public class Valkiria {
         this.dead = true;
     }
 
+
     // Getter pozycji jako obiekt Point
     public Point getPosition() {
         return new Point(x, y);
@@ -308,6 +309,12 @@ public class Valkiria {
         int dy = hive.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+
+    public boolean isInRange(EnemyBehemoth enemyBehemoth) {
+        int dx = enemyBehemoth.getX() - x;
+        int dy = enemyBehemoth.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
     public boolean isInRange(EnemyHunter enemyHunters) {
         int dx = enemyHunters.getX() - x;
         int dy = enemyHunters.getY() - y;
@@ -328,6 +335,7 @@ public class Valkiria {
             ArrayList<Hive> hives,
             ArrayList<EnemyShooter> enemyShooters,
             ArrayList<EnemyHunter> enemyHunters,
+            ArrayList<EnemyBehemoth> enemyBehemoths,
             int cameraX, int cameraY,
             int screenWidth, int screenHeight
     ) {
@@ -350,16 +358,18 @@ public class Valkiria {
         if (currentTarget instanceof Hive h && !hives.contains(h)) outOfRange = true;
         if (currentTarget instanceof EnemyShooter es && !enemyShooters.contains(es)) outOfRange = true;
         if (currentTarget instanceof EnemyHunter eh && !enemyHunters.contains(eh)) outOfRange = true;
+        if (currentTarget instanceof  EnemyBehemoth eb && !enemyBehemoths.contains(eb)) outOfRange = true;
 
         boolean notInRange =
                 !(currentTarget instanceof Enemy e && isInRange(e)) &&
                         !(currentTarget instanceof EnemyToo et && isInRange(et)) &&
                         !(currentTarget instanceof Hive h && isInRange(h)) &&
                         !(currentTarget instanceof EnemyShooter es && isInRange(es)) &&
-                        !(currentTarget instanceof EnemyHunter eh && isInRange(eh));
+                        !(currentTarget instanceof EnemyHunter eh && isInRange(eh)) &&
+                        !(currentTarget instanceof EnemyBehemoth eb && isInRange(eb));
 
         if (currentTarget == null || outOfRange || notInRange) {
-            chooseTarget(enemies, enemyToos, hives, enemyShooters, enemyHunters);
+            chooseTarget(enemies, enemyToos, hives, enemyShooters, enemyHunters, enemyBehemoths);
         }
 
         if (currentTarget != null && currentTime - lastShotTime >= shootCooldown) {
@@ -385,6 +395,9 @@ public class Valkiria {
             } else if (currentTarget instanceof EnemyHunter eh && isInRange(eh)) {
                 Bullets.add(new Bullet(startX, startY, eh.getX() + 15, eh.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             }
+            else if (currentTarget instanceof EnemyBehemoth eb && isInRange(eb)) {
+                Bullets.add(new Bullet(startX, startY, eb.getX() + 15, eb.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+            }
 
             bulletsLeft--; // zmniejszamy liczbę pocisków w magazynku
             lastShotTime = currentTime;
@@ -392,7 +405,7 @@ public class Valkiria {
     }
 
 
-    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters) {
+    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths) {
         currentTarget = null;
 
         // Szukaj najbliższego Enemy w zasięgu
@@ -420,6 +433,12 @@ public class Valkiria {
             if (isInRange(enemyToo)) {
                 currentTarget = enemyToo;
                 return; // Znaleziono cel
+            }
+        }
+        for (EnemyBehemoth enemyBehemoth : enemyBehemoths) {
+            if (isInRange(enemyBehemoth)) {
+                currentTarget = enemyBehemoth;
+                return;
             }
         }
         for (Hive hive : hives) {

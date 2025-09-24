@@ -117,6 +117,11 @@ public class SoldierBot {
         int dy = enemy.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    public boolean isInRange(EnemyBehemoth enemyBehemoth) {
+        int dx = enemyBehemoth.getX() - x;
+        int dy = enemyBehemoth.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
 
     public boolean isInRange(EnemyShooter enemyShooter) {
         int dx = enemyShooter.getX() - x;
@@ -193,6 +198,7 @@ public class SoldierBot {
             ArrayList<HiveToo> hiveToos,
             ArrayList<EnemyShooter> enemyShooters,
             ArrayList<EnemyHunter> enemyHunters,
+            ArrayList<EnemyBehemoth> enemyBehemoths,
             int cameraX, int cameraY,
             int screenWidth, int screenHeight
     ) {
@@ -205,6 +211,7 @@ public class SoldierBot {
         if (currentTarget instanceof HiveToo ht && !hiveToos.contains(ht)) outOfRange = true;
         if (currentTarget instanceof EnemyShooter es && !enemyShooters.contains(es)) outOfRange = true;
         if (currentTarget instanceof EnemyHunter eh && !enemyHunters.contains(eh)) outOfRange = true;
+        if (currentTarget instanceof  EnemyBehemoth eb && !enemyBehemoths.contains(eb)) outOfRange = true;
 
         boolean notInRange =
                 !(currentTarget instanceof Enemy e && isInRange(e)) &&
@@ -212,10 +219,11 @@ public class SoldierBot {
                         !(currentTarget instanceof Hive h && isInRange(h)) &&
                         !(currentTarget instanceof HiveToo ht && isInRange(ht)) &&
                         !(currentTarget instanceof EnemyShooter es && isInRange(es)) &&
-                        !(currentTarget instanceof EnemyHunter eh && isInRange(eh));
+                        !(currentTarget instanceof EnemyHunter eh && isInRange(eh)) &&
+                        !(currentTarget instanceof EnemyBehemoth eb && isInRange(eb));
 
         if (currentTarget == null || outOfRange || notInRange) {
-            chooseTarget(enemies, enemyToos, hives, hiveToos, enemyShooters, enemyHunters);
+            chooseTarget(enemies, enemyToos, hives, hiveToos, enemyShooters, enemyHunters, enemyBehemoths);
         }
 
         if (currentTarget != null && currentTime - lastShotTime >= shootCooldown) {
@@ -234,6 +242,8 @@ public class SoldierBot {
                 Bullets.add(new Bullet(startX, startY, es.getX() + 15, es.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             } else if (currentTarget instanceof EnemyHunter eh && isInRange(eh)) {
                 Bullets.add(new Bullet(startX, startY, eh.getX() + 15, eh.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+            } else if (currentTarget instanceof EnemyBehemoth eb && isInRange(eb)) {
+                Bullets.add(new Bullet(startX, startY, eb.getX() + 15, eb.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             }
 
             lastShotTime = currentTime;
@@ -241,7 +251,7 @@ public class SoldierBot {
     }
 
 
-    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters) {
+    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths) {
         currentTarget = null;
 
         // Szukaj najbliższego Enemy w zasięgu
@@ -271,6 +281,12 @@ public class SoldierBot {
                 return; // Znaleziono cel
             }
         }
+        for (EnemyBehemoth enemyBehemoth : enemyBehemoths) {
+            if (isInRange(enemyBehemoth)) {
+                currentTarget = enemyBehemoth;
+                return;
+            }
+        }
         for (Hive hive : hives) {
             if (isInRange(hive)) {
                 currentTarget = hive;
@@ -291,8 +307,8 @@ public class SoldierBot {
 
     }
     /// ///////////update laduje w GamePanel.update//////
-    public void update(List<Enemy> enemies, List<EnemyShooter> enemyShooters, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos, List<SoldierBot> allBots) {
-        Object target = getClosestTarget(enemies, enemyShooters, enemyToos, hives, hiveToos);
+    public void update(List<Enemy> enemies, List<EnemyShooter> enemyShooters, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos,  List<SoldierBot> allBots, List<EnemyBehemoth> enemyBehemoths) {
+        Object target = getClosestTarget(enemies, enemyShooters, enemyToos, hives, hiveToos, enemyBehemoths);
 
         if (target != null && patrolArea.contains(getTargetPosition(target))) {
             moveTowardsTarget(target, allBots);
@@ -395,10 +411,11 @@ public class SoldierBot {
         if (target instanceof EnemyToo et) return et.getPosition();
         if (target instanceof Hive h) return h.getPosition();
         if (target instanceof HiveToo ht) return ht.getPosition();
+        if (target instanceof EnemyBehemoth eb) return eb.getPosition();
         return new Point(0, 0);
     }
 
-    public Object getClosestTarget(List<Enemy> enemies, List<EnemyShooter> enemyShooters, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos) {
+    public Object getClosestTarget(List<Enemy> enemies, List<EnemyShooter> enemyShooters, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos, List<EnemyBehemoth> enemyBehemoths) {
         Object closest = null;
         double minDistance = Double.MAX_VALUE;
 
@@ -441,6 +458,14 @@ public class SoldierBot {
             }
         }
 
+        for (EnemyBehemoth enemyBehemoth : enemyBehemoths) {
+            double dist = enemyBehemoth.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = enemyBehemoth;
+            }
+        }
+
         return closest;
     }
 
@@ -459,6 +484,9 @@ public class SoldierBot {
             tx = ht.getX(); ty = ht.getY();
         } else if (target instanceof EnemyToo et) {
             tx = et.getX(); ty = et.getY();
+        }
+        else if (target instanceof EnemyBehemoth eb) {
+            tx = eb.getX(); ty = eb.getY();
         }
 
         if (!patrolArea.contains(tx, ty)) {

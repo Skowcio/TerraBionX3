@@ -142,6 +142,12 @@ public class EnemyBehemoth {
         return new Rectangle(x, y, width, height);
     }
 
+
+
+    public Point getPosition() {
+        return new Point(x, y);
+    }
+
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
@@ -183,6 +189,11 @@ public class EnemyBehemoth {
         int dy = builderVehicle.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    public boolean isInRange(Valkiria valkiria) {  // 🆕 BuilderVehicle
+        int dx = valkiria.getX() - x;
+        int dy = valkiria.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
     public boolean isInRange(SoldierBot soldierBot) {
         int dx = soldierBot.getX() - x;
         int dy = soldierBot.getY() - y;
@@ -217,6 +228,7 @@ public class EnemyBehemoth {
 
     private void chooseTarget(
             ArrayList<Soldier> soldiers,
+            ArrayList<Valkiria> valkirias,
             ArrayList<SoldierBot> soldierBots,
             ArrayList<BattleVehicle> battleVehicles,
             ArrayList<Factory> factories,
@@ -233,6 +245,12 @@ public class EnemyBehemoth {
             if (isInRange(soldier)) {
                 currentTarget = soldier;
                 return; // Znaleziono cel
+            }
+        }
+        for (Valkiria valkiria : valkirias){
+            if (isInRange(valkiria)){
+                currentTarget = valkiria;
+                return;
             }
         }
         for (SoldierBot soldierBot : soldierBots) {
@@ -283,6 +301,7 @@ public class EnemyBehemoth {
             Graphics g,
             ArrayList<Projectile> projectiles,
             ArrayList<Soldier> soldiers,
+            ArrayList<Valkiria> valkirias,
             ArrayList<SoldierBot> soldierBots,
             ArrayList<BattleVehicle> battleVehicles,
             ArrayList<Factory> factories,
@@ -302,11 +321,10 @@ public class EnemyBehemoth {
                 (currentTarget instanceof BattleVehicle && !battleVehicles.contains(currentTarget)) ||
                 (currentTarget instanceof Factory && !factories.contains(currentTarget)) ||
                 (currentTarget instanceof PowerPlant && !powerPlants.contains(currentTarget)) ||
-                (currentTarget instanceof BuilderVehicle && !builderVehicles.contains(currentTarget)) // 🆕
-                ||
+                (currentTarget instanceof BuilderVehicle && !builderVehicles.contains(currentTarget)) ||
                 (currentTarget instanceof Artylery && !artyleries.contains(currentTarget))||
                 (currentTarget instanceof Baracks && !baracks.contains(currentTarget))||
-
+                (currentTarget instanceof Valkiria && !valkirias.contains(currentTarget))||
 
                 !(currentTarget instanceof Soldier soldier && isInRange(soldier)) &&
                         !(currentTarget instanceof SoldierBot soldierBot&& isInRange(soldierBot)) &&
@@ -315,11 +333,22 @@ public class EnemyBehemoth {
                         !(currentTarget instanceof PowerPlant powerPlant && isInRange(powerPlant)) &&
                         !(currentTarget instanceof BuilderVehicle builderVehicle && isInRange(builderVehicle)) &&
                         !(currentTarget instanceof Artylery artylery && isInRange(artylery)) &&
-                        !(currentTarget instanceof  Baracks b && isInRange(b))
+                        !(currentTarget instanceof  Baracks b && isInRange(b)) &&
+                        !(currentTarget instanceof  Valkiria v && isInRange(v))
 
         )
         {
-            chooseTarget(soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artyleries, baracks); // Wybierz nowy cel
+            chooseTarget(
+                    soldiers,
+                    valkirias,
+                    soldierBots,
+                    battleVehicles,
+                    factories,
+                    powerPlants,
+                    builderVehicles,
+                    artyleries,
+                    baracks
+            );
         }
 
         // Jeśli mamy ważny cel, strzelaj
@@ -330,6 +359,7 @@ public class EnemyBehemoth {
                     lastShotTime = currentTime;
                 }
             }
+
             if (currentTarget instanceof SoldierBot soldierBot) {
                 if (isInRange(soldierBot)) {
                     projectiles.add(new Projectile(x + 15, y + 15, soldierBot.getX() + 15, soldierBot.getY() + 15));
@@ -372,6 +402,12 @@ public class EnemyBehemoth {
                     lastShotTime = currentTime;
                 }
             }
+            if (currentTarget instanceof Valkiria valkiria) {
+                if (isInRange(valkiria)) {
+                    projectiles.add(new Projectile(x + 15, y + 15, valkiria.getX() + 15, valkiria.getY() + 15));
+                    lastShotTime = currentTime;
+                }
+            }
 //            else if (currentTarget instanceof Hive hive) {
 //                if (isInRange(hive)) {
 //                    bullets.add(new Bullet(x + 15, y + 15, hive.getX() + 15, hive.getY() + 15));
@@ -391,6 +427,7 @@ public class EnemyBehemoth {
                        List<PowerPlant> powerPlants,
                        List<Factory> factorys,
                        List<SoldierBot> soldierBots,
+                       List<Valkiria> valkirias,
                        List<EnemyHunter> enemies,
                         List<Explosion> explosions){
 
@@ -398,8 +435,9 @@ public class EnemyBehemoth {
         Soldier closestSoldier = getClosestSoldier(soldiers);
         BattleVehicle closestVehicle = getClosestBattleVehicle(battleVehicles);
         SoldierBot closestBot = getClosestSoldierBot(soldierBots);
+        Valkiria closestValkiria = getClosestValkiria(valkirias);
 
-        if (closestSoldier != null || closestVehicle != null || closestBot != null) {
+        if (closestSoldier != null || closestVehicle != null || closestBot != null || closestValkiria != null) {
             // atak jak wcześniej
             moveTowardsSoldier(soldiers);
             moveTowardsBattleVehicle(battleVehicles);
@@ -407,9 +445,10 @@ public class EnemyBehemoth {
             moveTowardsPowerPlant(powerPlants);
             moveTowardsHarvester(harvesters);
             moveTowardsBuilderVehicle(builderVehicles);
+            moveTowardsValkiria(valkirias);
             moveTowardsFactory(factorys);
             moveTowardsSoldierBot(soldierBots);
-            attackClosestSoldier(soldiers, soldierBots, builderVehicles, explosions);
+            attackClosestSoldier(soldiers, soldierBots, valkirias, builderVehicles, explosions);
         } else {
             // jeśli nikt nie jest w zasięgu → patrol
             movePatrol();
@@ -417,9 +456,10 @@ public class EnemyBehemoth {
     }
 
     /// ///////////////tu jest to co atakuje jak dotknienb
-    private void attackClosestSoldier(List<Soldier> soldiers, List<SoldierBot> soldierBots,List<BuilderVehicle> builderVehicles, List<Explosion> explosions ) {
+    private void attackClosestSoldier(List<Soldier> soldiers, List<SoldierBot> soldierBots, List<Valkiria> valkirias, List<BuilderVehicle> builderVehicles, List<Explosion> explosions ) {
         Soldier closestSoldier = getClosestSoldier(soldiers);
         SoldierBot closestSoldierBot = getClosestSoldierBot(soldierBots);
+        Valkiria closestValkiria = getClosestValkiria(valkirias);
         BuilderVehicle closestBuilder = getClosestBuldierVehicle(builderVehicles);
 
         if (closestSoldier != null && getBounds().intersects(closestSoldier.getBounds())) {
@@ -437,6 +477,15 @@ public class EnemyBehemoth {
             if (dead) {
                 soldierBots.remove(closestSoldierBot);
                 explosions.add(new Explosion(closestSoldierBot.getX(), closestSoldierBot.getY()));
+
+            }
+        }
+        if (closestValkiria != null && getBounds().intersects(closestValkiria.getBounds())) {
+            boolean dead = closestValkiria.takeDamage(); // zadaj 1 dmg (albo więcej)
+
+            if (dead) {
+                valkirias.remove(closestValkiria);
+                explosions.add(new Explosion(closestValkiria.getX(), closestValkiria.getY()));
 
             }
         }
@@ -480,6 +529,20 @@ public class EnemyBehemoth {
         }
         return closest;
     }
+    private Valkiria getClosestValkiria(java.util.List<Valkiria> valkirias) {
+        Valkiria closest = null;
+        double minDistance = Double.MAX_VALUE;
+
+        for (Valkiria valkiria : valkirias) {
+            double distance = valkiria.getPosition().distance(x, y);
+            if (distance < minDistance && distance <= aggroRange) { // tylko w zasięgu!
+                minDistance = distance;
+                closest = valkiria;
+            }
+        }
+        return closest;
+    }
+
     private BattleVehicle getClosestBattleVehicle(java.util.List<BattleVehicle> battleVehicles) {
         BattleVehicle closest = null;
         double minDistance = Double.MAX_VALUE;
@@ -585,6 +648,22 @@ public class EnemyBehemoth {
         if (closestBuilderVehicle != null) {
             int dx = closestBuilderVehicle.getX() - x;
             int dy = closestBuilderVehicle.getY() - y;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > 0) {
+                updateDirection(dx, dy); // 🔽 dodaj tutaj
+                x += (int) (speed * dx / distance);
+                y += (int) (speed * dy / distance);
+            }
+
+        }
+    }
+    public void moveTowardsValkiria(List<Valkiria> valkiriass) {
+        Valkiria closestValkiria = getClosestValkiria(valkiriass);
+
+        if (closestValkiria != null) {
+            int dx = closestValkiria.getX() - x;
+            int dy = closestValkiria.getY() - y;
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 0) {

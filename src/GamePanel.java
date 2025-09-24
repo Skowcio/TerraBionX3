@@ -1540,6 +1540,15 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     }break;
                 }
             }
+            for (Valkiria valkiria : valkirias) {
+                if (projectile.checkCollision(valkiria)) {
+                    toRemove.add(projectile);
+                    if (valkiria.takeDamage()) {
+                        valkirias.remove(valkiria); // Usuń żołnierza po trafieniu
+                        explosions.add(new Explosion(valkiria.getX(), valkiria.getY()));
+                    }break;
+                }
+            }
             Iterator<Baracks> iterator2 = baracks.iterator();
             while (iterator2.hasNext()) {
                 Baracks baracks = iterator2.next();
@@ -2012,6 +2021,18 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     }
                 }
 
+                for (EnemyBehemoth enemyBehemoth : enemyBehemoths) {
+                    if (bullet.checkCollision(enemyBehemoth)) {
+                        bulletsToRemove.add(bullet);
+//                        hit = true;
+                        if (enemyBehemoth.takeDamage()) {
+                            enemyBehemoths.remove(enemyBehemoth);
+                        }
+                        break;
+                    }
+                }
+
+
                 // Sprawdzanie kolizji z EnemyToo
                 Iterator<EnemyToo> enemyTooIterator = enemiesToo.iterator();
                 while (enemyTooIterator.hasNext()) {
@@ -2123,13 +2144,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             enemyShooter.update(soldierBots,soldiers, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories);
         }
         for (SoldierBot soldierBot : new ArrayList<>(soldierBots)) {
-            soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots);
+            soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots, enemyBehemoths);
         }
         for (EnemyHunter enemyHunter : new ArrayList<>(enemyHunters)){
             enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters);
         }
         for (EnemyBehemoth enemyBehemoth : new ArrayList<>(enemyBehemoths)){
-            enemyBehemoth.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters, explosions);
+            enemyBehemoth.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, valkirias, enemyHunters, explosions);
         }
         for (Enemy enemy : enemies) {
             enemy.move();
@@ -2797,7 +2818,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         for (EnemyBehemoth enemyBehemoth : enemyBehemoths){
             enemyBehemoth.draw(g);
             enemyBehemoth.updateFly(deltaTime);
-            enemyBehemoth.shoot(g, projectiles, soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
+            enemyBehemoth.shoot(g, projectiles, soldiers, valkirias, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
         }
 
         for (Artylery artylery : artylerys){
@@ -2868,6 +2889,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     hives,
                     enemyShooters,
                     enemyHunters,
+                    enemyBehemoths,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
@@ -2888,6 +2910,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     hives,
                     enemyShooters,
                     enemyHunters,
+                    enemyBehemoths,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
@@ -2908,6 +2931,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     hiveToos,
                     enemyShooters,
                     enemyHunters,
+                    enemyBehemoths,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
