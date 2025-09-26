@@ -363,7 +363,7 @@ public class Soldier {
             } else if (currentTarget instanceof EnemyToo et && isInRange(et)) {
                 Bullets.add(new Bullet(startX, startY, et.getX() + 15, et.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             } else if (currentTarget instanceof Hive h && isInRange(h)) {
-                Bullets.add(new Bullet(startX, startY, h.getX() + 15, h.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+                Bullets.add(new Bullet(startX, startY, h.getX() + 40, h.getY() + 40, cameraX, cameraY, screenWidth, screenHeight));
             } else if (currentTarget instanceof EnemyShooter es && isInRange(es)) {
                 Bullets.add(new Bullet(startX, startY, es.getX() + 15, es.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             } else if (currentTarget instanceof EnemyHunter eh && isInRange(eh)) {

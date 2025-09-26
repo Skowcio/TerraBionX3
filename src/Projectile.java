@@ -43,7 +43,7 @@ public class Projectile {
     }
 
 
-   //////// shrink hitbox ktoro jest 45x45 od srodka w przypadku jednostki ktora ma 50x50
+   //////// shrink hitbox ktory ma odjete jakos 8 pxl
    ///
    // --------- Hitbox z shrink ----------
    private boolean intersectsWithShrink(int objX, int objY, int objWidth, int objHeight, int shrink) {

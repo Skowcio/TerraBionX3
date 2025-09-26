@@ -9,6 +9,8 @@ public class HiveToo {
     private int x, y;
     private int health = 50; // Liczba uderzeń, które Hive może wytrzymać
     private final int size = 100; // Rozmiar Hive
+
+    private final int width = 80, height = 80;
     private long lastSpawnTime = System.currentTimeMillis();
     private final int SPAWN_INTERVAL = 30000; // 20 sekund w milisekundach
     private Random random = new Random();
@@ -29,6 +31,14 @@ public class HiveToo {
         return new Point(x, y);
     }
 
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 
     public int getX() {
         return x;

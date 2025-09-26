@@ -21,11 +21,11 @@ public class Valkiria {
     private boolean dead = false;
     private Point target;
     private final int range = 220;
-    private final int shootCooldown = 250;
+    private final int shootCooldown = 200;
     private Object currentTarget;
     private long lastShotTime = 0;
 
-    private int magazineSize = 20;     // liczba pocisków w magazynku
+    private int magazineSize = 25;     // liczba pocisków w magazynku
     private int bulletsLeft = magazineSize; // początkowo pełny magazynek
     private boolean reloading = false;
     private long reloadStartTime = 0;

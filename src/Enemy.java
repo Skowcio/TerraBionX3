@@ -23,6 +23,14 @@ public class Enemy {
         return y;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
     public void draw(Graphics g) {
         g.setColor(Color.RED);
         g.fillRect(x, y, width, height);

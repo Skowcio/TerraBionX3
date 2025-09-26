@@ -120,6 +120,13 @@ public class EnemyShooter {
                 return; // Znaleziono cel
             }
         }
+        for (Valkiria valkiria : valkirias) {
+            if (isInRange(valkiria)) {
+                currentTarget = valkiria;
+                return; // Znaleziono cel
+            }
+        }
+
         for (SoldierBot soldierBot : soldierBots) {
             if (isInRange(soldierBot)) {
                 currentTarget = soldierBot;
