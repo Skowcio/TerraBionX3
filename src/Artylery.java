@@ -58,6 +58,14 @@ public class Artylery implements Serializable {
         return y;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
     // Getter pozycji jako obiekt Point
     public Point getPosition() {
         return new Point(x, y);

@@ -24,7 +24,13 @@ public class Harvester {
         return new Rectangle(x, y, width, height);
     }
 
+    public int getWidth() {
+        return width;
+    }
 
+    public int getHeight() {
+        return height;
+    }
 
     // Gettery
     public int getX() {

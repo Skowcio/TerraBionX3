@@ -76,6 +76,14 @@ public class SoldierBot {
         return y;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
     }

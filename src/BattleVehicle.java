@@ -37,6 +37,13 @@ public class BattleVehicle {
         health--;
         return health <= 0;
     }
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 
     public BattleVehicle(int x, int y) {
         this.x = x;

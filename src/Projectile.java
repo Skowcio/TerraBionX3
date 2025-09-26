@@ -42,60 +42,59 @@ public class Projectile {
         return System.currentTimeMillis() - creationTime > lifetime;
     }
 
+
+   //////// shrink hitbox ktoro jest 45x45 od srodka w przypadku jednostki ktora ma 50x50
+   ///
+   // --------- Hitbox z shrink ----------
+   private boolean intersectsWithShrink(int objX, int objY, int objWidth, int objHeight, int shrink) {
+       int offset = shrink / 2;
+       Rectangle projectileRect = new Rectangle(x, y, 8, 8);
+       Rectangle objRect = new Rectangle(
+               objX + offset,
+               objY + offset,
+               objWidth - shrink,
+               objHeight - shrink
+       );
+       return projectileRect.intersects(objRect);
+   }
+
     public boolean checkCollision(Soldier soldier) {
-        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
-        Rectangle soldierRect = new Rectangle(soldier.getX(), soldier.getY(), 20, 20);
-        return projectileRect.intersects(soldierRect);
+        return intersectsWithShrink(soldier.getX(), soldier.getY(), soldier.getWidth(), soldier.getHeight(), 8);
     }
+
     public boolean checkCollision(Valkiria valkiria) {
-        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
-        Rectangle soldierRect = new Rectangle(valkiria.getX(), valkiria.getY(), 20, 20);
-        return projectileRect.intersects(soldierRect);
+        return intersectsWithShrink(valkiria.getX(), valkiria.getY(), valkiria.getWidth(), valkiria.getHeight(), 8);
     }
-    public boolean checkCollision(Baracks baracks) {
-        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
-        Rectangle barackRect = new Rectangle(baracks.getX(), baracks.getY(), 20, 20);
-        return projectileRect.intersects(barackRect);
-    }
+
     public boolean checkCollision(SoldierBot soldierBot) {
-        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
-        Rectangle soldierRect = new Rectangle(soldierBot.getX(), soldierBot.getY(), 20, 20);
-        return projectileRect.intersects(soldierRect);
+        return intersectsWithShrink(soldierBot.getX(), soldierBot.getY(), soldierBot.getWidth(), soldierBot.getHeight(), 8);
+    }
+
+    public boolean checkCollision(Baracks baracks) {
+        return intersectsWithShrink(baracks.getX(), baracks.getY(), baracks.getWidth(), baracks.getHeight(), 8);
     }
 
     public boolean checkCollision(BattleVehicle battleVehicle) {
-        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
-        Rectangle artyleryRect = new Rectangle(battleVehicle.getX(), battleVehicle.getY(), 20, 20);
-        return projectileRect.intersects(artyleryRect);
-    }
-    public boolean checkCollision(Factory factory) {
-        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
-        Rectangle artyleryRect = new Rectangle(factory.getX(), factory.getY(), 20, 20);
-        return projectileRect.intersects(artyleryRect);
+        return intersectsWithShrink(battleVehicle.getX(), battleVehicle.getY(), battleVehicle.getWidth(), battleVehicle.getHeight(), 8);
     }
 
+    public boolean checkCollision(Factory factory) {
+        return intersectsWithShrink(factory.getX(), factory.getY(), factory.getWidth(), factory.getHeight(), 8);
+    }
 
     public boolean checkCollision(Artylery artylery) {
-        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
-        Rectangle artyleryRect = new Rectangle(artylery.getX(), artylery.getY(), 20, 20);
-        return projectileRect.intersects(artyleryRect);
+        return intersectsWithShrink(artylery.getX(), artylery.getY(), artylery.getWidth(), artylery.getHeight(), 8);
     }
 
     public boolean checkCollision(PowerPlant powerPlant) {
-        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
-        Rectangle powerPlantRect = new Rectangle(powerPlant.getX(), powerPlant.getY(), 20, 20);
-        return projectileRect.intersects(powerPlantRect);
+        return intersectsWithShrink(powerPlant.getX(), powerPlant.getY(), powerPlant.getWidth(), powerPlant.getHeight(), 8);
     }
 
     public boolean checkCollision(BuilderVehicle builderVehicle) {
-        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
-        Rectangle builderVehicleRect = new Rectangle(builderVehicle.getX(), builderVehicle.getY(), 20, 20);
-        return projectileRect.intersects(builderVehicleRect);
+        return intersectsWithShrink(builderVehicle.getX(), builderVehicle.getY(), builderVehicle.getWidth(), builderVehicle.getHeight(), 8);
     }
 
     public boolean checkCollision(Harvester harvester) {
-        Rectangle projectileRect = new Rectangle(x, y, 8, 8);
-        Rectangle harvesterRect = new Rectangle(harvester.getX(), harvester.getY(), 30, 30);
-        return projectileRect.intersects(harvesterRect);
+        return intersectsWithShrink(harvester.getX(), harvester.getY(), harvester.getWidth(), harvester.getHeight(), 8);
     }
 }

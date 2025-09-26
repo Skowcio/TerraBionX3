@@ -26,7 +26,13 @@ public class PowerPlant {
         health--;
         return health <= 0;
     }
+    public int getWidth() {
+        return width;
+    }
 
+    public int getHeight() {
+        return height;
+    }
 
     public int getX() {
         return x;

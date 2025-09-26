@@ -75,6 +75,8 @@ public class Factory {
 
         totalFactories++; // zwiększamy globalny licznik
     }
+
+
     public static int getMaxFactories() {
         return MAX_FACTORIES;
     }
