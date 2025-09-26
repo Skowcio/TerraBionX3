@@ -5,7 +5,7 @@ import javax.imageio.ImageIO;
 
 public class  SteelMine {
     private int x, y;
-    private int width = 80, height = 80;
+    private int width = 100, height = 100;
     private boolean selected;
     private BufferedImage steelmineImage;
 

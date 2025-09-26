@@ -57,6 +57,11 @@ public class EnemyShooter {
         int dy = soldier.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    public boolean isInRange(Valkiria valkiria) {
+        int dx = valkiria.getX() - x;
+        int dy = valkiria.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
     public boolean isInRange(BuilderVehicle builderVehicle) {  // 🆕 BuilderVehicle
         int dx = builderVehicle.getX() - x;
         int dy = builderVehicle.getY() - y;
@@ -96,6 +101,7 @@ public class EnemyShooter {
 
     private void chooseTarget(
             ArrayList<Soldier> soldiers,
+            ArrayList<Valkiria> valkirias,
             ArrayList<SoldierBot> soldierBots,
             ArrayList<BattleVehicle> battleVehicles,
             ArrayList<Factory> factories,
@@ -162,13 +168,14 @@ public class EnemyShooter {
             Graphics g,
             ArrayList<Projectile> projectiles,
             ArrayList<Soldier> soldiers,
+            ArrayList<Valkiria> valkirias,   // 🆕
             ArrayList<SoldierBot> soldierBots,
             ArrayList<BattleVehicle> battleVehicles,
             ArrayList<Factory> factories,
             ArrayList<PowerPlant> powerPlants,
             ArrayList<BuilderVehicle> builderVehicles,
             ArrayList<Artylery> artyleries,
-    ArrayList<Baracks> baracks)
+            ArrayList<Baracks> baracks)
             // 🆕 BuilderVehicle
 
     {
@@ -185,9 +192,11 @@ public class EnemyShooter {
                 ||
                 (currentTarget instanceof Artylery && !artyleries.contains(currentTarget))||
                 (currentTarget instanceof Baracks && !baracks.contains(currentTarget))||
+                (currentTarget instanceof Valkiria && !valkirias.contains(currentTarget)) ||
 
 
                 !(currentTarget instanceof Soldier soldier && isInRange(soldier)) &&
+                        !(currentTarget instanceof Valkiria v && isInRange(v)) &&
                         !(currentTarget instanceof SoldierBot soldierBot&& isInRange(soldierBot)) &&
                         !(currentTarget instanceof BattleVehicle battleVehicle && isInRange(battleVehicle)) &&
                         !(currentTarget instanceof Factory factory && isInRange(factory)) &&
@@ -198,7 +207,7 @@ public class EnemyShooter {
 
         )
         {
-            chooseTarget(soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artyleries, baracks); // Wybierz nowy cel
+            chooseTarget(soldiers, valkirias, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artyleries, baracks); // Wybierz nowy cel
         }
 
         // Jeśli mamy ważny cel, strzelaj
@@ -206,6 +215,12 @@ public class EnemyShooter {
             if (currentTarget instanceof Soldier soldier) {
                 if (isInRange(soldier)) {
                     projectiles.add(new Projectile(x + 15, y + 15, soldier.getX() + 15, soldier.getY() + 15));
+                    lastShotTime = currentTime;
+                }
+            }
+            if (currentTarget instanceof Valkiria valkiria) {
+                if (isInRange(valkiria)) {
+                    projectiles.add(new Projectile(x + 15, y + 15, valkiria.getX() + 15, valkiria.getY() + 15));
                     lastShotTime = currentTime;
                 }
             }
@@ -262,6 +277,7 @@ public class EnemyShooter {
     public void update(
             List<SoldierBot> soldierBots,
             List<Soldier> soldiers,
+            List<Valkiria> valkirias,
             List<Harvester> harvesters,
             List<BuilderVehicle> builderVehicles,
             List<Artylery> artylerys,
@@ -271,13 +287,14 @@ public class EnemyShooter {
             List<Factory> factorys
 
     ) {
-        Object target = getClosestTarget(soldierBots, soldiers, powerPlants, battleVehicles, factorys, builderVehicles, artylerys, baracks);
+        Object target = getClosestTarget(soldierBots, soldiers, valkirias, powerPlants, battleVehicles, factorys, builderVehicles, artylerys, baracks);
         moveTowardsTarget(target);
     }
 
     public Object getClosestTarget(
             List<SoldierBot> soldierBots,
             List<Soldier> soldiers,
+            List<Valkiria> valkirias,
             List<PowerPlant> powerPlants,
             List<BattleVehicle> battleVehicles,
             List<Factory> factorys,
@@ -293,6 +310,14 @@ public class EnemyShooter {
             if (dist < minDistance) {
                 minDistance = dist;
                 closest = soldier;
+            }
+        }
+
+        for (Valkiria valkiria : valkirias) {
+            double dist = valkiria.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = valkiria;
             }
         }
 
@@ -359,7 +384,11 @@ public class EnemyShooter {
         if (target instanceof Soldier s) {
             tx = s.getX();
             ty = s.getY();
-        } else if (target instanceof SoldierBot sb) {
+        }
+        else if (target instanceof Valkiria v) {
+            tx = v.getX();
+            ty = v.getY();
+        }else if (target instanceof SoldierBot sb) {
             tx = sb.getX();
             ty = sb.getY();
         } else if (target instanceof PowerPlant pp) {

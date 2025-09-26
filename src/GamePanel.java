@@ -101,6 +101,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public ArrayList<Soldier> getSoldier(){ return soldiers;
     }
 /// /// to do radaru miniMapPanel
+    public List<Valkiria> getValkirias() {
+        return valkirias;
+    }
     public List<SoldierBot> getSoldierBots() {
         return soldierBots;
     }
@@ -111,12 +114,18 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         return enemies;
     }
 
+
     public List<EnemyShooter> getenemyShooters() {
         return enemyShooters;
+    }
+    public List<EnemyBehemoth> getenemyBehemoths() {
+        return enemyBehemoths;
     }
     public List<EnemyToo> getenemyToos() {return enemiesToo;}
     public List<Hive> getHives() {return hives;}
     public List<HiveToo> getHiveToos() {return hiveToos;}
+
+    public List<Baracks> getBaracks() {return baracks;}
     public List<Factory> getFactories() {return factories;}
     public List<PowerPlant> getPowerPlants() {return powerPlants;}
     public List<SteelMine> getSteelMines() {return steelMines;}
@@ -239,6 +248,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 // tu jest load misjii
     public void loadMission(Mission mission) {
         soldiers.clear();
+        valkirias.clear();
         builderVehicles.clear();
         enemies.clear();
         soldierBots.clear();
@@ -405,6 +415,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     // do czyszczenia mapy przed nowa misja
     private void clearAllUnitsAndEnemies() {
         soldiers.clear();
+        valkirias.clear();
         crystals.clear();
         soldierBots.clear();
         cryopits.clear();
@@ -2142,7 +2153,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
 
         for (EnemyShooter enemyShooter : enemyShooters) {
-            enemyShooter.update(soldierBots,soldiers, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories);
+            enemyShooter.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories);
         }
         for (SoldierBot soldierBot : new ArrayList<>(soldierBots)) {
             soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots, enemyBehemoths);
@@ -3034,7 +3045,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         for (EnemyShooter enemyShooter : enemyShooters){
             enemyShooter.draw(g);
-            enemyShooter.shoot(g, projectiles, soldiers, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
+            enemyShooter.shoot(g, projectiles, soldiers, valkirias, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
         }
         //budowniczy
         for (BuilderVehicle builderVehicle :builderVehicles) {
