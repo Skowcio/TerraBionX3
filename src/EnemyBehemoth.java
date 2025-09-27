@@ -19,9 +19,9 @@ public class EnemyBehemoth {
     private int health = 70;
     private final int maxHealth = 70;       // maksymalne HP
     private long lastRegenTime = 0;         // czas ostatniej regeneracji
-    private final long regenCooldown = 10_000; // timer do odnowienia hp 10 sekund w ms
-    private final int shootCooldown = 1100; // Czas odnowienia strzału (ms)
-    private final int range = 190; // Zasięg strzelania w pikselach
+    private final long regenCooldown = 5_000; // timer do odnowienia hp 10 sekund w ms
+    private final int shootCooldown = 900; // Czas odnowienia strzału (ms)
+    private final int range = 210; // Zasięg strzelania w pikselach
     private Object currentTarget; // Aktualny cel
     private long lastShotTime = 0; // Czas ostatniego strzału
     private boolean dead = false;

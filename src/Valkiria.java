@@ -14,7 +14,7 @@ public class Valkiria {
     private int x, y;
     private boolean selected;
     private int width = 50, height = 50;
-    private int health = 10;
+    private int health = 20;
     private final int maxHealth = 10;       // maksymalne HP
     private long lastRegenTime = 0;         // czas ostatniej regeneracji
     private final long regenCooldown = 20_000; // 10 sekund w ms
@@ -321,6 +321,11 @@ public class Valkiria {
         int dy = hive.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    public boolean isInRange(HiveToo hiveToo){
+        int dx = hiveToo.getX() - x;
+        int dy = hiveToo.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
 
     public boolean isInRange(EnemyBehemoth enemyBehemoth) {
         int dx = enemyBehemoth.getX() - x;
@@ -345,6 +350,7 @@ public class Valkiria {
             ArrayList<Enemy> enemies,
             ArrayList<EnemyToo> enemyToos,
             ArrayList<Hive> hives,
+            ArrayList<HiveToo> hiveToos,
             ArrayList<EnemyShooter> enemyShooters,
             ArrayList<EnemyHunter> enemyHunters,
             ArrayList<EnemyBehemoth> enemyBehemoths,
@@ -368,6 +374,7 @@ public class Valkiria {
         if (currentTarget instanceof Enemy e && !enemies.contains(e)) outOfRange = true;
         if (currentTarget instanceof EnemyToo et && !enemyToos.contains(et)) outOfRange = true;
         if (currentTarget instanceof Hive h && !hives.contains(h)) outOfRange = true;
+        if (currentTarget instanceof HiveToo ht && !hiveToos.contains(ht)) outOfRange = true;
         if (currentTarget instanceof EnemyShooter es && !enemyShooters.contains(es)) outOfRange = true;
         if (currentTarget instanceof EnemyHunter eh && !enemyHunters.contains(eh)) outOfRange = true;
         if (currentTarget instanceof  EnemyBehemoth eb && !enemyBehemoths.contains(eb)) outOfRange = true;
@@ -376,12 +383,13 @@ public class Valkiria {
                 !(currentTarget instanceof Enemy e && isInRange(e)) &&
                         !(currentTarget instanceof EnemyToo et && isInRange(et)) &&
                         !(currentTarget instanceof Hive h && isInRange(h)) &&
+                        !(currentTarget instanceof HiveToo ht && isInRange(ht)) &&
                         !(currentTarget instanceof EnemyShooter es && isInRange(es)) &&
                         !(currentTarget instanceof EnemyHunter eh && isInRange(eh)) &&
                         !(currentTarget instanceof EnemyBehemoth eb && isInRange(eb));
 
         if (currentTarget == null || outOfRange || notInRange) {
-            chooseTarget(enemies, enemyToos, hives, enemyShooters, enemyHunters, enemyBehemoths);
+            chooseTarget(enemies, enemyToos, hives, hiveToos, enemyShooters, enemyHunters, enemyBehemoths);
         }
 
         if (currentTarget != null && currentTime - lastShotTime >= shootCooldown) {
@@ -402,7 +410,11 @@ public class Valkiria {
                 Bullets.add(new Bullet(startX, startY, et.getX() + 15, et.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             } else if (currentTarget instanceof Hive h && isInRange(h)) {
                 Bullets.add(new Bullet(startX, startY, h.getX() + 15, h.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            } else if (currentTarget instanceof EnemyShooter es && isInRange(es)) {
+            }
+            else if (currentTarget instanceof HiveToo ht && isInRange(ht)) {
+                Bullets.add(new Bullet(startX, startY, ht.getX() + 15, ht.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+            }
+            else if (currentTarget instanceof EnemyShooter es && isInRange(es)) {
                 Bullets.add(new Bullet(startX, startY, es.getX() + 15, es.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             } else if (currentTarget instanceof EnemyHunter eh && isInRange(eh)) {
                 Bullets.add(new Bullet(startX, startY, eh.getX() + 15, eh.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
@@ -417,7 +429,7 @@ public class Valkiria {
     }
 
 
-    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths) {
+    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths) {
         currentTarget = null;
 
         // Szukaj najbliższego Enemy w zasięgu
@@ -456,6 +468,12 @@ public class Valkiria {
         for (Hive hive : hives) {
             if (isInRange(hive)) {
                 currentTarget = hive;
+                return; // Znaleziono cel
+            }
+        }
+        for (HiveToo hiveToo : hiveToos) {
+            if (isInRange(hiveToo)) {
+                currentTarget = hiveToo;
                 return; // Znaleziono cel
             }
         }
@@ -514,7 +532,7 @@ public class Valkiria {
 
         // Pasek życia (nad sprite'em, unoszony razem z nim)
         g2d.setColor(Color.GREEN);
-        int maxHealth = 10;
+        int maxHealth = 20;
         int healthBarWidth = 50;
         int currentHealthWidth = (int)((health / (double)maxHealth) * healthBarWidth);
         g2d.fillRect(drawX, drawY - 5, currentHealthWidth, 3);

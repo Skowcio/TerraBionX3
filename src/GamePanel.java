@@ -35,6 +35,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Minigunner> minigunners;
     private ArrayList<BattleVehicle> battleVehicles;
     private ArrayList<Artylery> artylerys;
+
     private ArrayList<Crystal> crystals;
 
     private ArrayList<Flora> floras;
@@ -59,10 +60,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<MinigunnerBullet> minigunnerBullets;
     private ArrayList<ArtBullet> artBullets;
     private ArrayList<Object> occupiedTargets = new ArrayList<>();
+
     private ArrayList<Baracks> baracks;
     private ArrayList<Factory> factories;
     private ArrayList<ResearchCenter> researchCenters;
+    private ArrayList<ValkiriaTech> valkiriaTechs;
     private ArrayList<Bulding> buldings;
+
     private ArrayList<Hive> hives;
     private ArrayList<HiveToo> hiveToos;
     private ArrayList<SteelMine> steelMines;
@@ -150,6 +154,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JButton btnFactory;
     private JButton btnArtylery2;
     private JButton btnResearch;
+    private JButton btnValkiriaTech;
 
     private JButton btnSoldier;
 
@@ -195,13 +200,14 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     //do budowania
     private enum BuildingType {
-        POWER_PLANT, STEEL_MINE, BARRACKS, FACTORY,ARTYLERY,RESEARCH    }
+        POWER_PLANT, STEEL_MINE, BARRACKS, FACTORY,ARTYLERY,RESEARCH, VALKIRIATECH    }
 
     private boolean isPlacingBuilding = false;
     private BuildingType buildingToPlace = null;
 
     private boolean isPlacingPowerPlant = false;
     private boolean isPlacingFactory = false;
+    private boolean isPlacingValkiriaTech = false;
     private boolean isPlacingSteelMine = false;
     private boolean isPlacingBarracks = false;
     private Point currentMousePosition = null;
@@ -602,6 +608,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         this.hiveToos = new ArrayList<>();
         this.cryopits = new ArrayList<>();
         this.powerPlants = new ArrayList<>();
+        this.valkiriaTechs = new ArrayList<>();
         this.steelMines = new ArrayList<>();
         this.soldiers = new ArrayList<>();
         this.soldierBots = new ArrayList<>();
@@ -1004,6 +1011,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnResearch.setEnabled(true);
         add(btnResearch);
 
+        btnValkiriaTech = new JButton("Valkiria Tech");
+        btnValkiriaTech.setBounds(10, 330, 120, 30);
+        btnValkiriaTech.setVisible(false);
+        btnValkiriaTech.setEnabled(true);
+        add(btnValkiriaTech);
+
+
 // Logika dla Power Plant
         btnResearch.addActionListener(e -> {
             if (selectedBuilderVehicle != null && collectedSteel >= 500 && totalPower >= 100) {
@@ -1011,6 +1025,15 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 buildingToPlace = BuildingType.RESEARCH;
                 placingBuildingType = "Research Center";
                 System.out.println("Wybierz miejsce budowy");
+            }
+        });
+
+        btnValkiriaTech.addActionListener(e -> {
+            if (selectedBuilderVehicle != null && collectedSteel >= 5000 && totalPower >= 100) {
+                isPlacingBuilding = true;
+                buildingToPlace = BuildingType.VALKIRIATECH;
+                placingBuildingType = "Valkiria Tech";
+
             }
         });
 
@@ -1409,6 +1432,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnFactory.setVisible(showBuilderMenu);
         btnArtylery2.setVisible(showBuilderMenu);
         btnResearch.setVisible(showBuilderMenu);
+        btnValkiriaTech.setVisible(showBuilderMenu);
         repaint(); // Odśwież panel
     }
 
@@ -2249,6 +2273,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         isPlacingBuilding = false;
         isPlacingPowerPlant = false;
         isPlacingFactory = false;
+        isPlacingValkiriaTech = false;
         isPlacingBarracks = false;
         isPlacingSteelMine = false;
         placementCursor = null;
@@ -2329,6 +2354,19 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                             break;
                         }
                     }
+                    if (buildingToPlace == BuildingType.VALKIRIATECH) {
+                        boolean insideCrystalArea = false;
+                        for (Crystal crystal : crystals) {
+                            if (crystal.getBuildArea(200).contains(newBuilding)) {
+                                insideCrystalArea = true;
+                                break;
+                            }
+                        }
+                        if (!insideCrystalArea) {
+                            collision = true;
+                            System.out.println("❌ ValkiriaTech musi być w zasięgu kryształu!");
+                        }
+                    }
                 }
 
 
@@ -2362,6 +2400,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                         case RESEARCH:
                             researchCenters.add(new ResearchCenter(mouseX, mouseY));
                             collectedSteel -= 3000;
+                            totalPower -= 200;
+                            break;
+
+                        case  VALKIRIATECH:
+                            valkiriaTechs.add(new ValkiriaTech(mouseX, mouseY));
+                            collectedSteel -= 5000; // koszt np.
                             totalPower -= 200;
                             break;
 
@@ -2823,15 +2867,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         }
 
-        for (EnemyHunter enemyHunter : enemyHunters){
-            enemyHunter.draw(g);
 
-        }
-        for (EnemyBehemoth enemyBehemoth : enemyBehemoths){
-            enemyBehemoth.draw(g);
-            enemyBehemoth.updateFly(deltaTime);
-            enemyBehemoth.shoot(g, projectiles, soldiers, valkirias, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
-        }
+
 
         for (Artylery artylery : artylerys){
             artylery.draw(g);
@@ -2860,6 +2897,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         // Rysowanie elektrowni
         for (PowerPlant powerPlant : powerPlants) {
             powerPlant.draw(g);
+        }
+        for (ValkiriaTech valkiriaTech : valkiriaTechs) {
+            valkiriaTech.draw(g);
         }
         for (SteelMine steelMine : steelMines) {
             steelMine.draw(g);
@@ -2899,8 +2939,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     enemies,
                     enemiesToo,
                     hives,
+                    hiveToos,
                     enemyShooters,
                     enemyHunters,
+
                     enemyBehemoths,
                     viewRect.x,
                     viewRect.y,
@@ -2920,6 +2962,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     enemies,
                     enemiesToo,
                     hives,
+                    hiveToos,
                     enemyShooters,
                     enemyHunters,
                     enemyBehemoths,
@@ -3037,12 +3080,18 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
             enemyHunter.draw(g);
         }
+        for (EnemyBehemoth enemyBehemoth : enemyBehemoths){
+            enemyBehemoth.draw(g);
+            enemyBehemoth.updateFly(deltaTime);
+            enemyBehemoth.shoot(g, projectiles, soldiers, valkirias, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
+        }
 
 
         // Rysowanie wrogów
         for (Enemy enemy : enemies) {
             enemy.draw(g);
         }
+
         for (EnemyShooter enemyShooter : enemyShooters){
             enemyShooter.draw(g);
             enemyShooter.shoot(g, projectiles, soldiers, valkirias, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
@@ -3147,6 +3196,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             btnFactory.setLocation(screenX + 10, screenY + 210);
             btnArtylery2.setLocation(screenX + 10, screenY + 250);
             btnResearch.setLocation(screenX + 10, screenY + 290);
+            btnValkiriaTech.setLocation(screenX + 10, screenY + 330);
 
             btnSoldier.setLocation(screenX + 10, screenY + 90);
             btnProduceShell.setLocation(screenX + 10, screenY + 130);

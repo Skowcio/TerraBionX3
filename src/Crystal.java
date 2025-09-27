@@ -1,14 +1,11 @@
 import java.awt.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Random;
 import javax.imageio.ImageIO;
 
 public class Crystal {
     private int x, y;
-    private final int size = 150; // rozmiar blokera
+    private final int size = 150; // rozmiar kryształu
     private int width = 150, height = 150;
     private BufferedImage crystalImage;
 
@@ -26,16 +23,25 @@ public class Crystal {
         return new Rectangle(x, y, width, height);
     }
 
+    // 🔹 Strefa budowania (kwadrat wokół środka kryształu)
+    public Rectangle getBuildArea(int radius) {
+        int centerX = x + width / 2;
+        int centerY = y + height / 2;
+        return new Rectangle(centerX - radius, centerY - radius, radius * 2, radius * 2);
+    }
+
     public void draw(Graphics g) {
-        if (crystalImage != null){
-            g.drawImage(crystalImage, x, y, height, height, null);
+        if (crystalImage != null) {
+            g.drawImage(crystalImage, x, y, width, height, null);
         }
-//        g.setColor(Color.GRAY);
-//        g.fillRect(x, y, size, size);
-//        g.setColor(Color.BLACK);
-//        g.drawRect(x, y, size, size);
+        // (opcjonalne) podgląd strefy budowania:
+        // Rectangle area = getBuildArea(200);
+        // g.setColor(new Color(0, 255, 0, 50)); // półprzezroczysty zielony
+        // g.fillRect(area.x, area.y, area.width, area.height);
     }
 
     public int getX() { return x; }
     public int getY() { return y; }
+    public int getWidth() { return width; }
+    public int getHeight() { return height; }
 }
