@@ -24,10 +24,11 @@ public class HUDPanel extends JPanel {
         g2d.drawString("Steel Collected: " + gamePanel.getCollectedSteel(), 20, 30);
         g2d.drawString("Power: " + gamePanel.getTotalPower(), 20, 60);
         g2d.setColor(Color.WHITE);
-        g2d.drawString("Factories: " + Factory.getTotalFactories() + " / " + Factory.getMaxFactories(), 650, 30);
-        g2d.drawString("Towers: " + Artylery.getTotalArtys() + " / " + Artylery.getMaxArtylerys(), 850, 30);
-        g2d.drawString("Drones: " + gamePanel.getBuilderVehicles().size() + " / 5", 1050, 30);
-        g2d.drawString("AX-2M Fighter: " + gamePanel.getSoldier().size() + " / 8", 1250,30);
+        g2d.drawString("Factories: " + Factory.getTotalFactories() + " / " + Factory.getMaxFactories(), 450, 30);
+        g2d.drawString("Towers: " + Artylery.getTotalArtys() + " / " + Artylery.getMaxArtylerys(), 600, 30);
+//        g2d.drawString("Drones: " + gamePanel.getBuilderVehicles().size() + " / 5", 750, 30);
+        g2d.drawString("AX-2M Fighter: " + gamePanel.getSoldier().size() + " / 8", 900,30);
+        g2d.drawString("Valkiria: " + gamePanel.getValkirias().size() + " / Tech: " + gamePanel.getValkiriaTech().size(), 1100, 30);
         /// //////////////////////////////////////ta forma jest szybsza gamePanel.getBuilderVehicles w praktyce.... na maszynach z lat 90 byla by roznica///////
 
         // do obslugi wyswietlania paska Drony budownicze
@@ -36,10 +37,10 @@ public class HUDPanel extends JPanel {
 
 // Tekst
         g2d.setColor(Color.WHITE);
-        g2d.drawString("Drones: " + currentDrones + " / " + maxDrones, 1050, 30);
+        g2d.drawString("Drones: " + currentDrones + " / " + maxDrones, 750, 30);
 
 // Pasek postępu
-        int barX = 1050;
+        int barX = 750;
         int barY = 45;
         int barWidth = 90;
         int barHeight = 10;

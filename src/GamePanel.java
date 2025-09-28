@@ -108,6 +108,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public List<Valkiria> getValkirias() {
         return valkirias;
     }
+    public List<ValkiriaTech> getValkiriaTech() {
+        return valkiriaTechs;
+    }
     public List<SoldierBot> getSoldierBots() {
         return soldierBots;
     }
@@ -2116,6 +2119,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     totalPower = MAX_POWER;
                 }
             }
+        }
+        // 🔽 Pobór zasobów przez ValkiriaTech
+        for (ValkiriaTech valkiriaTech : valkiriaTechs) {
+            collectedSteel -= 1;  // zużywa 10 na sekunde
+            totalPower -= 1;      // zużywa 10 na sekunde
+            if (collectedSteel < 0) collectedSteel = 0; // zabezpieczenie
+            if (totalPower < 0) totalPower = 0;         // zabezpieczenie
         }
         repaint();
     }
