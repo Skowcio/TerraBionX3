@@ -28,7 +28,10 @@ public class Factory {
     private boolean producingSoldier = false;
     private long soldierStartTime;
     private final int soldierProductionTime = 20000; // 10s
-
+// produkcja valkirii
+    private boolean producingValkiria = false;
+    private long valkiriaStartTime;
+    private final int valkiriaProductionTime = 10000; // 10 sekund
 
 
     public static int getTotalFactories() {
@@ -147,6 +150,52 @@ public class Factory {
             }
         }
     }
+    public double getValkiriaProgress() {
+        if (producingValkiria) {
+            long now = System.currentTimeMillis();
+            long elapsed = now - valkiriaStartTime;
+            return Math.min(1.0, (double) elapsed / valkiriaProductionTime);
+        }
+        return 0.0;
+    }
+
+    public void startProducingValkiria() {
+        if (!producingValkiria) {
+            producingValkiria = true;
+            valkiriaStartTime = System.currentTimeMillis();
+            System.out.println("Produkcja Valkirii rozpoczęta!");
+        }
+    }
+
+    public void updateValkiriaProduction(ArrayList<Valkiria> valkirias) {
+        if (producingValkiria) {
+            long now = System.currentTimeMillis();
+            if (now - valkiriaStartTime >= valkiriaProductionTime) {
+                producingValkiria = false;
+
+                // ➕ dodajemy Valkirię po ukończeniu produkcji
+                int valkiriaX = x + width + 20;
+                int valkiriaY = y;
+                valkirias.add(new Valkiria(valkiriaX, valkiriaY));
+
+                System.out.println("Valkiria wyprodukowana!");
+            }
+        }
+    }
+
+    public int getRemainingValkiriaTime() {
+        if (producingValkiria) {
+            long now = System.currentTimeMillis();
+            long remaining = valkiriaProductionTime - (now - valkiriaStartTime);
+            return (int) Math.max(0, remaining / 1000);
+        }
+        return 0;
+    }
+
+    public boolean isProducingValkiria() {
+        return producingValkiria;
+    }
+
 
     public int getRemainingSoldierTime() {
         if (producingSoldier) {
@@ -372,6 +421,26 @@ public class Factory {
 //            g.setColor(Color.CYAN);
 //            g.drawString(" : " + getRemainingSoldierTime() + "s", x, y + height + 55);
         }
+        if (producingValkiria) {
+            int barX = x;
+            int barY = y + height + 80; // niżej niż pasek soldier
+            int barWidth = 100;
+            int barHeight = 10;
+
+            g.setColor(Color.GRAY);
+            g.fillRect(barX, barY, barWidth, barHeight);
+
+            int fillWidth = (int) (barWidth * getValkiriaProgress());
+            g.setColor(Color.MAGENTA);
+            g.fillRect(barX, barY, fillWidth, barHeight);
+
+            g.setColor(Color.WHITE);
+            g.drawRect(barX, barY, barWidth, barHeight);
+
+            g.setColor(Color.MAGENTA);
+            g.drawString("Valkiria: " + getRemainingValkiriaTime() + "s", barX, barY - 2);
+        }
+
 
         // Liczba botów i limit
         g.setColor(Color.WHITE);

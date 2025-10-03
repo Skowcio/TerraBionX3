@@ -15,6 +15,8 @@ public class ValkiriaTech {
     public ValkiriaTech(int x, int y) {
         this.x = x;
         this.y = y;
+        // 🔥 Każdy ValkiriaTech pozwala zbudować jedną dodatkową Valkirię
+        Valkiria.increaseMaxValkirias(1);
     }
 
     public void draw(Graphics g) {

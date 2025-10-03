@@ -25,6 +25,9 @@ public class Valkiria {
     private Object currentTarget;
     private long lastShotTime = 0;
 
+    private static int totalValkirias = 0;
+    private static int MAX_VALKIRIAS = 0;
+
     private int magazineSize = 25;     // liczba pocisków w magazynku
     private int bulletsLeft = magazineSize; // początkowo pełny magazynek
     private boolean reloading = false;
@@ -49,6 +52,9 @@ public class Valkiria {
         this.selected = false;
         this.target = null;
 
+        // dodaje valkirie do liczby max
+        totalValkirias++;
+
         // Ładowanie grafik – nazwy plików: APC0.png ... APC15.png
         try {
             for (int i = 0; i < 16; i++) {
@@ -57,6 +63,15 @@ public class Valkiria {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public static int getMaxValkiriaTech() {
+        return MAX_VALKIRIAS;
+    }
+    public static int getFactoryCount() {
+        return totalValkirias;
+    }
+    public static void increaseMaxValkirias(int amount) {
+        MAX_VALKIRIAS += amount;
     }
 
     public Rectangle getBounds() {
@@ -84,6 +99,14 @@ public class Valkiria {
         return height;
     }
 
+    public static int getTotalValkirias() {
+        return totalValkirias;
+    }
+
+    public static int getMaxValkirias() {
+        return MAX_VALKIRIAS;
+    }
+
 
     public boolean takeDamage() {
         health--;
@@ -104,10 +127,14 @@ public class Valkiria {
         return dead;
     }
 
-    public void markAsDead() {
-        this.dead = true;
-    }
-
+//    public void markAsDead() {
+//        this.dead = true;
+//    }
+public void markAsDead() {
+    this.dead = true;
+    totalValkirias--; // zwalnia slot na nową
+    if (totalValkirias < 0) totalValkirias = 0;
+}
 
     // Getter pozycji jako obiekt Point
     public Point getPosition() {

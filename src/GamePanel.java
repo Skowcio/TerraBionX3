@@ -160,6 +160,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JButton btnValkiriaTech;
 
     private JButton btnSoldier;
+    private JButton btnValkiria;
 
     private JButton btnProduceShell;
     private JButton btnFireShell;
@@ -393,6 +394,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         updateGame(); // od razu sprawdzanie celu
         missionStartTime = System.currentTimeMillis();
         ResearchCenter.resetCounts();
+
     }
 
 
@@ -693,7 +695,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         btnSoldier.setBounds(10, 50, 120, 30); // Pozycja i rozmiar
         btnSoldier.setVisible(false); // Ukryj przycisk na starcie
         add(btnSoldier);
-
+/// / pamietaj ze przycisk SOLDIER jest teraz przyciskiem do buldierow w barakach!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         btnSoldier.addActionListener(e -> {
             if (selectedBaracks != null) {
                 if (collectedSteel >= 2000) {
@@ -711,6 +713,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 }
             }
         });
+
+
 
         btnProduceShell = new JButton("Produkuj Pocisk");
         btnProduceShell.setBounds(10, 90, 150, 30);
@@ -861,7 +865,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
                     /// //maksymalna liczba w grze fighterow kontrolowanych przez gracza
                     if (soldiers.size() >= 8) {
-                        System.out.println("Limit FENIX Drone osiągnięty (max 5).");
+                        System.out.println("Limit FENIX Drone osiągnięty (max 8).");
                         return; // Nie buduj więcej
                     }
                     // Oblicz pozycję jednostki obok Factory
@@ -886,6 +890,29 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         });
 
         setLayout(null);
+
+        btnValkiria = new JButton("Valkiria");
+        btnValkiria.setBounds(10, 50, 120, 30); // Pozycja i rozmiar
+        btnValkiria.setVisible(false); // Ukryj przycisk na starcie
+        add(btnValkiria);
+
+        btnValkiria.addActionListener(e -> {
+            if (selectedFactories != null) {
+                if (collectedSteel >= 2000) {
+                    if (Valkiria.getTotalValkirias() < Valkiria.getMaxValkirias()) {
+                        collectedSteel -= 2000;
+                        selectedFactories.startProducingValkiria();
+                        updateFactorysMenu();
+                        repaint();
+                    } else {
+                        System.out.println("Potrzebujesz więcej ValkiriaTech!");
+                    }
+                } else {
+                    System.out.println("Nie masz wystarczającej ilości stali! Potrzebujesz 2000 Steel.");
+                }
+            }
+        });
+
         btnBuilderVehicle.addActionListener(e -> {
             if (selectedFactories != null) {
                 if (collectedSteel >= 2000) {
@@ -1456,6 +1483,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     private void updateFactorysMenu() {
         btnHarvester.setVisible((showFactorysMenu));
+        btnValkiria.setVisible((showFactorysMenu));
         btnArtylery.setVisible((showFactorysMenu));
         btnBattleVehicle.setVisible((showFactorysMenu));
         btnBuilderVehicle.setVisible((showFactorysMenu));
@@ -2108,6 +2136,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     // Harvester wydobywa zasoby
                     resource.mineResource(2); // Zmniejsz ilość zasobów o 2 na sekundę
                     collectedSteel += 2;     // Zwiększ liczbę zebranych zasobów
+                    totalPower -=1;
+                    if (totalPower < 0) totalPower = 0;         // zabezpieczenie
                 }
             }
         }
@@ -2120,10 +2150,16 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 }
             }
         }
+        for (ResearchCenter researchCenter : researchCenters){
+            collectedSteel -= 1;
+            totalPower -=1;
+            if (collectedSteel < 0) collectedSteel = 0; // zabezpieczenie
+            if (totalPower < 0) totalPower = 0;         // zabezpieczenie
+        }
         // 🔽 Pobór zasobów przez ValkiriaTech
         for (ValkiriaTech valkiriaTech : valkiriaTechs) {
-            collectedSteel -= 1;  // zużywa 10 na sekunde
-            totalPower -= 1;      // zużywa 10 na sekunde
+            collectedSteel -= 2;  // zużywa 20 na sekunde
+            totalPower -= 2;      // zużywa 20 na sekunde
             if (collectedSteel < 0) collectedSteel = 0; // zabezpieczenie
             if (totalPower < 0) totalPower = 0;         // zabezpieczenie
         }
@@ -2928,6 +2964,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         for (Factory factory : factories) {
             factory.draw(g);
+            factory.updateValkiriaProduction(valkirias); // <-- NOWE
             factory.spawnBots(g, soldierBots,
                     () -> totalPower,                // Supplier — odczyt
                     () -> totalPower -= 50           // Runnable — zużycie
@@ -3218,6 +3255,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             btnBattleVehicle.setLocation(screenX + 10, screenY + 170);
             btnBuilderVehicle.setLocation(screenX + 10, screenY + 210);
             btnDroneBot.setLocation(screenX + 10, screenY + 290);
+            btnValkiria.setLocation(screenX + 10, screenY + 330);
             btnDestructionFactory.setLocation(screenX + 10, screenY + 380);
 
             btnDestructionArty.setLocation(screenX + 10, screenY + 90);

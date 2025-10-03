@@ -18,7 +18,7 @@ public class MissionManager {
 
         mission1.valkiriaPositions.add(new Point(850, 400));
 
-        mission1.crystalPositions.add(new Point(880, 900));
+        mission1.crystalPositions.add(new Point(680, 700));
 
         mission1.floraPositions.add(new Point(400, 20));
         mission1.floraTypes.add("marsh");
