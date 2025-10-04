@@ -239,6 +239,7 @@ public void markAsDead() {
                             ArrayList<PowerPlant> powerPlants,
                             ArrayList<Baracks> baracks,
                             ArrayList<Valkiria> valkirias,
+                            ArrayList<Soldier> soldiers,
                             ArrayList<Hive> hives,
                             ArrayList<BattleVehicle> battleVehicles) {
         // Kolizje (zostawiłem tak jak było)
@@ -247,6 +248,7 @@ public void markAsDead() {
 //        for (Baracks b : baracks) if (isCollidingWithBarack(b, x, y)) return;
         for (Hive h : hives) if (isCollidingWithHive(h, x, y)) return;
 //        for (BattleVehicle bv : battleVehicles) if (isCollidingWithBattleV(bv, x, y)) return;
+        for (Soldier s : soldiers) if (isCollidingWithSoldier(s, x, y)) return;
 
         this.x = x;
         this.y = y;
@@ -281,6 +283,27 @@ public void markAsDead() {
 
         // Sprawdzamy, czy nowa pozycja żołnierza nachodzi na elektrownię
         return targetBounds.intersects(powerPlantBounds);
+    }
+    private boolean isCollidingWithSoldier(Soldier soldier, int targetX, int targetY) {
+
+        int allowedOverlap = 10; // maksymalna liczba pikseli, na którą mogą nachodzić
+
+        // Tworzymy prostokąty kolizji, zmniejszając je o allowedOverlap
+        Rectangle targetBounds = new Rectangle(
+                targetX + allowedOverlap,
+                targetY + allowedOverlap,
+                width - 2 * allowedOverlap,
+                height - 2 * allowedOverlap
+        );
+
+        Rectangle soldierBounds = new Rectangle(
+                soldier.getX() + allowedOverlap,
+                soldier.getY() + allowedOverlap,
+                soldier.getWidth() - 2 * allowedOverlap,
+                soldier.getHeight() - 2 * allowedOverlap
+        );
+
+        return targetBounds.intersects(soldierBounds);
     }
     private boolean isCollidingWithValkiria(Valkiria valkiria, int targetX, int targetY) {
         if (this == valkiria) return false; // ignoruj kolizję z samym sobą

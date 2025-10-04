@@ -44,6 +44,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     /// to jest do zaznaczania grupowego jednostek
     private ArrayList<Soldier> selectedSoldiers;
     private ArrayList<BuilderVehicle> selectedBuldierVehicles;
+    private  ArrayList<Valkiria> selectedValkirias;
 
     private ArrayList<Harvester> harvesters;
     private ArrayList<Enemy> enemies;
@@ -637,6 +638,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         /// do grupowego zaznaczania
         this.selectedSoldiers = new ArrayList<>();
         this.selectedBuldierVehicles = new ArrayList<>();
+        this.selectedValkirias = new ArrayList<>();
 
         this.selectedBattleVehicle = null;
         this.selectedArtylery = null;
@@ -1741,7 +1743,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
                 // Przesuń żołnierza o obliczone wartości
-                soldier.setPosition(soldier.getX() + dx, soldier.getY() + dy, powerPlants, baracks, soldiers, hives, battleVehicles);
+                soldier.setPosition(soldier.getX() + dx, soldier.getY() + dy, powerPlants, baracks, soldiers, hives, valkirias, battleVehicles);
 
                 // Jeśli żołnierz osiągnął punkt docelowy, usuń cel
                 if (dx == 0 && dy == 0) {
@@ -1771,7 +1773,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
                 // Przesuń żołnierza o obliczone wartości
-                valkiria.setPosition(valkiria.getX() + dx, valkiria.getY() + dy, powerPlants, baracks, valkirias, hives, battleVehicles);
+                valkiria.setPosition(valkiria.getX() + dx, valkiria.getY() + dy, powerPlants, baracks, valkirias, soldiers, hives, battleVehicles);
 
                 // Jeśli żołnierz osiągnął punkt docelowy, usuń cel
                 if (dx == 0 && dy == 0) {
@@ -2364,6 +2366,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
                 for (SteelMine mine : steelMines)
                     if (mine.getBounds().intersects(newBuilding)) collision = true;
+
+                for (ResearchCenter researchCenter : researchCenters)
+                    if (researchCenter.getBounds().intersects(newBuilding)) collision = true;
+
+                for (ValkiriaTech valkiriaTech : valkiriaTechs)
+                    if (valkiriaTech.getBounds().intersects(newBuilding)) collision = true;
+
                 for (Crystal crystal : crystals)
                     if (crystal.getBounds().intersects(newBuilding)) collision = true;
 
@@ -2773,6 +2782,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 }
             }
 
+            for (Valkiria valkiria : valkirias) {
+                if (selectionRectangle.intersects(new Rectangle(valkiria.getX(), valkiria.getY(), 20, 20))){
+                    valkiria.setSelected(true);
+                    selectedValkirias.add(valkiria);
+                }
+            }
+
             // Zaznacz BuilderVehicle
             for (BuilderVehicle builder : builderVehicles) {
                 if (selectionRectangle.intersects(new Rectangle(builder.getX(), builder.getY(), 20, 20))) {
@@ -2789,6 +2805,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 soldier.setSelected(false);
             }
             selectedSoldiers.clear();
+            for (Valkiria valkiria : selectedValkirias){
+                valkiria.setSelected(false);
+            }
+            selectedValkirias.clear();
 
             // Odznacz BuilderVehicle
             for (BuilderVehicle builder : selectedBuldierVehicles) {
@@ -2808,6 +2828,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             for (Soldier soldier : selectedSoldiers) {
                 soldier.setTarget(target);
                 soldier.setSelected(true);
+            }
+            for (Valkiria valkiria : selectedValkirias){
+                valkiria.setTarget(target);
+                valkiria.setSelected(true);
             }
 
             for (BuilderVehicle builder : selectedBuldierVehicles) {

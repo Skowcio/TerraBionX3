@@ -9,8 +9,8 @@ import javax.imageio.ImageIO;
 
 public class ValkiriaTech {
     private int x, y;
-    private final int width = 50;
-    private final int height = 50;
+    private final int width = 80;
+    private final int height = 80;
 
     public ValkiriaTech(int x, int y) {
         this.x = x;

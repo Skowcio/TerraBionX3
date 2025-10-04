@@ -195,6 +195,7 @@ public class Soldier {
                             ArrayList<Baracks> baracks,
                             ArrayList<Soldier> soldiers,
                             ArrayList<Hive> hives,
+                            ArrayList<Valkiria> valkirias,
                             ArrayList<BattleVehicle> battleVehicles) {
         // Kolizje (zostawiłem tak jak było)
 //        for (PowerPlant p : powerPlants) if (isCollidingWithPowerPlant(p, x, y)) return;
@@ -202,6 +203,7 @@ public class Soldier {
 //        for (Baracks b : baracks) if (isCollidingWithBarack(b, x, y)) return;
         for (Hive h : hives) if (isCollidingWithHive(h, x, y)) return;
 //        for (BattleVehicle bv : battleVehicles) if (isCollidingWithBattleV(bv, x, y)) return;
+        for (Valkiria v : valkirias) if (isCollidingWithValkiria(v, x, y)) return;
 
         this.x = x;
         this.y = y;
@@ -258,11 +260,35 @@ public class Soldier {
 
         return targetBounds.intersects(soldierBounds);
     }
+    private boolean isCollidingWithValkiria(Valkiria valkiria, int targetX, int targetY) {
+
+
+        int allowedOverlap = 10; // maksymalna liczba pikseli, na którą mogą nachodzić
+
+        // Tworzymy prostokąty kolizji, zmniejszając je o allowedOverlap
+        Rectangle targetBounds = new Rectangle(
+                targetX + allowedOverlap,
+                targetY + allowedOverlap,
+                width - 2 * allowedOverlap,
+                height - 2 * allowedOverlap
+        );
+
+        Rectangle valkiriaBounds = new Rectangle(
+                valkiria.getX() + allowedOverlap,
+                valkiria.getY() + allowedOverlap,
+                valkiria.getWidth() - 2 * allowedOverlap,
+                valkiria.getHeight() - 2 * allowedOverlap
+        );
+
+        return targetBounds.intersects(valkiriaBounds);
+    }
     private  boolean isCollidingWithHive(Hive hive, int targetX, int targetY){
         Rectangle targetBounds = new Rectangle(targetX, targetY, width, height);
         Rectangle hiveBounds = hive.getBounds();
         return targetBounds.intersects(hiveBounds);
     }
+
+
 //    private boolean isCollidingWithBarack(Baracks barack, int targetX, int targetY) {
 //
 //        Rectangle targetBounds = new Rectangle(targetX, targetY, width, height);
