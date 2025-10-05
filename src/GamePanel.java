@@ -258,21 +258,21 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     /// /// /////////////////////////////////////////////////////////////////////////////////////
 // tu jest load misjii
     public void loadMission(Mission mission) {
-        soldiers.clear();
-        valkirias.clear();
-        builderVehicles.clear();
-        enemies.clear();
-        soldierBots.clear();
-        enemyShooters.clear();
-        hiveToos.clear();
-        enemyHunters.clear();
-        enemiesToo.clear();
-        hives.clear();
-        projectiles.clear();
-        bullets.clear();
-        resources.clear();
-        powerPlants.clear();
-        crystals.clear();
+//        soldiers.clear();
+//        valkirias.clear();
+//        builderVehicles.clear();
+//        enemies.clear();
+//        soldierBots.clear();
+//        enemyShooters.clear();
+//        hiveToos.clear();
+//        enemyHunters.clear();
+//        enemiesToo.clear();
+//        hives.clear();
+//        projectiles.clear();
+//        bullets.clear();
+//        resources.clear();
+//        powerPlants.clear();
+//        crystals.clear();
 
         System.out.println("🔄 Resetuję licznik Hive. Przed: " + destroyedHiveCount);
         destroyedHiveCount = 0;
@@ -455,6 +455,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         steelMines.clear();
         explosions.clear();
         projectiles.clear();
+//        floras.clear();  gdy to jest dodane to nie laduje 2 misji, o chuj chodzi ?
 
         // Wyczyść zaznaczenia jednostek
         selectedSoldier = null;
@@ -1546,6 +1547,19 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private void enemyShoot() {
         for (Enemy enemy : enemies) {
             Projectile projectile = enemy.shootAtNearestSoldier(soldiers);
+            if (projectile != null) {
+                projectiles.add(projectile);
+            }
+        }
+        for (Enemy enemy : enemies) {
+            Projectile projectile = enemy.shootAtNearestSoldierBot(soldierBots);
+            if (projectile != null) {
+                projectiles.add(projectile);
+            }
+        }
+
+        for (Enemy enemy : enemies) {
+            Projectile projectile = enemy.shootAtNearestValkiria(valkirias);
             if (projectile != null) {
                 projectiles.add(projectile);
             }

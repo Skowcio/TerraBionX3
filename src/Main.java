@@ -15,10 +15,34 @@ public class Main {
         frame.setVisible(true);
     }
 
+
+
     private static void showMainMenu(JFrame frame, MissionManager missionManager) {
-        JPanel menuPanel = new JPanel();
+        // Ładowanie obrazka z resources (zalecane)
+        ImageIcon bgIcon = new ImageIcon(
+                Main.class.getResource("/background/TerraBionX3.png")
+        );
+        Image backgroundImage = bgIcon.getImage();
+
+        JPanel menuPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                int panelWidth = getWidth();
+                int panelHeight = getHeight();
+                int imgWidth = backgroundImage.getWidth(null);
+                int imgHeight = backgroundImage.getHeight(null);
+
+                // Wyliczamy przesunięcie, żeby centrować
+                int x = (panelWidth - imgWidth) / 2;
+                int y = (panelHeight - imgHeight) / 2;
+
+                g.drawImage(backgroundImage, x, y, this);
+            }
+        };
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
-        menuPanel.setBackground(Color.BLACK);
+        menuPanel.setOpaque(false); // żeby widzieć tło
 
         JLabel title = new JLabel("TerraBionX2");
         title.setFont(new Font("Arial", Font.BOLD, 50));
@@ -39,16 +63,14 @@ public class Main {
         menuPanel.add(exitButton);
         menuPanel.add(Box.createVerticalGlue());
 
-        // Obsługa kliknięcia "New Game"
         newGameButton.addActionListener(e -> startGame(frame, missionManager));
-
-        // Obsługa kliknięcia "Exit Game"
         exitButton.addActionListener(e -> System.exit(0));
 
         frame.setContentPane(menuPanel);
         frame.revalidate();
         frame.repaint();
     }
+
 
     private static void startGame(JFrame frame, MissionManager missionManager) {
         Mission current = missionManager.getCurrentMission();

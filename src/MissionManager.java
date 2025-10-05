@@ -56,10 +56,24 @@ public class MissionManager {
         mission1.resourcesPositions.add(new Point(850, 600));
 
 
-mission1.enemyBehemothPositions.add(new Point(1100, 1300));
-        mission1.enemyPositions.add(new Point(1000, 1200));
+//        mission1.enemyBehemothPositions.add(new Point(1100, 1300));
+//
+        mission1.enemyPositions.add(new Point(1050, 1200));
+        mission1.enemyPositions.add(new Point(1100, 1200));
+//        mission1.enemyPositions.add(new Point(1000, 1300));
+//        mission1.enemyPositions.add(new Point(1000, 1250));
+
 
         mission1.randomHiveCount = 5;
+
+        mission1.soldierPositions.add(new Point(1050, 9500));
+        mission1.soldierPositions.add(new Point(1000, 900));
+        mission1.soldierPositions.add(new Point(1350, 1000));
+        mission1.soldierPositions.add(new Point(1400, 1050));
+
+        mission1.valkiriaPositions.add(new Point(1250, 1000));
+        mission1.valkiriaPositions.add(new Point(1250, 1100));
+
         mission1.hiveSpawnArea = new Rectangle(1800, 1200, 1000, 1000);
         mission1.requiredHivesDestroyed = 5;
         mission1.objectiveType = Mission.ObjectiveType.DESTROY_ALL_HIVES;
@@ -115,15 +129,19 @@ mission1.enemyBehemothPositions.add(new Point(1100, 1300));
         mission2.builderPositions.add(new Point(380, 450));
         mission2.enemyPositions.add(new Point(1400, 1500));
         mission2.enemyPositions.add(new Point(1200, 1300));
+
         mission2.resourcesPositions.add(new Point(550, 400));
         mission2.resourcesPositions.add(new Point(590, 450));
         mission2.resourcesPositions.add(new Point(1550, 1400));
+
         mission2.hiveTooPositions.add(new Point(1950, 1500));
         mission2.randomHiveCount = 30;
         mission2.hiveSpawnArea = new Rectangle(1800, 1400, 800, 800);
         mission2.enemyPositions.add(new Point(1800, 1300));
         mission2.requiredHivesDestroyed = 0;
+
         mission2.objectiveType = Mission.ObjectiveType.DEFEND_FOR_TIME; // <- inny typ celu
+
         missions.add(mission2);
     }
 
