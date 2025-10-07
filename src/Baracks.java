@@ -49,6 +49,9 @@ public class Baracks {
     public int getHeight() {
         return height;
     }
+    public int getHealth() {
+        return health;
+    }
 
     // do obslugi pocisku
 

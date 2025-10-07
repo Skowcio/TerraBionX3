@@ -69,7 +69,7 @@ public class MissionManager {
         mission1.soldierPositions.add(new Point(1050, 9500));
         mission1.soldierPositions.add(new Point(1000, 900));
         mission1.soldierPositions.add(new Point(1350, 1000));
-        mission1.soldierPositions.add(new Point(1400, 1050));
+        mission1.soldierPositions.add(new Point(1800, 1050));
 
 //        mission1.valkiriaPositions.add(new Point(1250, 1000));
 //        mission1.valkiriaPositions.add(new Point(1250, 1100));
@@ -127,6 +127,8 @@ public class MissionManager {
         mission2.soldierPositions.add(new Point(300, 400));
         mission2.builderPositions.add(new Point(320, 430));
         mission2.builderPositions.add(new Point(380, 450));
+        mission2.barackPositions.add(new Point(660,  200));
+
         mission2.enemyPositions.add(new Point(1400, 1500));
         mission2.enemyPositions.add(new Point(1200, 1300));
 

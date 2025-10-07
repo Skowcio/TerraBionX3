@@ -223,6 +223,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JScrollPane scrollPane;
     private MissionManager missionManager;
 
+    // by misja byla mission fail
+    private boolean missionFailed = false;
+    private long missionFailTime = 0;
+
     private long missionStartTime = 0;  // czas rozpoczęcia misji
     private final long defendDurationMillis = 15 * 60 * 1000; // 15 minut w milisekundach
 
@@ -1637,6 +1641,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 if (projectile.checkCollision(baracks)){
                     toRemove.add(projectile);
                     if (baracks.takeDamage()){
+                        missionFailed = true;
+                        showMissionFailScreen();
                         iterator2.remove();
                     }
                     break;
@@ -2202,6 +2208,18 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             return;
         }
 
+        for (Baracks b : baracks) {
+            if (b.getHealth() <= 0 && !missionFailed) {
+                missionFailed = true;
+                missionFailTime = System.currentTimeMillis();
+                showMissionFailScreen();
+                return;
+            }
+        }
+        if (missionFailed) {
+            return;
+        }
+
         // ✅ Logika sprawdzająca warunek zakończenia misji
         if (!missionCompleted) {
             if (current.objectiveType == Mission.ObjectiveType.DESTROY_ALL_HIVES) {
@@ -2261,6 +2279,22 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
         repaint();
+    }
+
+    private void showMissionFailScreen() {
+        missionFailTime = System.currentTimeMillis();
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000); // ⏳ Czekaj 3 sekundy
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            SwingUtilities.invokeLater(() -> {
+                Main mainApp = new Main();
+                mainApp.main(new String[0]);
+            });
+        }).start();
     }
 
 
@@ -3307,6 +3341,34 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
         if (miniMapPanel != null) {
             miniMapPanel.repaint();
+        }
+        if (missionFailed) {
+            Graphics2D g2d = (Graphics2D) g.create(); // kopiujemy Graphics, żeby nie psuć oryginalnego
+            g2d.setColor(new Color(0, 0, 0, 180)); // półprzezroczyste tło
+
+            int overlayWidth, overlayHeight;
+            int textX, textY;
+
+            // Pobranie widoku gracza (JViewport)
+            if (getParent() instanceof JViewport viewport) {
+                Point viewPos = viewport.getViewPosition();
+                overlayWidth = viewport.getWidth();
+                overlayHeight = viewport.getHeight();
+
+                g2d.fillRect(viewPos.x, viewPos.y, overlayWidth, overlayHeight);
+
+                String text = "MISSION FAILED";
+                g2d.setColor(Color.RED);
+                g2d.setFont(new Font("Arial", Font.BOLD, 48));
+                int textWidth = g2d.getFontMetrics().stringWidth(text);
+                int textHeight = g2d.getFontMetrics().getHeight();
+
+                textX = viewPos.x + (overlayWidth - textWidth) / 2;
+                textY = viewPos.y + (overlayHeight - textHeight) / 2 + g2d.getFontMetrics().getAscent();
+
+                g2d.drawString(text, textX, textY);
+            }
+            g2d.dispose(); // zwolnienie kopii Graphics
         }
 
     }

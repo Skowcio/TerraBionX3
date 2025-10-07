@@ -192,7 +192,7 @@ public class EnemyToo {
         } else if (target instanceof Baracks b && bounds.intersects(b.getBounds())) {
             boolean destroyed = b.takeDamage();
             if (destroyed){
-                list.remove(b);
+
                 explosions.add(new Explosion(b.getX(), b.getY())); // efekt wybuchu
             }
 
