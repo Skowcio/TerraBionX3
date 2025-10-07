@@ -137,57 +137,105 @@ public class Soldier {
 
         return new Rectangle(x + offsetX, y + offsetY, collisionW, collisionH);
     }
-
-    public void resolveHardOverlap(ArrayList<Soldier> allSoldiers) {
+    public void resolveSoftOverlap(ArrayList<Soldier> allSoldiers) {
         for (Soldier other : allSoldiers) {
-            if (this == other) continue;
+            if (this == other) continue; // pomijamy siebie samego
 
-            // Mogą na siebie nachodzić częściowo (allowedBounds)
-            if (getAllowedBounds().intersects(other.getAllowedBounds())) {
-                // ❌ Ale jeśli pełne hitboxy się stykają → teleport
-                if (getStrictBounds().intersects(other.getStrictBounds())) {
-                    teleportAway(allSoldiers);
-                }
+            double dx = this.x - other.x;
+            double dy = this.y - other.y;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Odległość, w której zaczyna się "rozpychanie"
+            double minDistance = 35.0; // można regulować – mniejsze = gęściej się układają
+
+            if (distance > 0 && distance < minDistance) {
+                double overlap = minDistance - distance;
+
+                // kierunek odpychania
+                double pushX = (dx / distance) * overlap * 0.5;
+                double pushY = (dy / distance) * overlap * 0.5;
+
+                // odsuń obie jednostki
+                this.x += pushX;
+                this.y += pushY;
+                other.x -= pushX;
+                other.y -= pushY;
             }
         }
     }
 
-    private void teleportAway(ArrayList<Soldier> allSoldiers) {
-        int offset = 50;
-        int dir = (int)(Math.random() * 8);
+    public void resolveSoftOverlapWithValkirias(ArrayList<Valkiria> valkirias) {
+        for (Valkiria valkiria : valkirias) {
+            double dx = this.x - valkiria.getX();
+            double dy = this.y - valkiria.getY();
+            double distance = Math.sqrt(dx * dx + dy * dy);
 
-        int nx = x;
-        int ny = y;
+            double minDistance = 45.0; // dystans "komfortowy", można regulować
 
-        switch (dir) {
-            case 0 -> ny -= offset;
-            case 1 -> { ny -= offset; nx += offset; }
-            case 2 -> nx += offset;
-            case 3 -> { ny += offset; nx += offset; }
-            case 4 -> ny += offset;
-            case 5 -> { ny += offset; nx -= offset; }
-            case 6 -> nx -= offset;
-            case 7 -> { ny -= offset; nx -= offset; }
-        }
+            if (distance > 0 && distance < minDistance) {
+                double overlap = minDistance - distance;
 
-        Rectangle newBounds = new Rectangle(nx, ny, width, height);
+                // kierunek odpychania
+                double pushX = (dx / distance) * overlap * 0.5;
+                double pushY = (dy / distance) * overlap * 0.5;
 
-        // 🔹 sprawdzamy czy nowe miejsce nie koliduje z innymi
-        boolean collision = false;
-        for (Soldier other : allSoldiers) {
-            if (this == other) continue;
-            if (newBounds.intersects(other.getStrictBounds())) {
-                collision = true;
-                break;
+                // odsuń tylko żołnierza (Valkiria raczej stoi w miejscu)
+                this.x += pushX;
+                this.y += pushY;
             }
         }
-
-        if (!collision) {
-            x = nx;
-            y = ny;
-        }
     }
-/// /////////////////////////////////
+
+//    public void resolveHardOverlap(ArrayList<Soldier> allSoldiers) {
+//        for (Soldier other : allSoldiers) {
+//            if (this == other) continue;
+//
+//            // Mogą na siebie nachodzić częściowo (allowedBounds)
+//            if (getAllowedBounds().intersects(other.getAllowedBounds())) {
+//                // ❌ Ale jeśli pełne hitboxy się stykają → teleport
+//                if (getStrictBounds().intersects(other.getStrictBounds())) {
+//                    teleportAway(allSoldiers);
+//                }
+//            }
+//        }
+//    }
+//
+//    private void teleportAway(ArrayList<Soldier> allSoldiers) {
+//        int offset = 50;
+//        int dir = (int)(Math.random() * 8);
+//
+//        int nx = x;
+//        int ny = y;
+//
+//        switch (dir) {
+//            case 0 -> ny -= offset;
+//            case 1 -> { ny -= offset; nx += offset; }
+//            case 2 -> nx += offset;
+//            case 3 -> { ny += offset; nx += offset; }
+//            case 4 -> ny += offset;
+//            case 5 -> { ny += offset; nx -= offset; }
+//            case 6 -> nx -= offset;
+//            case 7 -> { ny -= offset; nx -= offset; }
+//        }
+//
+//        Rectangle newBounds = new Rectangle(nx, ny, width, height);
+//
+//        // 🔹 sprawdzamy czy nowe miejsce nie koliduje z innymi
+//        boolean collision = false;
+//        for (Soldier other : allSoldiers) {
+//            if (this == other) continue;
+//            if (newBounds.intersects(other.getStrictBounds())) {
+//                collision = true;
+//                break;
+//            }
+//        }
+//
+//        if (!collision) {
+//            x = nx;
+//            y = ny;
+//        }
+//    }
+    /// /////////////////////////////////
     // to jest kierunek Soldiera po lodagame - z tego co czaje?
 
     public void setPosition(int x, int y,
@@ -199,7 +247,7 @@ public class Soldier {
                             ArrayList<BattleVehicle> battleVehicles) {
         // Kolizje (zostawiłem tak jak było)
 //        for (PowerPlant p : powerPlants) if (isCollidingWithPowerPlant(p, x, y)) return;
-        for (Soldier s : soldiers) if (isCollidingWithSoldier(s, x, y)) return;
+//        for (Soldier s : soldiers) if (isCollidingWithSoldier(s, x, y)) return;
 //        for (Baracks b : baracks) if (isCollidingWithBarack(b, x, y)) return;
         for (Hive h : hives) if (isCollidingWithHive(h, x, y)) return;
 //        for (BattleVehicle bv : battleVehicles) if (isCollidingWithBattleV(bv, x, y)) return;
@@ -524,6 +572,3 @@ public class Soldier {
         g2d.fillRect(drawX, drawY - 5, currentHealthWidth, 3);
     }
 }
-
-
-

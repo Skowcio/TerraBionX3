@@ -64,22 +64,22 @@ public class EnemyToo {
         return health <= 0; // Zwraca true, jeśli Enemy zostało zniszczone
     }
 
-    public void update(List<Soldier> soldiers, List<Harvester> harvesters, List<Baracks> baracks,
+    public void update(List<Soldier> soldiers, List<Valkiria> valkirias, List<Harvester> harvesters, List<Baracks> baracks,
                        List<BuilderVehicle> builderVehicles, List<Artylery> artylerys,
                        List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants, List<SoldierBot> soldierBots,
                        List<Factory> factorys, List<Explosion> explosions) {
 
-        Object closest = getClosestTarget(soldiers, harvesters, baracks, builderVehicles,
+        Object closest = getClosestTarget(soldiers, valkirias, harvesters, baracks, builderVehicles,
                 artylerys, battleVehicles, powerPlants, soldierBots, factorys);
 
         moveTowardsTarget(closest);
         attackIfInRange(closest, resolveListForTarget(closest,
-                soldiers, harvesters, baracks, builderVehicles,
+                soldiers, valkirias, harvesters, baracks, builderVehicles,
                 artylerys, battleVehicles, powerPlants, soldierBots, factorys), explosions);
     }
 
 
-    private Object getClosestTarget(List<Soldier> soldiers, List<Harvester> harvesters, List<Baracks> baracks,
+    private Object getClosestTarget(List<Soldier> soldiers, List<Valkiria> valkirias, List<Harvester> harvesters, List<Baracks> baracks,
                                     List<BuilderVehicle> builderVehicles, List<Artylery> artylerys,
                                     List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants, List<SoldierBot> soldierBots,
                                     List<Factory> factorys) {
@@ -90,6 +90,10 @@ public class EnemyToo {
         for (Soldier s : soldiers) {
             double dist = s.getPosition().distance(x, y);
             if (dist < minDistance) { minDistance = dist; closest = s; }
+        }
+        for (Valkiria v : valkirias) {
+            double dist = v.getPosition().distance(x, y);
+            if (dist < minDistance) { minDistance = dist; closest = v; }
         }
         for (Harvester h : harvesters) {
             double dist = h.getPosition().distance(x, y);
@@ -148,6 +152,9 @@ public class EnemyToo {
         } else if (target instanceof PowerPlant p) {
             tx = p.getX(); ty = p.getY();
         }
+        else if (target instanceof Valkiria v) {
+            tx = v.getX(); ty = v.getY();
+        }
         else if (target instanceof SoldierBot sb) {
             tx = sb.getX(); ty = sb.getY();
         }
@@ -172,17 +179,29 @@ public class EnemyToo {
         Rectangle bounds = getBounds();
 
         if (target instanceof Soldier s && bounds.intersects(s.getBounds())) {
-            list.remove(s);
+            boolean destroyed = s.takeDamage();
+            if (destroyed){
+                list.remove(s);
+                explosions.add(new Explosion(s.getX(), s.getY())); // efekt wybuchu
+            }
+
 
         } else if (target instanceof Harvester h && bounds.intersects(h.getBounds())) {
             list.remove(h);
 
         } else if (target instanceof Baracks b && bounds.intersects(b.getBounds())) {
-            list.remove(b);
+            boolean destroyed = b.takeDamage();
+            if (destroyed){
+                list.remove(b);
+                explosions.add(new Explosion(b.getX(), b.getY())); // efekt wybuchu
+            }
 
         } else if (target instanceof BuilderVehicle bv && bounds.intersects(bv.getBounds())) {
-            list.remove(bv);
-            explosions.add(new Explosion(bv.getX(), bv.getY())); // efekt wybuchu
+            boolean destroyed = bv.takeDamage();
+            if (destroyed){
+                list.remove(bv);
+                explosions.add(new Explosion(bv.getX(), bv.getY())); // efekt wybuchu
+            }
 
         } else if (target instanceof Artylery a && bounds.intersects(a.getBounds())) {
             list.remove(a);
@@ -203,6 +222,13 @@ public class EnemyToo {
                 explosions.add(new Explosion(sb.getX(), sb.getY())); // efekt wybuchu
             }
         }
+        else if (target instanceof Valkiria v && bounds.intersects(v.getBounds())) {
+            boolean destroyed = v.takeDamage();
+            if (destroyed){
+                list.remove(v);
+                explosions.add(new Explosion(v.getX(), v.getY())); // efekt wybuchu
+            }
+        }
         else if (target instanceof Factory f && bounds.intersects(f.getBounds())) {
             boolean destroyed = f.takeDamage(); // Zadaj 1 punkt obrażeń
             if (destroyed) {
@@ -216,6 +242,7 @@ public class EnemyToo {
     @SuppressWarnings("unchecked")
     private List<?> resolveListForTarget(Object target,
                                          List<Soldier> soldiers,
+                                         List<Valkiria> valkirias,
                                          List<Harvester> harvesters,
                                          List<Baracks> baracks,
                                          List<BuilderVehicle> builderVehicles,
@@ -225,6 +252,7 @@ public class EnemyToo {
                                          List<SoldierBot> soldierBots,
                                          List<Factory> factorys) {
         if (target instanceof Soldier) return soldiers;
+        if (target instanceof Valkiria) return valkirias;
         if (target instanceof Harvester) return harvesters;
         if (target instanceof Baracks) return baracks;
         if (target instanceof BuilderVehicle) return builderVehicles;

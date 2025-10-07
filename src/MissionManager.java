@@ -16,7 +16,7 @@ public class MissionManager {
         mission1.soldierPositions.add(new Point(700, 300));
         mission1.soldierPositions.add(new Point(800, 350));
 
-        mission1.valkiriaPositions.add(new Point(850, 400));
+        mission1.valkiriaPositions.add(new Point(1050, 400));
 
         mission1.crystalPositions.add(new Point(680, 700));
 
@@ -58,8 +58,8 @@ public class MissionManager {
 
 //        mission1.enemyBehemothPositions.add(new Point(1100, 1300));
 //
-        mission1.enemyPositions.add(new Point(1050, 1200));
-        mission1.enemyPositions.add(new Point(1100, 1200));
+//        mission1.enemyPositions.add(new Point(1050, 1200));
+//        mission1.enemyPositions.add(new Point(1100, 1200));
 //        mission1.enemyPositions.add(new Point(1000, 1300));
 //        mission1.enemyPositions.add(new Point(1000, 1250));
 
@@ -71,8 +71,8 @@ public class MissionManager {
         mission1.soldierPositions.add(new Point(1350, 1000));
         mission1.soldierPositions.add(new Point(1400, 1050));
 
-        mission1.valkiriaPositions.add(new Point(1250, 1000));
-        mission1.valkiriaPositions.add(new Point(1250, 1100));
+//        mission1.valkiriaPositions.add(new Point(1250, 1000));
+//        mission1.valkiriaPositions.add(new Point(1250, 1100));
 
         mission1.hiveSpawnArea = new Rectangle(1800, 1200, 1000, 1000);
         mission1.requiredHivesDestroyed = 5;

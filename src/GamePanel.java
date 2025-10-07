@@ -1763,11 +1763,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 if (dx == 0 && dy == 0) {
                     soldier.setTarget(null);
                 }
-                soldier.resolveHardOverlap(soldiers);
+                soldier.resolveSoftOverlap(soldiers);
+                soldier.resolveSoftOverlapWithValkirias(valkirias);
             }
         }
         repaint();
     }
+
 
     private void moveValkirias() {
         for (Valkiria valkiria : valkirias) {
@@ -1794,6 +1796,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     valkiria.setTarget(null);
                 }
                 valkiria.resolveHardOverlap(valkirias);
+                valkiria.resolveSoftOverlapWithValkirias(valkirias);
+                valkiria.resolveSoftOverlapWithSoldiers(soldiers);
             }
         }
         repaint();
@@ -2235,7 +2239,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
         for (EnemyToo enemyToo : enemiesToo) {
-            enemyToo.update(soldiers, harvesters, baracks, builderVehicles, artylerys, battleVehicles, powerPlants,soldierBots, factories, explosions); // Przekazuje listę żołnierzy do śledzenia
+            enemyToo.update(soldiers, valkirias, harvesters, baracks, builderVehicles, artylerys, battleVehicles, powerPlants,soldierBots, factories, explosions); // Przekazuje listę żołnierzy do śledzenia
         }
 
         for (EnemyShooter enemyShooter : enemyShooters) {
@@ -2608,7 +2612,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             for (Valkiria valkiria : valkirias) {
                 valkiria.setSelected(false);
 
-                if (new Rectangle(valkiria.getX(), valkiria.getY(), 30, 30).contains(e.getPoint())) {
+                if (new Rectangle(valkiria.getX(), valkiria.getY(), 50, 50).contains(e.getPoint())) {
                     selectedValkiria = valkiria;
                     valkiria.setSelected(true);
 

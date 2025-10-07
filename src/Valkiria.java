@@ -343,7 +343,45 @@ public void markAsDead() {
 //        Rectangle battleBounds = battleVehicle.getBounds();
 //        return targetBounds.intersects(battleBounds);
 //    }
+// 🟢 Miękkie rozpychanie Valkirii z innymi Valkiriami
+public void resolveSoftOverlapWithValkirias(ArrayList<Valkiria> allValkirias) {
+    for (Valkiria other : allValkirias) {
+        if (this == other) continue;
 
+        double dx = this.x - other.x;
+        double dy = this.y - other.y;
+        double distance = Math.sqrt(dx * dx + dy * dy);
+
+        double minDistance = 55.0; // dystans komfortowy (można regulować)
+        if (distance > 0 && distance < minDistance) {
+            double overlap = minDistance - distance;
+            double pushX = (dx / distance) * overlap * 0.5;
+            double pushY = (dy / distance) * overlap * 0.5;
+
+            this.x += pushX;
+            this.y += pushY;
+        }
+    }
+}
+
+    // 🟢 Miękkie rozpychanie Valkirii z żołnierzami
+    public void resolveSoftOverlapWithSoldiers(ArrayList<Soldier> soldiers) {
+        for (Soldier soldier : soldiers) {
+            double dx = this.x - soldier.getX();
+            double dy = this.y - soldier.getY();
+            double distance = Math.sqrt(dx * dx + dy * dy);
+
+            double minDistance = 55.0; // dystans komfortowy
+            if (distance > 0 && distance < minDistance) {
+                double overlap = minDistance - distance;
+                double pushX = (dx / distance) * overlap * 0.5;
+                double pushY = (dy / distance) * overlap * 0.5;
+
+                this.x += pushX;
+                this.y += pushY;
+            }
+        }
+    }
 
 
     public Point getTarget() {
@@ -579,6 +617,39 @@ public void markAsDead() {
             g2d.drawLine(drawX + width + offset, drawY + height + offset,
                     drawX + width + offset, drawY + height + offset - cornerSize);
         }
+        // --- Liczba amunicji ---
+        g2d.setFont(new Font("Arial", Font.BOLD, 10));
+        String ammoText = bulletsLeft + " / " + magazineSize;
+        int textWidth = g2d.getFontMetrics().stringWidth(ammoText);
+
+        // --- Pasek przeładowania (tylko jeśli trwa reload) ---
+        if (reloading) {
+            long currentTime = System.currentTimeMillis();
+            double progress = Math.min(1.0, (double)(currentTime - reloadStartTime) / reloadTime);
+
+            int barWidth = 20;
+            int barHeight = 5;
+            int barX = drawX + width - textWidth - barWidth - 5; // przed liczbą amunicji
+            int barY = drawY + height - barHeight;
+
+            // tło
+            g2d.setColor(Color.DARK_GRAY);
+            g2d.fillRect(barX, barY, barWidth, barHeight);
+
+            // wypełnienie
+            int fillWidth = (int)(barWidth * progress);
+            g2d.setColor(Color.CYAN);
+            g2d.fillRect(barX, barY, fillWidth, barHeight);
+
+            // ramka
+            g2d.setColor(Color.WHITE);
+            g2d.drawRect(barX, barY, barWidth, barHeight);
+        }
+
+        // --- Rysowanie napisu z amunicją ---
+        g2d.setColor(Color.YELLOW);
+        g2d.drawString(ammoText, drawX + width - textWidth, drawY + height);
+
 
         // Pasek życia (nad sprite'em, unoszony razem z nim)
         g2d.setColor(Color.GREEN);
@@ -586,6 +657,8 @@ public void markAsDead() {
         int healthBarWidth = 50;
         int currentHealthWidth = (int)((health / (double)maxHealth) * healthBarWidth);
         g2d.fillRect(drawX, drawY - 5, currentHealthWidth, 3);
+
+
     }
 }
 
