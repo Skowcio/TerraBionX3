@@ -81,6 +81,9 @@ public class Projectile {
     public boolean checkCollision(Factory factory) {
         return intersectsWithShrink(factory.getX(), factory.getY(), factory.getWidth(), factory.getHeight(), 8);
     }
+    public boolean checkCollision(SteelMine steelMine) {
+        return intersectsWithShrink(steelMine.getX(), steelMine.getY(), steelMine.getWidth(), steelMine.getHeight(), 8);
+    }
 
     public boolean checkCollision(Artylery artylery) {
         return intersectsWithShrink(artylery.getX(), artylery.getY(), artylery.getWidth(), artylery.getHeight(), 8);

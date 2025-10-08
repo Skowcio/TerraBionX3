@@ -1682,6 +1682,16 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     break;
                 }
             }
+            for (SteelMine steelMine : steelMines) {
+                if (projectile.checkCollision(steelMine)) {
+                    toRemove.add(projectile);
+                    if (steelMine.takeDamage()){
+                        steelMines.remove(steelMine);
+                        explosions.add(new Explosion(steelMine.getX(), steelMine.getY()));
+                    }
+                    break;
+                }
+            }
             Iterator<Artylery> artyleryIterator = artylerys.iterator();
 
             while (artyleryIterator.hasNext()) {
@@ -2261,7 +2271,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
 
         for (EnemyShooter enemyShooter : enemyShooters) {
-            enemyShooter.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories);
+            enemyShooter.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories, steelMines);
         }
         for (SoldierBot soldierBot : new ArrayList<>(soldierBots)) {
             soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots, enemyBehemoths);
@@ -3217,7 +3227,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         for (EnemyShooter enemyShooter : enemyShooters){
             enemyShooter.draw(g);
-            enemyShooter.shoot(g, projectiles, soldiers, valkirias, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
+            enemyShooter.shoot(g, projectiles, soldiers, valkirias, soldierBots, battleVehicles, factories, steelMines, powerPlants, builderVehicles, artylerys, baracks);
         }
         //budowniczy
         for (BuilderVehicle builderVehicle :builderVehicles) {

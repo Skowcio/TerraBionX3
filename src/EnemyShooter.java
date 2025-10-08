@@ -82,6 +82,12 @@ public class EnemyShooter {
         int dy = factory.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+
+    public boolean isInRange(SteelMine steelMine) {
+        int dx = steelMine.getX() - x;
+        int dy = steelMine.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
     public boolean isInRange(PowerPlant powerPlant){
         int dx = powerPlant.getX() - x;
         int dy = powerPlant.getY() - y;
@@ -105,6 +111,7 @@ public class EnemyShooter {
             ArrayList<SoldierBot> soldierBots,
             ArrayList<BattleVehicle> battleVehicles,
             ArrayList<Factory> factories,
+            ArrayList<SteelMine> steelMines,
             ArrayList<PowerPlant> powerPlants,
             ArrayList<BuilderVehicle> builderVehicles, // 🆕 BuilderVehicle
             ArrayList<Artylery> artyleries,
@@ -145,6 +152,12 @@ public class EnemyShooter {
                 return; // Znaleziono cel
             }
         }
+        for (SteelMine steelMine : steelMines) {
+            if (isInRange(steelMine)) {
+                currentTarget = steelMine;
+                return; // Znaleziono cel
+            }
+        }
         for (PowerPlant powerPlant : powerPlants) {
             if (isInRange(powerPlant)){
                 currentTarget = powerPlant;
@@ -179,6 +192,7 @@ public class EnemyShooter {
             ArrayList<SoldierBot> soldierBots,
             ArrayList<BattleVehicle> battleVehicles,
             ArrayList<Factory> factories,
+            ArrayList<SteelMine> steelMines,
             ArrayList<PowerPlant> powerPlants,
             ArrayList<BuilderVehicle> builderVehicles,
             ArrayList<Artylery> artyleries,
@@ -194,6 +208,7 @@ public class EnemyShooter {
                 (currentTarget instanceof SoldierBot && !soldierBots.contains(currentTarget)) ||
                (currentTarget instanceof BattleVehicle && !battleVehicles.contains(currentTarget)) ||
                 (currentTarget instanceof Factory && !factories.contains(currentTarget)) ||
+                (currentTarget instanceof SteelMine && !steelMines.contains(currentTarget)) ||
                 (currentTarget instanceof PowerPlant && !powerPlants.contains(currentTarget)) ||
                 (currentTarget instanceof BuilderVehicle && !builderVehicles.contains(currentTarget)) // 🆕
                 ||
@@ -207,6 +222,7 @@ public class EnemyShooter {
                         !(currentTarget instanceof SoldierBot soldierBot&& isInRange(soldierBot)) &&
                         !(currentTarget instanceof BattleVehicle battleVehicle && isInRange(battleVehicle)) &&
                         !(currentTarget instanceof Factory factory && isInRange(factory)) &&
+                        !(currentTarget instanceof SteelMine steelMine && isInRange(steelMine)) &&
         !(currentTarget instanceof PowerPlant powerPlant && isInRange(powerPlant)) &&
                         !(currentTarget instanceof BuilderVehicle builderVehicle && isInRange(builderVehicle)) &&
                 !(currentTarget instanceof Artylery artylery && isInRange(artylery)) &&
@@ -214,7 +230,7 @@ public class EnemyShooter {
 
         )
         {
-            chooseTarget(soldiers, valkirias, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artyleries, baracks); // Wybierz nowy cel
+            chooseTarget(soldiers, valkirias, soldierBots, battleVehicles, factories, steelMines, powerPlants, builderVehicles, artyleries, baracks); // Wybierz nowy cel
         }
 
         // Jeśli mamy ważny cel, strzelaj
@@ -246,6 +262,12 @@ public class EnemyShooter {
             if (currentTarget instanceof Factory factory){
                 if (isInRange(factory)) {
                     projectiles.add(new Projectile(x + 15, y + 15, factory.getX() + 15, factory.getY() + 15));
+                    lastShotTime = currentTime;
+                }
+            }
+            if (currentTarget instanceof SteelMine steelMine){
+                if (isInRange(steelMine)) {
+                    projectiles.add(new Projectile(x + 15, y + 15, steelMine.getX() + 15, steelMine.getY() + 15));
                     lastShotTime = currentTime;
                 }
             }
@@ -291,10 +313,11 @@ public class EnemyShooter {
             List<Baracks> baracks,
             List<BattleVehicle> battleVehicles,
             List<PowerPlant> powerPlants,
-            List<Factory> factorys
+            List<Factory> factorys,
+            List<SteelMine> steelMines
 
     ) {
-        Object target = getClosestTarget(soldierBots, soldiers, valkirias, powerPlants, battleVehicles, factorys, builderVehicles, artylerys, baracks);
+        Object target = getClosestTarget(soldierBots, soldiers, valkirias, powerPlants, battleVehicles, factorys, builderVehicles, artylerys, baracks, steelMines);
         moveTowardsTarget(target);
     }
 
@@ -307,7 +330,8 @@ public class EnemyShooter {
             List<Factory> factorys,
             List<BuilderVehicle> builderVehicles,
             List<Artylery> artyleries,
-            List<Baracks> baracks
+            List<Baracks> baracks,
+            List<SteelMine> steelMines
     ) {
         Object closest = null;
         double minDistance = Double.MAX_VALUE;
@@ -348,6 +372,13 @@ public class EnemyShooter {
             if (dist < minDistance) {
                 minDistance = dist;
                 closest = factory;
+            }
+        }
+        for (SteelMine steelMine : steelMines) {
+            double dist = steelMine.getPosition().distance(x, y);
+            if (dist < minDistance) {
+                minDistance = dist;
+                closest = steelMine;
             }
         }
 
@@ -416,6 +447,10 @@ public class EnemyShooter {
         else if (target instanceof Factory f) {
             tx = f.getX();
             ty = f.getY();
+        }
+        else if (target instanceof SteelMine sm) {
+            tx = sm.getX();
+            ty = sm.getY();
         }
         else if (target instanceof BuilderVehicle bb){
             tx = bb.getX();
