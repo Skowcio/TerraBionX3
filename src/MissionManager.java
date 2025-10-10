@@ -6,8 +6,13 @@ public class MissionManager {
     private ArrayList<Mission> missions = new ArrayList<>();
     private int currentMissionIndex = 0;
 
+
+    public int getCurrentMissionIndex() {
+        return currentMissionIndex;
+    }
     public MissionManager() {
         loadMissions();
+
     }
 
     private void loadMissions() {
@@ -69,6 +74,9 @@ public class MissionManager {
         mission1.soldierPositions.add(new Point(1050, 9500));
         mission1.soldierPositions.add(new Point(1000, 900));
         mission1.soldierPositions.add(new Point(1350, 1000));
+        mission1.soldierPositions.add(new Point(1350, 1300));
+        mission1.soldierPositions.add(new Point(1350, 1200));
+        mission1.soldierPositions.add(new Point(1350, 1050));
         mission1.soldierPositions.add(new Point(1800, 1050));
 
 //        mission1.valkiriaPositions.add(new Point(1250, 1000));
@@ -145,6 +153,26 @@ public class MissionManager {
         mission2.objectiveType = Mission.ObjectiveType.DEFEND_FOR_TIME; // <- inny typ celu
 
         missions.add(mission2);
+
+        /// ////////////// misja 3
+        Mission mission3 = new Mission("Resource Rush");
+        mission3.soldierPositions.add(new Point(500, 400));
+        mission3.builderPositions.add(new Point(520, 420));
+        mission3.barackPositions.add(new Point(600, 200));
+
+// Dodaj trochę surowców na mapę
+        mission3.resourcesPositions.add(new Point(800, 600));
+        mission3.resourcesPositions.add(new Point(900, 650));
+        mission3.resourcesPositions.add(new Point(1000, 700));
+        mission3.resourcesPositions.add(new Point(1500, 700));
+        mission3.resourcesPositions.add(new Point(1600, 750));
+
+// Ile trzeba zebrać surowca (np. stali)
+        mission3.requiredHivesDestroyed = 0; // tu niepotrzebne, ale zostaje
+        mission3.objectiveType = Mission.ObjectiveType.COLLECT_RESOURCES;
+        mission3.requiredSteelAmount = 60000; // ile trzeba zebrać do ukończenia
+
+        missions.add(mission3);
     }
 
     public Mission getCurrentMission() {

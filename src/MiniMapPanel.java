@@ -51,12 +51,30 @@ public class MiniMapPanel extends JPanel {
             int y = (int) (soldierBot.getY() * scaleY);
             g2d.fillRect(x, y, 2, 2);
         }
-        // Jednostki: żołnierze - niebiescy
+
         g2d.setColor(new Color(0, 180, 250));
         for (Valkiria valkiria : gamePanel.getValkirias()) {
             int x = (int) (valkiria.getX() * scaleX);
             int y = (int) (valkiria.getY() * scaleY);
             g2d.fillRect(x, y, 2, 2);
+        }
+
+        // Jednostki: żołnierze - niebiescy
+        g2d.setColor(new Color(0, 250, 204));
+        for (Artylery artylery : gamePanel.getArtylerys()) {
+            int x = (int) (artylery.getX() * scaleX);
+            int y = (int) (artylery.getY() * scaleY);
+
+            // Rysuj "X" o rozpiętości 5 pikseli
+            g2d.fillRect(x, y, 1, 1);       // środek
+            g2d.fillRect(x - 2, y - 2, 1, 1);
+            g2d.fillRect(x - 1, y - 1, 1, 1);
+            g2d.fillRect(x + 1, y + 1, 1, 1);
+            g2d.fillRect(x + 2, y + 2, 1, 1);
+            g2d.fillRect(x - 2, y + 2, 1, 1);
+            g2d.fillRect(x - 1, y + 1, 1, 1);
+            g2d.fillRect(x + 1, y - 1, 1, 1);
+            g2d.fillRect(x + 2, y - 2, 1, 1);
         }
         g2d.setColor(new Color(150, 80, 150));
         for (Crystal crystal : gamePanel.getCrystals()) {
@@ -102,6 +120,8 @@ public class MiniMapPanel extends JPanel {
             int y = (int) (hiveToo.getY() * scaleY);
             g2d.fillRect(x, y, 3, 3);
         }
+
+
 
 
         // Fabryki - żółte

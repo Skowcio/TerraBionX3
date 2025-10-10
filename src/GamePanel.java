@@ -115,9 +115,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     public List<SoldierBot> getSoldierBots() {
         return soldierBots;
     }
-    public List<Crystal> getCrystals(){
-        return crystals;
-    }
+    public List<Crystal> getCrystals(){return crystals;}
+    public List<Artylery> getArtylerys(){return artylerys;}
     public List<Enemy> getEnemies() {
         return enemies;
     }
@@ -147,7 +146,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Projectile> projectiles;
     private ArrayList<ResourcesSteel> resources;
     private ArrayList<PowerPlant> powerPlants;
-    private int collectedSteel = 100000; // Przechowuje zebraną ilość stali
+    private int collectedSteel = 40000; // Przechowuje zebraną ilość stali
     private int totalPower = 0;
     private final int MAX_POWER = 200;
 
@@ -399,6 +398,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         updateGame(); // od razu sprawdzanie celu
         missionStartTime = System.currentTimeMillis();
         ResearchCenter.resetCounts();
+
+        // 🔹 Reset collectedSteel tylko przy 3 misji
+        if (missionManager.getCurrentMissionIndex() == 2) { // indeks 2 = trzecia misja (licząc od 0)
+            System.out.println("🔄 Resetuję zebrany surowiec (collectedSteel) — start 3 misji");
+            collectedSteel = 8000;
+        }
 
     }
 
@@ -2251,7 +2256,20 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                     onMissionCompleted();
                 }
 
-            } else {
+            }
+            else if (current.objectiveType == Mission.ObjectiveType.COLLECT_RESOURCES) {
+
+                // 💎 Nowa logika: sprawdzanie zebranego metalu
+                int requiredSteel = 80000; // np. 500 jednostek
+                if (collectedSteel >= requiredSteel) {
+                    System.out.println("✅ Zebrano wystarczająco stali — misja zakończona!");
+                    onMissionCompleted();
+                }
+
+            }
+
+
+            else {
                 System.out.println("ℹ️ Inny typ misji — warunek nieobsługiwany.");
             }
         }
@@ -2267,7 +2285,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
 
         for (EnemyToo enemyToo : enemiesToo) {
-            enemyToo.update(soldiers, valkirias, harvesters, baracks, builderVehicles, artylerys, battleVehicles, powerPlants,soldierBots, factories, explosions); // Przekazuje listę żołnierzy do śledzenia
+            enemyToo.update(soldiers, valkirias, harvesters, baracks, builderVehicles, artylerys, battleVehicles, powerPlants,soldierBots, factories, steelMines, explosions); // Przekazuje listę żołnierzy do śledzenia
         }
 
         for (EnemyShooter enemyShooter : enemyShooters) {

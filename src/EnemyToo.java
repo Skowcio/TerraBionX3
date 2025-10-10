@@ -67,22 +67,22 @@ public class EnemyToo {
     public void update(List<Soldier> soldiers, List<Valkiria> valkirias, List<Harvester> harvesters, List<Baracks> baracks,
                        List<BuilderVehicle> builderVehicles, List<Artylery> artylerys,
                        List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants, List<SoldierBot> soldierBots,
-                       List<Factory> factorys, List<Explosion> explosions) {
+                       List<Factory> factorys, List<SteelMine> steelMines, List<Explosion> explosions) {
 
         Object closest = getClosestTarget(soldiers, valkirias, harvesters, baracks, builderVehicles,
-                artylerys, battleVehicles, powerPlants, soldierBots, factorys);
+                artylerys, battleVehicles, powerPlants, soldierBots, factorys, steelMines);
 
         moveTowardsTarget(closest);
         attackIfInRange(closest, resolveListForTarget(closest,
                 soldiers, valkirias, harvesters, baracks, builderVehicles,
-                artylerys, battleVehicles, powerPlants, soldierBots, factorys), explosions);
+                artylerys, battleVehicles, powerPlants, soldierBots, factorys, steelMines), explosions);
     }
 
 
     private Object getClosestTarget(List<Soldier> soldiers, List<Valkiria> valkirias, List<Harvester> harvesters, List<Baracks> baracks,
                                     List<BuilderVehicle> builderVehicles, List<Artylery> artylerys,
                                     List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants, List<SoldierBot> soldierBots,
-                                    List<Factory> factorys) {
+                                    List<Factory> factorys, List<SteelMine> steelMines) {
 
         Object closest = null;
         double minDistance = Double.MAX_VALUE;
@@ -127,6 +127,10 @@ public class EnemyToo {
             double dist = f.getPosition().distance(x, y);
             if (dist < minDistance) { minDistance = dist; closest = f; }
         }
+        for (SteelMine sm : steelMines) {
+            double dist = sm.getPosition().distance(x, y);
+            if (dist < minDistance) { minDistance = dist; closest = sm; }
+        }
 
         return closest;
     }
@@ -160,6 +164,9 @@ public class EnemyToo {
         }
         else if (target instanceof Factory f) {
             tx = f.getX(); ty = f.getY();
+        }
+        else if (target instanceof SteelMine sm) {
+            tx = sm.getX(); ty = sm.getY();
         }
 
         int dx = tx - x;
@@ -204,9 +211,12 @@ public class EnemyToo {
             }
 
         } else if (target instanceof Artylery a && bounds.intersects(a.getBounds())) {
-            list.remove(a);
-            Artylery.decreaseArtysCount(); // zmniejsza licznik ilosci arty tower
-
+            boolean destroyed = a.takeDamage();
+            if (destroyed) {
+                list.remove(a);
+                Artylery.decreaseArtysCount(); // zmniejsza licznik ilosci arty tower
+                explosions.add(new Explosion(a.getX(), a.getY())); // efekt wybuchu
+            }
         } else if (target instanceof BattleVehicle bv && bounds.intersects(bv.getBounds())) {
             list.remove(bv);
 
@@ -237,6 +247,15 @@ public class EnemyToo {
                 explosions.add(new Explosion(f.getX(), f.getY())); // efekt wybuchu
             }
         }
+
+        else if (target instanceof SteelMine sm && bounds.intersects(sm.getBounds())) {
+            boolean destroyed = sm.takeDamage(); // Zadaj 1 punkt obrażeń
+            if (destroyed) {
+                list.remove(sm);
+                Factory.decreaseFactoryCount();  // zmniejsz licznik
+                explosions.add(new Explosion(sm.getX(), sm.getY())); // efekt wybuchu
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -250,7 +269,8 @@ public class EnemyToo {
                                          List<BattleVehicle> battleVehicles,
                                          List<PowerPlant> powerPlants,
                                          List<SoldierBot> soldierBots,
-                                         List<Factory> factorys) {
+                                         List<Factory> factorys,
+    List<SteelMine> steelMines) {
         if (target instanceof Soldier) return soldiers;
         if (target instanceof Valkiria) return valkirias;
         if (target instanceof Harvester) return harvesters;
@@ -261,6 +281,7 @@ public class EnemyToo {
         if (target instanceof PowerPlant) return powerPlants;
         if (target instanceof SoldierBot) return soldierBots;
         if (target instanceof Factory) return factorys;
+        if (target instanceof SteelMine) return steelMines;
         return List.of(); // pusta lista, fallback
     }
 

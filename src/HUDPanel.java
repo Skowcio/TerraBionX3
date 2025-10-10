@@ -77,6 +77,17 @@ public class HUDPanel extends JPanel {
                 g2d.setColor(Color.YELLOW);
                 g2d.drawString(timeText, 20, 90);
             }
+            if (current != null && current.objectiveType == Mission.ObjectiveType.COLLECT_RESOURCES) {
+                int requiredSteel = 80000; // Tyle ile w GamePanel.updateGame()
+                int collected = gamePanel.getCollectedSteel();
+
+                int remaining = Math.max(0, requiredSteel - collected);
+                String text = "🪓 Collect steel: " + collected + " / " + requiredSteel;
+
+                g2d.setFont(new Font("Arial", Font.BOLD, 16));
+                g2d.setColor(Color.CYAN);
+                g2d.drawString(text, 20, 90);
+            }
         }
     }
 }

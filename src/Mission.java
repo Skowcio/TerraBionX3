@@ -23,6 +23,8 @@ public class Mission {
     public Rectangle hiveSpawnArea;
 
     public int requiredHivesDestroyed = 5;
+/// // do zebrania w 3 misji ilsoc
+    public int requiredSteelAmount = 0;
 
     public ObjectiveType objectiveType;
 
