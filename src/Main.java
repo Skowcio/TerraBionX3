@@ -17,7 +17,7 @@ public class Main {
 
 
 
-    private static void showMainMenu(JFrame frame, MissionManager missionManager) {
+    public static void showMainMenu(JFrame frame, MissionManager missionManager) {
         // Ładowanie obrazka z resources (zalecane)
         ImageIcon bgIcon = new ImageIcon(
                 Main.class.getResource("/background/TerraBionX3.png")

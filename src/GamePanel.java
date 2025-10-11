@@ -227,7 +227,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private long missionFailTime = 0;
 
     private long missionStartTime = 0;  // czas rozpoczęcia misji
-    private final long defendDurationMillis = 15 * 60 * 1000; // 15 minut w milisekundach
+    private final long defendDurationMillis = 2 * 60 * 1000; // 15 minut w milisekundach
 
     private int destroyedHiveCount = 0;
     private boolean missionCompleted = false;
@@ -402,7 +402,24 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         // 🔹 Reset collectedSteel tylko przy 3 misji
         if (missionManager.getCurrentMissionIndex() == 2) { // indeks 2 = trzecia misja (licząc od 0)
             System.out.println("🔄 Resetuję zebrany surowiec (collectedSteel) — start 3 misji");
-            collectedSteel = 8000;
+            collectedSteel = 50000;
+        }
+        // ✅ Ustaw kamerę na pierwsze koszary, jeśli istnieją
+        if (baracks != null && !baracks.isEmpty() && scrollPane != null) {
+            Baracks first = baracks.get(0);
+
+            // Pozycja środka koszar
+            int targetX = first.getX() + first.getWidth() / 2;
+            int targetY = first.getY() + first.getHeight() / 2;
+
+            // Przesuń kamerę tak, by Baracks był na środku widoku
+            JViewport viewport = scrollPane.getViewport();
+            Rectangle viewRect = viewport.getViewRect();
+
+            int scrollX = Math.max(0, targetX - viewRect.width / 2);
+            int scrollY = Math.max(0, targetY - viewRect.height / 2);
+
+            viewport.setViewPosition(new Point(scrollX, scrollY));
         }
 
     }
@@ -420,16 +437,27 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         JOptionPane.showMessageDialog(this, "Misja ukończona!");
 
-        missionManager.nextMission();
+        // 🔹 Sprawdź, czy jest kolejna misja
+        if (missionManager.getCurrentMissionIndex() + 1 < missionManager.getTotalMissions()) {
+            // 🔹 Przejdź do następnej
+            missionManager.nextMission();
 
-        Mission next = missionManager.getCurrentMission();
-        if (missionManager.hasMoreMissions()) {
+            Mission next = missionManager.getCurrentMission();
             System.out.println("➡️ Ładuję kolejną misję: " + next.name);
+
             clearAllUnitsAndEnemies();
             loadMission(next);
             missionCompleted = false;
+
         } else {
+            // 🔹 Ostatnia misja ukończona → wróć do menu
             JOptionPane.showMessageDialog(this, "🎉 Ukończono wszystkie misje!");
+
+            // Powrót do menu
+            SwingUtilities.invokeLater(() -> {
+                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+                Main.showMainMenu(frame, missionManager);
+            });
         }
     }
 

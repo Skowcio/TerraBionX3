@@ -187,7 +187,11 @@ public class MissionManager {
         }
     }
 
+
     public void reset() {
         currentMissionIndex = 0;
+    }
+    public int getTotalMissions() {
+        return missions.size();
     }
 }
