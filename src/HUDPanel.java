@@ -31,7 +31,7 @@ public class HUDPanel extends JPanel {
         g2d.drawString("Valkiria: " + gamePanel.getValkirias().size() + " / Tech: " + gamePanel.getValkiriaTech().size(), 1100, 30);
         /// //////////////////////////////////////ta forma jest szybsza gamePanel.getBuilderVehicles w praktyce.... na maszynach z lat 90 byla by roznica///////
 
-        // do obslugi wyswietlania paska Drony budownicze
+        /////////////////// do obslugi wyswietlania paska Drony budownicze
         int currentDrones = gamePanel.getBuilderVehicles().size();
         int maxDrones = 5;
 
@@ -58,8 +58,36 @@ public class HUDPanel extends JPanel {
         g2d.drawRect(barX, barY, barWidth, barHeight);
         /// ///////////////////////////////////////////////////
         /// /////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+        //Punkty za zabitych wrogów (bombardowanie)
+        /////////////////////////
+        /// /////
+        int killPoints = gamePanel.getEnemyKillPoints();
 
-        // 🔹 Wyświetlanie czasu obrony (jeśli to misja DEFEND_FOR_TIME)
+        g2d.setColor(Color.ORANGE);
+        g2d.setFont(new Font("Arial", Font.BOLD, 16));
+        g2d.drawString("🔥 Kill Points: " + killPoints + " / 50", 1680, 320);
+
+// Pasek postępu
+        int barX2 = 1650;
+        int barY2 = 340;
+        int barWidth2 = 200;
+        int barHeight2 = 10;
+
+        double progress2 = (double) killPoints / 50.0;
+        int fillWidth2 = (int) (barWidth2 * progress2);
+
+        g2d.setColor(Color.DARK_GRAY);
+        g2d.fillRect(barX2, barY2, barWidth2, barHeight2);
+
+        g2d.setColor(Color.ORANGE);
+        g2d.fillRect(barX2, barY2, fillWidth2, barHeight2);
+
+        g2d.setColor(Color.WHITE);
+        g2d.drawRect(barX2, barY2, barWidth2, barHeight2);
+        /// ////////
+
+        //  Wyświetlanie czasu obrony (jeśli to misja DEFEND_FOR_TIME)
         if (gamePanel.getMissionManager() != null) {
             Mission current = gamePanel.getMissionManager().getCurrentMission(); // t osie rozni i chyba powoduje blad jak jest Mission current = gamePanel.getCurrentMission(); i sie nie laduje mijsa nowa
             if (current != null && current.objectiveType == Mission.ObjectiveType.DEFEND_FOR_TIME) {

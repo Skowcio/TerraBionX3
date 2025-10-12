@@ -90,7 +90,25 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private JLabel countdownLabel; // to jest do tego by odliczalo budowe pojazdow
 
     private Soldier soldier; // to jest do zapisywania do calego Soldier w savegame i load
+/// /////////////////////////////// tu jest do zliczanai zniszczonych wrogow
 
+private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
+    private static final int MAX_KILL_POINTS = 50;
+
+    // Metoda do zliczania punktów po zniszczeniu wroga
+    public void addKillPoints(int amount) {
+        enemyKillPoints = Math.min(MAX_KILL_POINTS, enemyKillPoints + amount);
+    }
+
+    // Pobieranie aktualnych punktów (dla HUD)
+    public int getEnemyKillPoints() {
+        return enemyKillPoints;
+    }
+
+    // Reset punktów (np. po nowej misji)
+    public void resetKillPoints() {
+        enemyKillPoints = 0;
+    }
 
     /// ///////////////////////////////// to sa do minimapy jednostki by je zwracalo
     public List<Soldier> getSoldiers() {
@@ -164,6 +182,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     private JButton btnProduceShell;
     private JButton btnFireShell;
+    private JButton btnBombardment;
 
     private JButton btnHarvester;
     private JButton btnBattleVehicle;
@@ -743,7 +762,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         });
         productionUpdateTimer.start();
 
-        /// ogolna  sekcja dla przyciskow ktore wystepuja w grze
+        /// ogolna  sekcja z przyciskami, dla przyciskow ktore wystepuja w grze
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         /// /////////////////////////////////////////////////////////////////
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -797,6 +816,11 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                 selectedBaracks.startProducingShell();
             }
         });
+
+        btnBombardment = new JButton("Bombardment");
+        btnBombardment.setBounds(1680, 380, 150, 30);
+        btnBombardment.setVisible(true);
+        add(btnBombardment);
 
         btnFireShell = new JButton("Wystrzel Pocisk");
         btnFireShell.setBounds(10, 130, 150, 30);
@@ -2137,6 +2161,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                         bulletsToRemove.add(bullet);
                         if (enemy.takeDamage2()) {
                             enemies.remove(enemy);
+                            addKillPoints(1); // 🟢 +1 punkt za zabicie
                         }
                         break;
                     }
@@ -2148,6 +2173,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                         if (hive.takeDamage()) {
                             hives.remove(hive);
                             destroyedHiveCount++;
+                            addKillPoints(3); //  większy wróg = więcej punktów
 
                             System.out.println("Hive zniszczony! Liczba zniszczonych: " + destroyedHiveCount);
                         }
@@ -2160,6 +2186,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
                         if (hiveToo.takeDamage()) {
                             hiveToos.remove(hiveToo);
+                            addKillPoints(3); //  większy wróg = więcej punktów
                         }
                         break;
                     }
@@ -2172,6 +2199,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                         bulletsToRemove.add(bullet);
                         if (enemyShooter.takeDamage()) {
                             enemyShooterIterator.remove();
+                            addKillPoints(1); // 🟢 +1 punkt
                         }
                         break;
                     }
@@ -2194,6 +2222,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 //                        hit = true;
                         if (enemyBehemoth.takeDamage()) {
                             enemyBehemoths.remove(enemyBehemoth);
+                            addKillPoints(3); //  większy wróg = więcej punktów
                         }
                         break;
                     }
@@ -2208,6 +2237,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
                         bulletsToRemove.add(bullet);
                         if (enemyToo.takeDamage2()) {
                             enemyTooIterator.remove();
+                            addKillPoints(1); // 🟢 +1 punkt za zabicie
                         }
                         break;
                     }
@@ -3422,6 +3452,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             btnDestructionFactory.setLocation(screenX + 10, screenY + 380);
 
             btnDestructionArty.setLocation(screenX + 10, screenY + 90);
+
+            btnBombardment.setLocation(screenX + 1680, screenY + 380);
 
 
 
