@@ -146,8 +146,11 @@ public class MissionManager {
 
         mission2.hiveTooPositions.add(new Point(1950, 1500));
         mission2.randomHiveCount = 30;
-        mission2.hiveSpawnArea = new Rectangle(1800, 1400, 800, 800);
+        mission2.hiveSpawnArea = new Rectangle(1800, 1300, 800, 800);
         mission2.enemyPositions.add(new Point(1800, 1300));
+        // tu poajwiaja sie drugie hive, drugi sektor
+        mission2.randomHiveCount2 = 20;
+        mission2.hiveSpawnArea2 = new Rectangle(100, 2200, 1200, 700);
         mission2.requiredHivesDestroyed = 0;
 
         mission2.objectiveType = Mission.ObjectiveType.DEFEND_FOR_TIME; // <- inny typ celu

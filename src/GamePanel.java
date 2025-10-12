@@ -356,7 +356,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         }
 
         // ✅ Hive bez nakładania się, by nie pojawily sie w jednym miejscu
-        int hiveSize = 80; // Rozmiar Hive (dostosuj jeśli masz inną grafikę)
+        int hiveSize = 100; // Rozmiar Hive (dostosuj jeśli masz inną grafikę)
         ArrayList<Rectangle> hiveRects = new ArrayList<>();
         Random rand = new Random();
 
@@ -367,6 +367,37 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
             while (!placed && attempts < 100) {
                 int x = mission.hiveSpawnArea.x + rand.nextInt(mission.hiveSpawnArea.width - hiveSize);
                 int y = mission.hiveSpawnArea.y + rand.nextInt(mission.hiveSpawnArea.height - hiveSize);
+                Rectangle newRect = new Rectangle(x, y, hiveSize, hiveSize);
+
+                boolean overlaps = false;
+                for (Rectangle r : hiveRects) {
+                    if (newRect.intersects(r)) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+
+                if (!overlaps) {
+                    hiveRects.add(newRect);
+                    hives.add(new Hive(x, y));
+                    placed = true;
+                } else {
+                    attempts++;
+                }
+            }
+
+            if (!placed) {
+                System.out.println("⚠️ Nie udało się wstawić Hive bez kolizji po 100 próbach.");
+            }
+            /// /// drugi hive spawner by dal osie w 2 lokacjach je robic
+        }
+        for (int i = 0; i < mission.randomHiveCount2; i++) {
+            boolean placed = false;
+            int attempts = 0;
+
+            while (!placed && attempts < 100) {
+                int x = mission.hiveSpawnArea2.x + rand.nextInt(mission.hiveSpawnArea2.width - hiveSize);
+                int y = mission.hiveSpawnArea2.y + rand.nextInt(mission.hiveSpawnArea2.height - hiveSize);
                 Rectangle newRect = new Rectangle(x, y, hiveSize, hiveSize);
 
                 boolean overlaps = false;

@@ -20,7 +20,9 @@ public class Mission {
     public ArrayList<String> floraTypes = new ArrayList<>(); // do wyboru typu np. "marsh", "Tree"
 
     public int randomHiveCount = 0;
+    public int randomHiveCount2 = 0;
     public Rectangle hiveSpawnArea;
+    public Rectangle hiveSpawnArea2;
 
     public int requiredHivesDestroyed = 5;
 /// // do zebrania w 3 misji ilsoc
