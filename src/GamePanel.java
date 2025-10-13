@@ -27,6 +27,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private GameState gameState;
     private JFrame frame; // Referencja do głównego okna
     private ArrayList<Explosion> explosions; // Lista eksplozji
+    private List<BombardmentSequence> activeBombardments = new ArrayList<>();
     private ArrayList<Soldier> soldiers;
 
     private ArrayList<SoldierBot> soldierBots;
@@ -220,6 +221,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
     private boolean shootingMode = false;
 
+    private boolean bombardmentMode = false;
 
     //do budowania
     private enum BuildingType {
@@ -267,6 +269,8 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
     public void setScrollPane(JScrollPane scrollPane) {
         this.scrollPane = scrollPane;
     }
+
+
 
     /// /////////////////////////////////////////////////////////////////////////////////////
     /// /// /////////////////////////////////////////////////////////////////////////////////////
@@ -821,6 +825,19 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         btnBombardment.setBounds(1680, 380, 150, 30);
         btnBombardment.setVisible(true);
         add(btnBombardment);
+
+        btnBombardment.addActionListener(e -> {
+            if (getEnemyKillPoints() >= 12) { // Sprawdź, czy gracz ma wystarczająco punktów
+                bombardmentMode = true;
+                System.out.println("💥 Tryb bombardowania aktywny! Kliknij na mapę, aby zrzucić bomby.");
+            } else {
+                System.out.println("❌ Za mało punktów! (wymagane 8)");
+            }
+        });
+
+
+
+
 
         btnFireShell = new JButton("Wystrzel Pocisk");
         btnFireShell.setBounds(10, 130, 150, 30);
@@ -2298,12 +2315,14 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
     //update co się dzieje w grze gdy trafi w cos dany pocisk ?
     private void updateGame() {
-
-        // 🔍 Sprawdzenie MissionManager i obecnej misji
-        if (missionManager == null) {
-
-            return;
+        List<BombardmentSequence> finishedBombs = new ArrayList<>();
+        for (BombardmentSequence b : activeBombardments) {
+            b.update();
+            explosions.addAll(b.getExplosions());
+            b.getExplosions().clear();
+            if (b.isFinished()) finishedBombs.add(b);
         }
+        activeBombardments.removeAll(finishedBombs);
 
         Mission current = missionManager.getCurrentMission();
 
@@ -2519,6 +2538,30 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
     // tu jest to jak budynki moga byc budowane
     @Override
     public void mousePressed(MouseEvent e) {
+
+        /// ///////////// do bombardowania
+        /// //////////////////
+        if (bombardmentMode && SwingUtilities.isLeftMouseButton(e)) {
+            int mouseX = e.getX();
+            int mouseY = e.getY();
+
+            if (enemyKillPoints >= 8) {
+                enemyKillPoints -= 8; // zużyj 8 punktów
+                activeBombardments.add(new BombardmentSequence(mouseX, mouseY));
+                bombardmentMode = false; // wyłącz tryb po użyciu
+                System.out.println("💥 Bombardowanie rozpoczęte w (" + mouseX + ", " + mouseY + ")");
+            } else {
+                System.out.println("❌ Brak punktów! Potrzebujesz co najmniej 8.");
+                bombardmentMode = false;
+            }
+            return; // zakończ obsługę kliknięcia, żeby nie zaznaczać jednostek
+        }
+        /// ///////////
+        ///  ////////
+        /// //////
+        /// ////
+
+
         if (isPlacingBuilding && selectedBuilderVehicle != null && SwingUtilities.isLeftMouseButton(e)) {
             int mouseX = e.getX();
             int mouseY = e.getY();
