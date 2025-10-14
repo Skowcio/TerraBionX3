@@ -27,6 +27,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private GameState gameState;
     private JFrame frame; // Referencja do głównego okna
     private ArrayList<Explosion> explosions; // Lista eksplozji
+    private List<HitFlash> hitFlashes = new ArrayList<>();
     private List<BombardmentSequence> activeBombardments = new ArrayList<>();
     private ArrayList<Soldier> soldiers;
 
@@ -829,9 +830,9 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         btnBombardment.addActionListener(e -> {
             if (getEnemyKillPoints() >= 12) { // Sprawdź, czy gracz ma wystarczająco punktów
                 bombardmentMode = true;
-                System.out.println("💥 Tryb bombardowania aktywny! Kliknij na mapę, aby zrzucić bomby.");
+                System.out.println(" Tryb bombardowania aktywny! Kliknij na mapę, aby zrzucić bomby.");
             } else {
-                System.out.println("❌ Za mało punktów! (wymagane 8)");
+                System.out.println(" Za mało punktów! (wymagane 8)");
             }
         });
 
@@ -2176,6 +2177,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 for (Enemy enemy : enemies) {
                     if (bullet.checkCollision(enemy)) {
                         bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(enemy.getX() + 15, enemy.getY() + 15));
                         if (enemy.takeDamage2()) {
                             enemies.remove(enemy);
                             addKillPoints(1); // 🟢 +1 punkt za zabicie
@@ -2187,6 +2189,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 for (Hive hive : new ArrayList<>(hives)) {
                     if (bullet.checkCollision(hive)) {
                         bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(hive.getX() + 15, hive.getY() + 15));
                         if (hive.takeDamage()) {
                             hives.remove(hive);
                             destroyedHiveCount++;
@@ -2200,6 +2203,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 for (HiveToo hiveToo : hiveToos) {
                     if (bullet.checkCollision(hiveToo)) {
                         bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(hiveToo.getX() + 15, hiveToo.getY() + 15));
 
                         if (hiveToo.takeDamage()) {
                             hiveToos.remove(hiveToo);
@@ -2214,6 +2218,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     EnemyShooter enemyShooter = enemyShooterIterator.next();
                     if (bullet.checkCollision(enemyShooter)) {
                         bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(enemyShooter.getX() + 15, enemyShooter.getY() + 15));
                         if (enemyShooter.takeDamage()) {
                             enemyShooterIterator.remove();
                             addKillPoints(1); // 🟢 +1 punkt
@@ -2225,6 +2230,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 for (EnemyHunter enemyHunter : enemyHunters) {
                     if (bullet.checkCollision(enemyHunter)) {
                         bulletsToRemove.add(bullet);
+
 //                        hit = true;
                         if (enemyHunter.takeDamage()) {
                             enemyHunters.remove(enemyHunter);
@@ -2236,6 +2242,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 for (EnemyBehemoth enemyBehemoth : enemyBehemoths) {
                     if (bullet.checkCollision(enemyBehemoth)) {
                         bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(enemyBehemoth.getX() + 15, enemyBehemoth.getY() + 15));
 //                        hit = true;
                         if (enemyBehemoth.takeDamage()) {
                             enemyBehemoths.remove(enemyBehemoth);
@@ -2252,6 +2259,8 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     EnemyToo enemyToo = enemyTooIterator.next();
                     if (bullet.checkCollision(enemyToo)) {
                         bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(enemyToo.getX() + 15, enemyToo.getY() + 15));
+
                         if (enemyToo.takeDamage2()) {
                             enemyTooIterator.remove();
                             addKillPoints(1); // 🟢 +1 punkt za zabicie
@@ -3319,9 +3328,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             );
         }
         // Rysowanie pocisków
-        for (Bullet bullet : bullets) {
-            bullet.draw(g);
-        }
+
 
         for (BattleVehicle battleVehicle : battleVehicles){
             battleVehicle.draw(g);
@@ -3403,7 +3410,17 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         }
 
 
-
+        for (Bullet bullet : bullets) {
+            bullet.draw(g);
+        }
+        for (int i = 0; i < hitFlashes.size(); i++) {
+            HitFlash flash = hitFlashes.get(i);
+            flash.draw(g);
+            if (flash.isExpired()) {
+                hitFlashes.remove(i);
+                i--;
+            }
+        }
 
 
         // Rysowanie prostokąta zaznaczenia

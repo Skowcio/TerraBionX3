@@ -70,10 +70,22 @@ public class Bullet { // Bullet jest używany przez Soldier
     }
 
     public void draw(Graphics g) {
-        g.setColor(Color.WHITE);
-        g.fillRect(x, y, 5, 5); // Pocisk o rozmiarze 5x5
-    }
+        Graphics2D g2d = (Graphics2D) g.create();
 
+        // Efekt świetlny — poświata
+        for (int i = 0; i < 3; i++) {
+            int radius = 10 + i * 8;
+            float alpha = 0.25f - i * 0.07f; // im dalej od środka, tym słabsza poświata
+            g2d.setColor(new Color(1f, 1f, 0.6f, alpha)); // jasnożółta poświata
+            g2d.fillOval(x - radius / 2, y - radius / 2, radius, radius);
+        }
+
+        // Główny pocisk (jasny środek)
+        g2d.setColor(Color.WHITE);
+        g2d.fillOval(x - 2, y - 2, 5, 5);
+
+        g2d.dispose();
+    }
     public boolean checkCollision(Enemy enemy) {
         Rectangle bulletRect = new Rectangle(x, y, 5, 5);
         Rectangle enemyRect = new Rectangle(enemy.getX(), enemy.getY(), 30, 30);
