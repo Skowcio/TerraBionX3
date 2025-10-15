@@ -26,11 +26,21 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private MiniMapPanel miniMapPanel;
     private GameState gameState;
     private JFrame frame; // Referencja do głównego okna
+/// / to do FPS by  bylo
+    private long lastTime = System.nanoTime();
+    private int frames = 0;
+    private int fps = 0;
+    private long fpsTimer = System.currentTimeMillis();
+
+
+    public int getFPS() { return fps; }
+
+
     private ArrayList<Explosion> explosions; // Lista eksplozji
     private List<HitFlash> hitFlashes = new ArrayList<>();
     private List<BombardmentSequence> activeBombardments = new ArrayList<>();
-    private ArrayList<Soldier> soldiers;
 
+    private ArrayList<Soldier> soldiers;
     private ArrayList<SoldierBot> soldierBots;
     private ArrayList<Valkiria> valkirias;
     private ArrayList<Cryopit> cryopits;
@@ -249,7 +259,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
     private long missionFailTime = 0;
 
     private long missionStartTime = 0;  // czas rozpoczęcia misji
-    private final long defendDurationMillis = 2 * 60 * 1000; // 15 minut w milisekundach
+    private final long defendDurationMillis = 15 * 60 * 1000; // 15 minut w milisekundach
 
     private int destroyedHiveCount = 0;
     private boolean missionCompleted = false;
@@ -670,7 +680,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 // tu jest okenko glowne gry oraz okienko ktore jest po nacisnieciu ecape
         {
             this.frame = frame;
-            this.setPreferredSize(new Dimension(3000, 3000)); // Duża mapa
+            this.setPreferredSize(new Dimension(4000, 4000)); // Duża mapa
 
             setFocusable(true);
             requestFocusInWindow();
@@ -688,7 +698,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
         {
             // Ustawiamy większy rozmiar mapy
-            this.setPreferredSize(new Dimension(3000, 3000));  // Zwiększamy rozmiar mapy
+            this.setPreferredSize(new Dimension(4000, 4000));  // Zwiększamy rozmiar mapy
         }
 
         addKeyListener(this);
@@ -1559,7 +1569,10 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
 
     public void createExplosion(int x, int y) {
-        explosions.add(new Explosion(x, y)); // Dodaje nową eksplozję do listy
+        Explosion explosion = new Explosion(x, y);
+
+        explosion.checkEnemyCollision(enemiesToo, enemies, hives, enemyHunters, enemyShooters);
+        explosions.add(explosion);
     }
 
     public void setMiniMapPanel(MiniMapPanel miniMapPanel) {
@@ -2324,14 +2337,28 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
     //update co się dzieje w grze gdy trafi w cos dany pocisk ?
     private void updateGame() {
-        List<BombardmentSequence> finishedBombs = new ArrayList<>();
+        // Aktualizacja bombardowań — dodaj nowe eksplozje i od razu sprawdź kolizje
+        List<BombardmentSequence> finished = new ArrayList<>();
         for (BombardmentSequence b : activeBombardments) {
             b.update();
-            explosions.addAll(b.getExplosions());
-            b.getExplosions().clear();
-            if (b.isFinished()) finishedBombs.add(b);
+
+            // pobieramy nowe eksplozje wygenerowane w tej aktualizacji
+            List<Explosion> newExps = b.getExplosions();
+            if (!newExps.isEmpty()) {
+                for (Explosion ex : newExps) {
+                    // <- TUTAJ od razu sprawdzamy kolizje i zadajemy obrażenia
+                    ex.checkEnemyCollision(enemiesToo, enemies, hives, enemyHunters, enemyShooters);
+
+                    // dodajemy eksplozję do głównej listy do rysowania
+                    explosions.add(ex);
+                }
+                newExps.clear(); // czyścimy listę wewnątrz sekwencji
+            }
+
+            if (b.isFinished()) finished.add(b);
         }
-        activeBombardments.removeAll(finishedBombs);
+        activeBombardments.removeAll(finished);
+
 
         Mission current = missionManager.getCurrentMission();
 
@@ -2339,7 +2366,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
             return;
         }
-
+/// /////// to ejst gdy zniszcza baraki to jest koniec misji/gry
         for (Baracks b : baracks) {
             if (b.getHealth() <= 0 && !missionFailed) {
                 missionFailed = true;
@@ -2400,7 +2427,6 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
 
 
-
         for (EnemyToo enemyToo : enemiesToo) {
             enemyToo.update(soldiers, valkirias, harvesters, baracks, builderVehicles, artylerys, battleVehicles, powerPlants,soldierBots, factories, steelMines, explosions); // Przekazuje listę żołnierzy do śledzenia
         }
@@ -2425,7 +2451,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
         repaint();
     }
-
+///  poprostu do gameover
     private void showMissionFailScreen() {
         missionFailTime = System.currentTimeMillis();
         new Thread(() -> {
@@ -3167,15 +3193,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         }
 
 
-        for (int i = explosions.size() - 1; i >= 0; i--) {
-            Explosion explosion = explosions.get(i);
-            explosion.draw(g);
-            explosion.checkEnemyCollision(enemiesToo, enemies, hives, enemyHunters, enemyShooters); // Sprawdza kolizję z wrogami
 
-            if (explosion.isExpired()) {
-                explosions.remove(i); // Usunięcie eksplozji, gdy animacja się kończy
-            }
-        }
 
         if (selectionRectangle != null) {
             Graphics2D g2d = (Graphics2D) g;
@@ -3404,6 +3422,15 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             artBullet.draw(g);
         }
 
+        for (int i = explosions.size() - 1; i >= 0; i--) {
+            Explosion explosion = explosions.get(i);
+            explosion.draw(g);
+
+            if (explosion.isExpired()) {
+                explosions.remove(i);
+            }
+        }
+
         // Rysowanie pocisków
         for (Projectile projectile : projectiles) {
             projectile.draw(g);
@@ -3515,8 +3542,6 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
             btnBombardment.setLocation(screenX + 1680, screenY + 380);
 
-
-
         }
         if (miniMapPanel != null) {
             miniMapPanel.repaint();
@@ -3548,6 +3573,15 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 g2d.drawString(text, textX, textY);
             }
             g2d.dispose(); // zwolnienie kopii Graphics
+        }
+
+        // /// to do FPS by bylo
+        frames++;
+
+        if (System.currentTimeMillis() - fpsTimer >= 1000) {
+            fps = frames;
+            frames = 0;
+            fpsTimer += 1000;
         }
 
     }

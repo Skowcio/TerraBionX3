@@ -64,6 +64,11 @@ public class EnemyToo {
         return health <= 0; // Zwraca true, jeśli Enemy zostało zniszczone
     }
 
+    public boolean takeDamage3() {
+        health -= 10;
+        return health <= 0; // Zwraca true, jeśli Enemy zostało zniszczone
+    }
+
     public void update(List<Soldier> soldiers, List<Valkiria> valkirias, List<Harvester> harvesters, List<Baracks> baracks,
                        List<BuilderVehicle> builderVehicles, List<Artylery> artylerys,
                        List<BattleVehicle> battleVehicles, List<PowerPlant> powerPlants, List<SoldierBot> soldierBots,

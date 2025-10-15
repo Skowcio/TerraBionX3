@@ -8,8 +8,8 @@ public class MiniMapPanel extends JPanel {
 
     private final int minimapWidth = 300;
     private final int minimapHeight = 300;
-    private final int mapWidth = 3000;
-    private final int mapHeight = 3000;
+    private final int mapWidth = 4000;
+    private final int mapHeight = 4000;
 
     public MiniMapPanel(GamePanel gamePanel, JScrollPane scrollPane) {
         this.gamePanel = gamePanel;

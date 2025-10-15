@@ -4,6 +4,8 @@ import java.awt.*;
 public class HUDPanel extends JPanel {
     private final GamePanel gamePanel;
 
+
+
     public HUDPanel(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
         setLayout(null);
@@ -86,6 +88,8 @@ public class HUDPanel extends JPanel {
         g2d.setColor(Color.WHITE);
         g2d.drawRect(barX2, barY2, barWidth2, barHeight2);
         /// ////////
+
+        g2d.drawString("FPS: " + gamePanel.getFPS(), 20, 20);
 
         //  Wyświetlanie czasu obrony (jeśli to misja DEFEND_FOR_TIME)
         if (gamePanel.getMissionManager() != null) {
