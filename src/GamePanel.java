@@ -251,6 +251,8 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
     private final int MIN_DISTANCE_FROM_FACTORY = 350;
     private static final int BUILD_SIZE = 80;
 
+    private boolean tooFarFromCrystal = false;
+
     private JScrollPane scrollPane;
     private MissionManager missionManager;
 
@@ -879,6 +881,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 if (artylery.isSelected()) {
                     artylery.destroy();            // niszczya aarte
                     Artylery.decreaseArtysCount(); // zmniejsza licznik
+                    explosions.add(new Explosion(artylery.getX(), artylery.getY()));
                     showArtysMenu = false;
                     updateArtysMenu();
                     repaint();
@@ -946,6 +949,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 if (factory.isSelected()) {
                     factory.destroy();            // niszczya fabrykę
                     Factory.decreaseFactoryCount(); // zmniejsza licznik
+                    explosions.add(new Explosion(factory.getX(), factory.getY()));
                     showFactorysMenu = false;
                     updateFactorysMenu();
                     repaint(); // Odśwież panel
@@ -2594,7 +2598,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         /// ///////////
         ///  ////////
         /// //////
-        /// ////
+        /// //// to jest do budowania budynkow i tu jest ciekawostka ze Flora obstacle : obstacles to sa przeszkody z flora - Marsh itp
 
 
         if (isPlacingBuilding && selectedBuilderVehicle != null && SwingUtilities.isLeftMouseButton(e)) {
@@ -2630,7 +2634,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                         collision = true;
 
                 for (Flora obstacle : obstacles) {
-                    if (obstacle.getBounds().intersects(newBuilding)) {
+                    if (obstacle.getCollisionBounds().intersects(newBuilding)) {
                         collision = true;
                         break; // wystarczy jedna kolizja
                     }
@@ -2659,7 +2663,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     if (buildingToPlace == BuildingType.VALKIRIATECH) {
                         boolean insideCrystalArea = false;
                         for (Crystal crystal : crystals) {
-                            if (crystal.getBuildArea(200).contains(newBuilding)) {
+                            if (crystal.getBuildArea(180).contains(newBuilding)) {
                                 insideCrystalArea = true;
                                 break;
                             }
@@ -3168,9 +3172,8 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 }
             }
         }
-        for (Flora flora : obstacles) {
-            flora.draw(g);
-        }
+
+
 
         // Usunięcie wyczerpanych złóż
         resources.removeIf(ResourcesSteel::isDepleted);
@@ -3236,6 +3239,9 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 //        for (Cryopit cryopit : cryopits){
 //            cryopit.drawAll(g);
 //        }
+        for (Flora flora : obstacles) {
+            flora.draw(g);
+        }
         // Rysowanie żołnierzy
         for (Soldier soldier : soldiers) {
             soldier.draw(g);
@@ -3303,6 +3309,8 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     viewRect.height
             );
         }
+
+
 
         //budowniczy
         for (BuilderVehicle builderVehicle :builderVehicles) {
@@ -3459,6 +3467,11 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             g2d.draw(selectionRectangle);
         }
         //to jest od stawiania budynkow czerwone/biale pole
+        /// ///////////////////
+        /// ///////////////
+        /// /////////
+        /// ////////
+        /// /////////
         if (isPlacingBuilding && placementCursor != null && selectedBuilderVehicle != null) {
             Graphics2D g2 = (Graphics2D) g;
 
@@ -3470,8 +3483,10 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             double distance = Point.distance(builderX, builderY, cursorCenterX, cursorCenterY);
 
             boolean tooCloseToFactory = false;
+            boolean collisionDetected = false;
+            boolean tooFarFromCrystal = false; // 🔹 nowy warunek
 
-            // Tylko jeśli próbujesz postawić Factory
+            // 🔹 Sprawdzenie odległości od innych fabryk (jeśli stawiamy fabrykę)
             if ("Factory".equals(placingBuildingType)) {
                 for (Factory factory : factories) {
                     int factoryCenterX = factory.getX() + factory.getWidth() / 2;
@@ -3485,15 +3500,68 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 }
             }
 
-            if (distance <= BUILD_RANGE && !tooCloseToFactory) {
+            // 🔹 Jeśli stawiamy ValkiriaTech — sprawdź, czy jest w zasięgu Crystala
+
+
+            if (placingBuildingType != null && placingBuildingType.toLowerCase().contains("valkiria")) {
+                boolean insideCrystalArea = false;
+                Rectangle newBuilding = new Rectangle(placementCursor.x, placementCursor.y, BUILD_SIZE, BUILD_SIZE);
+
+                for (Crystal crystal : crystals) {
+                    if (crystal.getBuildArea(180).contains(newBuilding)) {
+                        insideCrystalArea = true;
+                        break;
+                    }
+                }
+
+                if (!insideCrystalArea) {
+                    tooFarFromCrystal = true;
+                    // 🔹 debug info
+
+                }
+            }
+
+
+
+
+            Rectangle newBuilding = new Rectangle(placementCursor.x, placementCursor.y, BUILD_SIZE, BUILD_SIZE);
+
+            // 🔹 Sprawdź kolizję z istniejącymi budynkami
+            for (PowerPlant plant : powerPlants)
+                if (plant.getBounds().intersects(newBuilding)) collisionDetected = true;
+            for (SteelMine mine : steelMines)
+                if (mine.getBounds().intersects(newBuilding)) collisionDetected = true;
+            for (ResearchCenter researchCenter : researchCenters)
+                if (researchCenter.getBounds().intersects(newBuilding)) collisionDetected = true;
+            for (ValkiriaTech valkiriaTech : valkiriaTechs)
+                if (valkiriaTech.getBounds().intersects(newBuilding)) collisionDetected = true;
+            for (Crystal crystal : crystals)
+                if (crystal.getBounds().intersects(newBuilding)) collisionDetected = true;
+            for (Baracks barack : baracks)
+                if (barack.getBounds().intersects(newBuilding)) collisionDetected = true;
+            for (Artylery artylery : artylerys)
+                if (artylery.getBounds().intersects(newBuilding)) collisionDetected = true;
+            for (Factory factory : factories)
+                if (factory.getBounds().intersects(newBuilding)) collisionDetected = true;
+
+            // 🔹 Sprawdź kolizję z przeszkodami (Flora)
+            for (Flora obstacle : obstacles) {
+                if (obstacle.getCollisionBounds().intersects(newBuilding)) {
+                    collisionDetected = true;
+                    break;
+                }
+            }
+
+// 🔹 Ustal kolor kwadratu budowy
+            if (distance <= BUILD_RANGE && !tooCloseToFactory && !collisionDetected && !tooFarFromCrystal) {
                 g2.setColor(Color.WHITE);
             } else {
                 g2.setColor(Color.RED);
             }
 
+            // 🔹 Narysuj kwadrat budowy
             g2.drawRect(placementCursor.x, placementCursor.y, BUILD_SIZE, BUILD_SIZE);
         }
-
 
 
 // Wyświetlanie zasobów niezależnie od przewijania mapy

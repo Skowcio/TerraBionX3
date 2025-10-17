@@ -28,6 +28,12 @@ public abstract class Flora {
         }
     }
 
+    public Rectangle getCollisionBounds() {
+        // 🔹 Dolne 2/3 grafiki blokują budowę
+        int baseHeight = (height * 2) / 3;
+        return new Rectangle(x, y + height - baseHeight, width, baseHeight);
+    }
+
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
     }
