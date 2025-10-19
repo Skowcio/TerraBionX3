@@ -2682,7 +2682,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     String typeName = "";
                     switch (buildingToPlace) {
                         case POWER_PLANT:
-                            buildTime = 5000;
+                            buildTime = 5000; // 5sek
                             collectedSteel -= 1000;
                             typeName = "PowerPlant";
                             totalPower += PowerPlant.getPowerGenerated();
@@ -2698,9 +2698,10 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                             btnResearch.setEnabled(true);
                             break;
                         case STEEL_MINE:
-                            steelMines.add(new SteelMine(mouseX, mouseY));
+
                             collectedSteel -= 1500;
-                            totalPower -= 100;
+                            buildTime = 10000; // 10sekund
+                            typeName = "SteelMine";
                             break;
                         case BARRACKS:
                             baracks.add(new Baracks(mouseX, mouseY));
@@ -3187,7 +3188,12 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 }
             }
         }
-
+/// ////////// graficzny proces budowy budynkow
+        /// ////////
+        /// ///////
+        /// ///
+        /// //
+        /// /
         for (BuildingProgress progress : buildingProgressList) {
             if (!progress.isFinished()) {
                 // 🔸 Kwadrat pomarańczowy
@@ -3629,7 +3635,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             // 🔹 Narysuj kwadrat budowy
             g2.drawRect(placementCursor.x, placementCursor.y, BUILD_SIZE, BUILD_SIZE);
         }
-
+/// ////// postep budowania
         for (BuildingProgress bp : buildingProgressList) {
             double progress = bp.getProgress();
 
@@ -3639,13 +3645,13 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             g.setColor(Color.ORANGE);
             g.drawRect(bp.x, bp.y, BUILD_SIZE, BUILD_SIZE);
 
-            // pasek postępu (zielony)
-            int barWidth = (int)(BUILD_SIZE * progress);
-            g.setColor(Color.GREEN);
-            g.fillRect(bp.x, bp.y + BUILD_SIZE + 4, barWidth, 5);
-
-            g.setColor(Color.BLACK);
-            g.drawRect(bp.x, bp.y + BUILD_SIZE + 4, BUILD_SIZE, 5);
+//            // pasek postępu (zielony)
+//            int barWidth = (int)(BUILD_SIZE * progress);
+//            g.setColor(Color.GREEN);
+//            g.fillRect(bp.x, bp.y + BUILD_SIZE + 4, barWidth, 5);
+//
+//            g.setColor(Color.BLACK);
+//            g.drawRect(bp.x, bp.y + BUILD_SIZE + 4, BUILD_SIZE, 5);
         }
 
 
