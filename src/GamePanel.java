@@ -39,6 +39,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Explosion> explosions; // Lista eksplozji
     private List<HitFlash> hitFlashes = new ArrayList<>();
     private List<BombardmentSequence> activeBombardments = new ArrayList<>();
+    private final List<BuildingProgress> buildingProgressList = new ArrayList<>();
 
     private ArrayList<Soldier> soldiers;
     private ArrayList<SoldierBot> soldierBots;
@@ -2677,10 +2678,13 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
 
                 if (!collision) {
+                    long buildTime = 0;
+                    String typeName = "";
                     switch (buildingToPlace) {
                         case POWER_PLANT:
-                            powerPlants.add(new PowerPlant(mouseX, mouseY));
+                            buildTime = 5000;
                             collectedSteel -= 1000;
+                            typeName = "PowerPlant";
                             totalPower += PowerPlant.getPowerGenerated();
                             btnSteelMine.setVisible(true);
                             btnSteelMine.setEnabled(true);
@@ -2735,6 +2739,9 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                             break;
                     }
 
+                    // Dodaj nową budowę do listy postępu
+                    buildingProgressList.add(new BuildingProgress(mouseX, mouseY, typeName, buildTime));
+
                     isPlacingBuilding = false;
                     buildingToPlace = null;
                     placementCursor = null;
@@ -2750,6 +2757,11 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
             return;
         }
+
+        /// ////////
+        /// ///////
+        /// ///////
+        /// ///////
         if (SwingUtilities.isLeftMouseButton(e)) {
             startPoint = e.getPoint(); // Zapisanie punktu początkowego zaznaczenia
             selectionRectangle = new Rectangle(); // Inicjalizacja prostokąta zaznaczenia
@@ -3152,7 +3164,10 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+
         // Rysowanie mapy (w tym przypadku tylko prostokąt)
+
 
         g.fillRect(0, 0, 3000, 3000); // Rysowanie mapy 3000x3000
 
@@ -3170,6 +3185,58 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 for (int y = 0; y < getHeight(); y += imgHeight) {
                     g.drawImage(backgroundImage, x, y, this);
                 }
+            }
+        }
+
+        for (BuildingProgress progress : buildingProgressList) {
+            if (!progress.isFinished()) {
+                // 🔸 Kwadrat pomarańczowy
+                g.setColor(new Color(255, 140, 0, 150));
+                g.fillRect(progress.x, progress.y, BUILD_SIZE, BUILD_SIZE);
+
+                // 🔸 Pasek postępu
+                g.setColor(Color.ORANGE);
+                g.drawRect(progress.x, progress.y - 8, BUILD_SIZE, 5);
+                int filled = (int) (BUILD_SIZE * progress.getProgress());
+                g.fillRect(progress.x, progress.y - 8, filled, 5);
+            }
+        }
+
+        Iterator<BuildingProgress> iterator = buildingProgressList.iterator();
+        while (iterator.hasNext()) {
+            BuildingProgress progress = iterator.next();
+            if (progress.isFinished()) {
+                switch (progress.getType()) {
+                    case "PowerPlant":
+                        powerPlants.add(new PowerPlant(progress.x, progress.y));
+                        totalPower += PowerPlant.getPowerGenerated();
+                        break;
+                    case "SteelMine":
+                        steelMines.add(new SteelMine(progress.x, progress.y));
+                        totalPower -= 100;
+                        break;
+                    case "Baracks":
+                        baracks.add(new Baracks(progress.x, progress.y));
+                        totalPower -= 100;
+                        break;
+                    case "ResearchCenter":
+                        researchCenters.add(new ResearchCenter(progress.x, progress.y));
+                        totalPower -= 200;
+                        break;
+                    case "ValkiriaTech":
+                        valkiriaTechs.add(new ValkiriaTech(progress.x, progress.y));
+                        totalPower -= 200;
+                        break;
+                    case "Factory":
+                        factories.add(new Factory(progress.x, progress.y));
+                        totalPower -= 150;
+                        break;
+                    case "Artylery":
+                        artylerys.add(new Artylery(progress.x, progress.y));
+                        totalPower -= 50;
+                        break;
+                }
+                iterator.remove(); // usuń z listy aktywnych budów
             }
         }
 
@@ -3561,6 +3628,24 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
             // 🔹 Narysuj kwadrat budowy
             g2.drawRect(placementCursor.x, placementCursor.y, BUILD_SIZE, BUILD_SIZE);
+        }
+
+        for (BuildingProgress bp : buildingProgressList) {
+            double progress = bp.getProgress();
+
+            g.setColor(new Color(255, 140, 0, 120)); // pomarańczowe półprzezroczyste tło
+            g.fillRect(bp.x, bp.y, BUILD_SIZE, BUILD_SIZE);
+
+            g.setColor(Color.ORANGE);
+            g.drawRect(bp.x, bp.y, BUILD_SIZE, BUILD_SIZE);
+
+            // pasek postępu (zielony)
+            int barWidth = (int)(BUILD_SIZE * progress);
+            g.setColor(Color.GREEN);
+            g.fillRect(bp.x, bp.y + BUILD_SIZE + 4, barWidth, 5);
+
+            g.setColor(Color.BLACK);
+            g.drawRect(bp.x, bp.y + BUILD_SIZE + 4, BUILD_SIZE, 5);
         }
 
 

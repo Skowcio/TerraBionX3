@@ -2,12 +2,7 @@ package flora;
 
 import java.awt.image.BufferedImage;
 import java.awt.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Random;
-import javax.imageio.ImageIO;
+
 
 public abstract class Flora {
     protected int x, y;
