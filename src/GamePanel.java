@@ -39,7 +39,12 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<Explosion> explosions; // Lista eksplozji
     private List<HitFlash> hitFlashes = new ArrayList<>();
     private List<BombardmentSequence> activeBombardments = new ArrayList<>();
+
+
     private final List<BuildingProgress> buildingProgressList = new ArrayList<>();
+    private final List<BuildingPortalEffect> buildingEffects = new ArrayList<>();
+    private java.util.List<BuildingPortalEffect> portalEffects = new java.util.ArrayList<>();
+
 
     private ArrayList<Soldier> soldiers;
     private ArrayList<SoldierBot> soldierBots;
@@ -538,8 +543,16 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         cryopits.clear();
         minigunners.clear();
         battleVehicles.clear();
+
         powerPlants.clear();
+        valkiriaTechs.clear();
+        baracks.clear();
+        researchCenters.clear();
+        factories.clear();
+        buldings.clear();
         artylerys.clear();
+        steelMines.clear();
+
         selectedSoldiers.clear();
         selectedBuldierVehicles.clear();
         harvesters.clear();
@@ -551,13 +564,11 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         bullets.clear();
         minigunnerBullets.clear();
         artBullets.clear();
-        baracks.clear();
-        researchCenters.clear();
-        factories.clear();
+
         buldings.clear();
         hives.clear();
         hiveToos.clear();
-        steelMines.clear();
+
         explosions.clear();
         projectiles.clear();
 //        floras.clear();  gdy to jest dodane to nie laduje 2 misji, o chuj chodzi ?
@@ -688,13 +699,13 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             setFocusable(true);
             requestFocusInWindow();
 
-            // Obsługa klawisza ESC
-            addKeyListener(new KeyAdapter() {
+            // 🔹 Zamiast KeyListenera — Key Bindings (działa zawsze)
+            getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                    .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "pause");
+            getActionMap().put("pause", new AbstractAction() {
                 @Override
-                public void keyPressed(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                        showPauseMenu();
-                    }
+                public void actionPerformed(ActionEvent e) {
+                    showPauseMenu();
                 }
             });
         }
@@ -2640,6 +2651,14 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                         break; // wystarczy jedna kolizja
                     }
                 }
+                for (BuildingPortalEffect effect : buildingEffects) {
+                    Rectangle portalArea = new Rectangle(effect.getX(), effect.getY(), effect.getSize(), effect.getSize());
+                    if (portalArea.intersects(newBuilding)) {
+                        collision = true;
+
+                        break;
+                    }
+                }
 
 
 //                for (Factory factory : factories)
@@ -2669,6 +2688,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                                 break;
                             }
                         }
+
                         if (!insideCrystalArea) {
                             collision = true;
                             System.out.println("❌ ValkiriaTech musi być w zasięgu kryształu!");
@@ -2709,31 +2729,34 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                             totalPower -= 100;
                             break;
                         case RESEARCH:
-                            researchCenters.add(new ResearchCenter(mouseX, mouseY));
+                            buildTime = 20000; // 10sekund
+                            typeName = "ResearchCenter";
                             collectedSteel -= 3000;
-                            totalPower -= 200;
+
                             break;
 
                         case  VALKIRIATECH:
-                            valkiriaTechs.add(new ValkiriaTech(mouseX, mouseY));
+                            buildTime = 20000; // 10sekund
                             collectedSteel -= 5000; // koszt np.
-                            totalPower -= 200;
+                            typeName = "ValkiriaTech";
                             break;
 
                         case FACTORY:
                             if (Factory.getFactoryCount() < Factory.getMaxFactories()) {
-                                factories.add(new Factory(mouseX, mouseY));
+
                                 collectedSteel -= 2500;
-                                totalPower -= 150;
+                                buildTime = 20000; // 10sekund
+                                typeName = "Factory";
                             } else {
                                 System.out.println("Nie można zbudować więcej fabryk! Limit osiągnięty.");
                             }
                             break;
                         case ARTYLERY:
                             if (Artylery.getTotalArtys() < Artylery.getMaxArtylerys()) {
-                                artylerys.add(new Artylery(mouseX, mouseY));
+                                buildTime = 20000; // 10sekund
+                                typeName = "Artylery";
                                 collectedSteel -= 500;
-                                totalPower -= 50;
+
                             } else {
                                 System.out.println("❌ Nie można zbudować więcej artylerii! Limit osiągnięty.");
                             }
@@ -2742,6 +2765,8 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
                     // Dodaj nową budowę do listy postępu
                     buildingProgressList.add(new BuildingProgress(mouseX, mouseY, typeName, buildTime));
+
+                    buildingEffects.add(new BuildingPortalEffect(mouseX, mouseY, BUILD_SIZE, buildTime));
 
                     isPlacingBuilding = false;
                     buildingToPlace = null;
@@ -2875,7 +2900,6 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 if (new Rectangle(builderVehicle.getX(), builderVehicle.getY(),50, 50).contains(e.getPoint())){
                     selectedBuilderVehicle = builderVehicle;
                     builderVehicle.setSelected(true);
-                    System.out.println("Zaznaczono BuilderVehicle.");
                     showBuilderMenu = true; // Pokaż menu budowy
                     updateBuilderMenu();
                     return;
@@ -2889,7 +2913,6 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 if (new Rectangle(factory.getX(), factory.getY(),140, 140).contains(e.getPoint())){
                     selectedFactories = factory;
                     factory.setSelected(true);
-                    System.out.println("Zaznaczono Factory.");
                     showFactorysMenu = true; // Pokaż menu produkcji factory
                     updateFactorysMenu();
                     return;
@@ -3188,63 +3211,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 }
             }
         }
-/// ////////// graficzny proces budowy budynkow
-        /// ////////
-        /// ///////
-        /// ///
-        /// //
-        /// /
-        for (BuildingProgress progress : buildingProgressList) {
-            if (!progress.isFinished()) {
-                // 🔸 Kwadrat pomarańczowy
-                g.setColor(new Color(255, 140, 0, 150));
-                g.fillRect(progress.x, progress.y, BUILD_SIZE, BUILD_SIZE);
 
-                // 🔸 Pasek postępu
-                g.setColor(Color.ORANGE);
-                g.drawRect(progress.x, progress.y - 8, BUILD_SIZE, 5);
-                int filled = (int) (BUILD_SIZE * progress.getProgress());
-                g.fillRect(progress.x, progress.y - 8, filled, 5);
-            }
-        }
-
-        Iterator<BuildingProgress> iterator = buildingProgressList.iterator();
-        while (iterator.hasNext()) {
-            BuildingProgress progress = iterator.next();
-            if (progress.isFinished()) {
-                switch (progress.getType()) {
-                    case "PowerPlant":
-                        powerPlants.add(new PowerPlant(progress.x, progress.y));
-                        totalPower += PowerPlant.getPowerGenerated();
-                        break;
-                    case "SteelMine":
-                        steelMines.add(new SteelMine(progress.x, progress.y));
-                        totalPower -= 100;
-                        break;
-                    case "Baracks":
-                        baracks.add(new Baracks(progress.x, progress.y));
-                        totalPower -= 100;
-                        break;
-                    case "ResearchCenter":
-                        researchCenters.add(new ResearchCenter(progress.x, progress.y));
-                        totalPower -= 200;
-                        break;
-                    case "ValkiriaTech":
-                        valkiriaTechs.add(new ValkiriaTech(progress.x, progress.y));
-                        totalPower -= 200;
-                        break;
-                    case "Factory":
-                        factories.add(new Factory(progress.x, progress.y));
-                        totalPower -= 150;
-                        break;
-                    case "Artylery":
-                        artylerys.add(new Artylery(progress.x, progress.y));
-                        totalPower -= 50;
-                        break;
-                }
-                iterator.remove(); // usuń z listy aktywnych budów
-            }
-        }
 
 
 
@@ -3314,6 +3281,99 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 //        }
         for (Flora flora : obstacles) {
             flora.draw(g);
+        }
+
+        /// ////////// graficzny proces budowy budynkow
+        /// ////////
+        /// ///////
+        /// ///
+        /// //
+        /// /
+        for (BuildingProgress progress : buildingProgressList) {
+            if (!progress.isFinished()) {
+
+                // 🔹 Efekt pulsującej kuli podczas budowy
+                double pulsate = Math.sin(System.currentTimeMillis() / 200.0); // płynne pulsowanie
+                int maxRadius = BUILD_SIZE / 2;
+                int radius = (int) (maxRadius * (0.7 + 0.3 * (pulsate + 1) / 2)); // od 70% do 100% wielkości
+
+                int centerX = progress.x + BUILD_SIZE / 2;
+                int centerY = progress.y + BUILD_SIZE / 2;
+
+                // Jasna kula wewnętrzna
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Pierwsza warstwa - delikatne światło
+                g2d.setColor(new Color(255, 255, 200, 100));
+                g2d.fillOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
+
+                // Druga warstwa - mocniejszy rdzeń
+                g2d.setColor(new Color(255, 255, 180, 180));
+                g2d.fillOval(centerX - radius / 2, centerY - radius / 2, radius, radius);
+
+                // Delikatna obwódka światła
+                g2d.setColor(new Color(255, 255, 255, 150));
+                g2d.setStroke(new BasicStroke(2f));
+                g2d.drawOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
+
+                g2d.dispose();
+
+                // 🔸 Pasek postępu budowy
+                g.setColor(Color.ORANGE);
+                g.drawRect(progress.x, progress.y - 8, BUILD_SIZE, 5);
+                int filled = (int) (BUILD_SIZE * progress.getProgress());
+                g.fillRect(progress.x, progress.y - 8, filled, 5);
+            }
+        }
+
+        Iterator<BuildingProgress> iterator = buildingProgressList.iterator();
+        while (iterator.hasNext()) {
+            BuildingProgress progress = iterator.next();
+            if (progress.isFinished()) {
+                switch (progress.getType()) {
+                    case "PowerPlant":
+                        powerPlants.add(new PowerPlant(progress.x, progress.y));
+                        totalPower += PowerPlant.getPowerGenerated();
+                        break;
+
+                    case "SteelMine":
+                        steelMines.add(new SteelMine(progress.x, progress.y));
+                        totalPower -= 100;
+                        break;
+
+                    case "Baracks":
+                        baracks.add(new Baracks(progress.x, progress.y));
+                        totalPower -= 100;
+                        break;
+
+                    case "ResearchCenter":
+                        researchCenters.add(new ResearchCenter(progress.x, progress.y));
+                        totalPower -= 200;
+                        break;
+
+                    case "ValkiriaTech":
+                        valkiriaTechs.add(new ValkiriaTech(progress.x, progress.y));
+                        totalPower -= 200;
+                        break;
+
+                    case "Factory":
+                        factories.add(new Factory(progress.x, progress.y));
+                        totalPower -= 150;
+                        break;
+
+                    case "Artylery":
+                        artylerys.add(new Artylery(progress.x, progress.y));
+                        totalPower -= 50;
+                        break;
+                }
+
+                // 🔹 DODAJ EFEKT PORTALU
+                portalEffects.add(new BuildingPortalEffect(progress.x, progress.y, BUILD_SIZE, 2800));
+
+                // 🔹 Usuń budowę z listy aktywnych
+                iterator.remove();
+            }
         }
         // Rysowanie żołnierzy
         for (Soldier soldier : soldiers) {
@@ -3621,6 +3681,23 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             for (Flora obstacle : obstacles) {
                 if (obstacle.getCollisionBounds().intersects(newBuilding)) {
                     collisionDetected = true;
+
+                }
+            }
+            // 🔹 Blokada dla aktywnych efektów portalu (po ukończeniu budowy)
+            for (BuildingPortalEffect effect : portalEffects) {
+                Rectangle portalArea = new Rectangle(effect.getX(), effect.getY(), effect.getSize(), effect.getSize());
+                if (portalArea.intersects(newBuilding)) {
+                    collisionDetected = true;
+                    break;
+                }
+            }
+
+// 🔹 Blokada dla portali w trakcie budowy (efekt przywołania budynku)
+            for (BuildingPortalEffect effect : buildingEffects) {
+                Rectangle portalArea = new Rectangle(effect.getX(), effect.getY(), effect.getSize(), effect.getSize());
+                if (portalArea.intersects(newBuilding)) {
+                    collisionDetected = true;
                     break;
                 }
             }
@@ -3639,11 +3716,13 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         for (BuildingProgress bp : buildingProgressList) {
             double progress = bp.getProgress();
 
-            g.setColor(new Color(255, 140, 0, 120)); // pomarańczowe półprzezroczyste tło
-            g.fillRect(bp.x, bp.y, BUILD_SIZE, BUILD_SIZE);
 
-            g.setColor(Color.ORANGE);
-            g.drawRect(bp.x, bp.y, BUILD_SIZE, BUILD_SIZE);
+
+//            g.setColor(new Color(255, 140, 0, 120)); // pomarańczowe półprzezroczyste tło
+//            g.fillRect(bp.x, bp.y, BUILD_SIZE, BUILD_SIZE);
+
+//            g.setColor(Color.ORANGE);
+//            g.drawRect(bp.x, bp.y, BUILD_SIZE, BUILD_SIZE);
 
 //            // pasek postępu (zielony)
 //            int barWidth = (int)(BUILD_SIZE * progress);
@@ -3653,6 +3732,16 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 //            g.setColor(Color.BLACK);
 //            g.drawRect(bp.x, bp.y + BUILD_SIZE + 4, BUILD_SIZE, 5);
         }
+/// ////////teleportacja budynku efekt?
+        Graphics2D g2dPortal = (Graphics2D) g;
+        java.util.Iterator<BuildingPortalEffect> it = portalEffects.iterator();
+        while (it.hasNext()) {
+            BuildingPortalEffect effect = it.next();
+            effect.draw(g2dPortal);
+            if (effect.isFinished()) {
+                it.remove(); // usuń zakończony efekt
+            }
+        }
 
 
 // Wyświetlanie zasobów niezależnie od przewijania mapy
@@ -3661,16 +3750,8 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         g2dOverlay.setFont(largeFont);
         g2dOverlay.setColor(Color.WHITE);
 
-// Oblicz przesunięcie widoku z JScrollPane (czyli przesunięcie mapy)
-//        if (getParent() instanceof JViewport viewport) {
-//            Point viewPos = viewport.getViewPosition();
-//            int screenX = viewPos.x;
-//            int screenY = viewPos.y;
-//
-//            // Tekst zawsze przyklejony do lewego górnego rogu widoku
-//            g2dOverlay.drawString("Steel Collected: " + collectedSteel, screenX + 20, screenY + 30);
-//            g2dOverlay.drawString("Power: " + totalPower, screenX + 20, screenY + 60);
-//        }
+
+
         if (getParent() instanceof JViewport viewport) {
             Point viewPos = viewport.getViewPosition();
             int screenX = viewPos.x;
