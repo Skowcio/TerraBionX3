@@ -1478,11 +1478,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2622,79 +2618,96 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
             if (distance <= BUILD_RANGE) {
                 Rectangle newBuilding = new Rectangle(mouseX, mouseY, BUILD_SIZE, BUILD_SIZE);
-
                 boolean collision = false;
-                for (PowerPlant plant : powerPlants)
-                    if (plant.getBounds().intersects(newBuilding)) collision = true;
 
-                for (SteelMine mine : steelMines)
-                    if (mine.getBounds().intersects(newBuilding)) collision = true;
+// 🧱 --- Ogólne kolizje (dla wszystkich budynków poza fabryką) ---
+                if (buildingToPlace != BuildingType.FACTORY) {
 
-                for (ResearchCenter researchCenter : researchCenters)
-                    if (researchCenter.getBounds().intersects(newBuilding)) collision = true;
+                    // Kolizje z istniejącymi budynkami
+                    for (PowerPlant plant : powerPlants)
+                        if (plant.getBounds().intersects(newBuilding)) collision = true;
 
-                for (ValkiriaTech valkiriaTech : valkiriaTechs)
-                    if (valkiriaTech.getBounds().intersects(newBuilding)) collision = true;
+                    for (SteelMine mine : steelMines)
+                        if (mine.getBounds().intersects(newBuilding)) collision = true;
 
-                for (Crystal crystal : crystals)
-                    if (crystal.getBounds().intersects(newBuilding)) collision = true;
+                    for (ResearchCenter researchCenter : researchCenters)
+                        if (researchCenter.getBounds().intersects(newBuilding)) collision = true;
 
-                for (Baracks barack : baracks)
-                    if (barack.getBounds().intersects(newBuilding)) collision = true;
-                for (Artylery artylery : artylerys)
-                    if (artylery.getBounds().intersects(newBuilding))
-                        collision = true;
+                    for (ValkiriaTech valkiriaTech : valkiriaTechs)
+                        if (valkiriaTech.getBounds().intersects(newBuilding)) collision = true;
 
-                for (Flora obstacle : obstacles) {
-                    if (obstacle.getCollisionBounds().intersects(newBuilding)) {
-                        collision = true;
-                        break; // wystarczy jedna kolizja
-                    }
+                    for (Crystal crystal : crystals)
+                        if (crystal.getBounds().intersects(newBuilding)) collision = true;
+
+                    for (Baracks barack : baracks)
+                        if (barack.getBounds().intersects(newBuilding)) collision = true;
+
+                    for (Artylery artylery : artylerys)
+                        if (artylery.getBounds().intersects(newBuilding)) collision = true;
+
+                    for (Factory factory : factories)
+                        if (factory.getBounds().intersects(newBuilding)) collision = true;
                 }
+
+// 🌿 Kolizje z przeszkodami (flora)
+                for (Flora obstacle : obstacles)
+                    if (obstacle.getCollisionBounds().intersects(newBuilding)) collision = true;
+
+// --- 🌀 Portale budynków (BuildingPortalEffect) ---
+                // 🌌 Efekty aktywnych portali (budynków w budowie)
                 for (BuildingPortalEffect effect : buildingEffects) {
                     Rectangle portalArea = new Rectangle(effect.getX(), effect.getY(), effect.getSize(), effect.getSize());
+
+                    // 1️⃣ Nie można budować na portalu żadnego budynku
                     if (portalArea.intersects(newBuilding)) {
                         collision = true;
-
-                        break;
-                    }
-                }
-
-
-//                for (Factory factory : factories)
-//                    if (factory.getBounds().intersects(newBuilding)) collision = true;
-                for (Factory factory : factories) {
-                    if (factory.getBounds().intersects(newBuilding)) {
-                        collision = true;
                         break;
                     }
 
-                    //  Sprawdzenie minimalnej odległości tylko dla fabryk
-                    if (buildingToPlace == BuildingType.FACTORY) {
-                        Point existingCenter = new Point(factory.getX() + 55, factory.getY() + 55);
-                        Point newCenter = new Point(mouseX + 55, mouseY + 55);
-                        // tu jest odleglosc miedzy fabrykami jaka musi byc by mozna bylo postawic
-                        if (existingCenter.distance(newCenter) < 350) {
+                    // 2️⃣ Dodatkowo: jeśli budujemy FABRYKĘ,
+                    //    to nie może być za blisko innej FABRYKI w budowie (350px)
+                    if (buildingToPlace == BuildingType.FACTORY && "Factory".equals(effect.getBuildingType())) {
+                        Point portalCenter = new Point(effect.getX() + effect.getSize() / 2, effect.getY() + effect.getSize() / 2);
+                        Point newCenter = new Point(mouseX + BUILD_SIZE / 2, mouseY + BUILD_SIZE / 2);
+                        if (portalCenter.distance(newCenter) < 350) {
                             collision = true;
-                            System.out.println("Zbyt blisko innej fabryki!");
+                            System.out.println("🚫 Zbyt blisko fabryki w trakcie budowy!");
                             break;
                         }
                     }
-                    if (buildingToPlace == BuildingType.VALKIRIATECH) {
-                        boolean insideCrystalArea = false;
-                        for (Crystal crystal : crystals) {
-                            if (crystal.getBuildArea(180).contains(newBuilding)) {
-                                insideCrystalArea = true;
-                                break;
-                            }
-                        }
+                }
 
-                        if (!insideCrystalArea) {
+// 🏭 --- Specjalne zasady tylko dla fabryk ---
+                if (buildingToPlace == BuildingType.FACTORY) {
+                    // Nie mogą być zbyt blisko innej fabryki (350px)
+                    for (Factory factory : factories) {
+                        Point existingCenter = new Point(factory.getX() + factory.getWidth() / 2, factory.getY() + factory.getHeight() / 2);
+                        Point newCenter = new Point(mouseX + BUILD_SIZE / 2, mouseY + BUILD_SIZE / 2);
+                        if (existingCenter.distance(newCenter) < 350) {
                             collision = true;
-                            System.out.println("❌ ValkiriaTech musi być w zasięgu kryształu!");
+                            System.out.println("🚫 Zbyt blisko innej fabryki!");
+                            break;
                         }
                     }
                 }
+
+// 💎 --- Specjalny warunek tylko dla ValkiriaTech ---
+                if (buildingToPlace == BuildingType.VALKIRIATECH) {
+                    boolean insideCrystalArea = false;
+                    for (Crystal crystal : crystals) {
+                        if (crystal.getBuildArea(180).contains(newBuilding)) {
+                            insideCrystalArea = true;
+                            break;
+                        }
+                    }
+                    if (!insideCrystalArea) {
+                        collision = true;
+                        System.out.println("❌ ValkiriaTech musi być w zasięgu kryształu!");
+                    }
+                }
+
+
+
 
 
                 if (!collision) {
@@ -2766,7 +2779,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     // Dodaj nową budowę do listy postępu
                     buildingProgressList.add(new BuildingProgress(mouseX, mouseY, typeName, buildTime));
 
-                    buildingEffects.add(new BuildingPortalEffect(mouseX, mouseY, BUILD_SIZE, buildTime));
+                    buildingEffects.add(new BuildingPortalEffect(mouseX, mouseY, BUILD_SIZE, buildTime, typeName));
 
                     isPlacingBuilding = false;
                     buildingToPlace = null;
@@ -3369,7 +3382,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                 }
 
                 // 🔹 DODAJ EFEKT PORTALU
-                portalEffects.add(new BuildingPortalEffect(progress.x, progress.y, BUILD_SIZE, 2800));
+                portalEffects.add(new BuildingPortalEffect(progress.x, progress.y, BUILD_SIZE, 2800, progress.getType()));
 
                 // 🔹 Usuń budowę z listy aktywnych
                 iterator.remove();
@@ -3701,6 +3714,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     break;
                 }
             }
+
 
 // 🔹 Ustal kolor kwadratu budowy
             if (distance <= BUILD_RANGE && !tooCloseToFactory && !collisionDetected && !tooFarFromCrystal) {

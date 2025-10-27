@@ -6,17 +6,23 @@ public class BuildingPortalEffect {
     private long startTime;
     private long duration;
     private double progress;
+    private String buildingType;
 
-    public BuildingPortalEffect(int x, int y, int size, long duration) {
+    public BuildingPortalEffect(int x, int y, int size, long duration, String buildingType) {
         this.x = x;
         this.y = y;
         this.size = size;
         this.duration = duration;
         this.startTime = System.currentTimeMillis();
+        this.buildingType = buildingType;
     }
 
     public boolean isFinished() {
         return System.currentTimeMillis() - startTime > duration;
+    }
+
+    public String getBuildingType() {
+        return buildingType;
     }
 
     private void update() {
