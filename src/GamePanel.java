@@ -2619,11 +2619,10 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             if (distance <= BUILD_RANGE) {
                 Rectangle newBuilding = new Rectangle(mouseX, mouseY, BUILD_SIZE, BUILD_SIZE);
                 boolean collision = false;
+//                boolean validSteelSpot = false; // ✅ specjalny warunek dla SteelMine
 
-// 🧱 --- Ogólne kolizje (dla wszystkich budynków poza fabryką) ---
-                if (buildingToPlace != BuildingType.FACTORY) {
-
-                    // Kolizje z istniejącymi budynkami
+                // 🧱 --- Ogólne kolizje (dla wszystkich budynków poza fabryką i steelmine) ---
+                if (buildingToPlace != BuildingType.FACTORY && buildingToPlace != BuildingType.STEEL_MINE) {
                     for (PowerPlant plant : powerPlants)
                         if (plant.getBounds().intersects(newBuilding)) collision = true;
 
@@ -2649,23 +2648,19 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                         if (factory.getBounds().intersects(newBuilding)) collision = true;
                 }
 
-// 🌿 Kolizje z przeszkodami (flora)
+                // 🌿 Kolizje z przeszkodami (flora)
                 for (Flora obstacle : obstacles)
                     if (obstacle.getCollisionBounds().intersects(newBuilding)) collision = true;
 
-// --- 🌀 Portale budynków (BuildingPortalEffect) ---
-                // 🌌 Efekty aktywnych portali (budynków w budowie)
+                // --- 🌀 Portale budynków (BuildingPortalEffect) ---
                 for (BuildingPortalEffect effect : buildingEffects) {
                     Rectangle portalArea = new Rectangle(effect.getX(), effect.getY(), effect.getSize(), effect.getSize());
-
-                    // 1️⃣ Nie można budować na portalu żadnego budynku
                     if (portalArea.intersects(newBuilding)) {
                         collision = true;
                         break;
                     }
 
-                    // 2️⃣ Dodatkowo: jeśli budujemy FABRYKĘ,
-                    //    to nie może być za blisko innej FABRYKI w budowie (350px)
+                    // dodatkowo — dla factory nie może być blisko portalu innej factory
                     if (buildingToPlace == BuildingType.FACTORY && "Factory".equals(effect.getBuildingType())) {
                         Point portalCenter = new Point(effect.getX() + effect.getSize() / 2, effect.getY() + effect.getSize() / 2);
                         Point newCenter = new Point(mouseX + BUILD_SIZE / 2, mouseY + BUILD_SIZE / 2);
@@ -2677,9 +2672,8 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     }
                 }
 
-// 🏭 --- Specjalne zasady tylko dla fabryk ---
+                // 🏭 --- Fabryki nie mogą być blisko siebie ---
                 if (buildingToPlace == BuildingType.FACTORY) {
-                    // Nie mogą być zbyt blisko innej fabryki (350px)
                     for (Factory factory : factories) {
                         Point existingCenter = new Point(factory.getX() + factory.getWidth() / 2, factory.getY() + factory.getHeight() / 2);
                         Point newCenter = new Point(mouseX + BUILD_SIZE / 2, mouseY + BUILD_SIZE / 2);
@@ -2691,7 +2685,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     }
                 }
 
-// 💎 --- Specjalny warunek tylko dla ValkiriaTech ---
+                // 💎 --- ValkiriaTech tylko w zasięgu Crystala ---
                 if (buildingToPlace == BuildingType.VALKIRIATECH) {
                     boolean insideCrystalArea = false;
                     for (Crystal crystal : crystals) {
@@ -2706,13 +2700,38 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     }
                 }
 
+//                // 🪓 --- SteelMine tylko na ResourcesSteel ---
+//                if (buildingToPlace == BuildingType.STEEL_MINE) {
+//                    boolean overlapsSteel = false;
+//                    for (ResourcesSteel steel : resources) {
+//                        if (steel.getBounds().intersects(newBuilding)) {
+//                            overlapsSteel = true;
+//                            validSteelSpot = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    // ❌ Jeśli nie ma zasobu pod spodem — nie można
+//                    if (!overlapsSteel) {
+//                        collision = true;
+//                        System.out.println("❌ SteelMine można budować tylko na złożach stali!");
+//                    }
+//
+//                    // ❌ Dodatkowo: nie może kolidować z istniejącymi budynkami
+//                    for (PowerPlant plant : powerPlants)
+//                        if (plant.getBounds().intersects(newBuilding)) collision = true;
+//                    for (Factory factory : factories)
+//                        if (factory.getBounds().intersects(newBuilding)) collision = true;
+//                }
 
-
-
-
+                // --- Jeśli nie ma kolizji, budujemy ---
                 if (!collision) {
                     long buildTime = 0;
                     String typeName = "";
+
+
+
+
                     switch (buildingToPlace) {
                         case POWER_PLANT:
                             buildTime = 5000; // 5sek
@@ -2731,9 +2750,8 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                             btnResearch.setEnabled(true);
                             break;
                         case STEEL_MINE:
-
                             collectedSteel -= 1500;
-                            buildTime = 10000; // 10sekund
+                            buildTime = 10000;
                             typeName = "SteelMine";
                             break;
                         case BARRACKS:
