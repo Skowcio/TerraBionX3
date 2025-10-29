@@ -1,5 +1,7 @@
 import java.awt.*;
 import java.util.List;
+import java.util.Iterator;
+import java.util.Random;
 
 public class EnemyToo {
     private int x, y;

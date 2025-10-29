@@ -957,19 +957,43 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         });
 
         btnDestructionFactory.addActionListener(e -> {
+            List<Factory> destroyedFactories = new ArrayList<>();
+
             for (Factory factory : factories) {
                 if (factory.isSelected()) {
-                    factory.destroy();            // niszczya fabrykę
+                    factory.destroy(); // niszczy fabrykę
                     Factory.decreaseFactoryCount(); // zmniejsza licznik
                     explosions.add(new Explosion(factory.getX(), factory.getY()));
+                    destroyedFactories.add(factory);
+
                     showFactorysMenu = false;
                     updateFactorysMenu();
-                    repaint(); // Odśwież panel
+                    repaint();
                 }
             }
 
-            // Usuń martwe fabryki z listy
-            factories.removeIf(factory -> factory.getBounds().isEmpty() || factory.takeDamage());
+            // 🧹 Usuń martwe fabryki z listy
+            factories.removeAll(destroyedFactories);
+
+            // 🌀 Usuń blokady (portale) w promieniu 350px od zniszczonych fabryk
+            for (Factory destroyed : destroyedFactories) {
+                Iterator<BuildingPortalEffect> portalIterator = buildingEffects.iterator();
+                while (portalIterator.hasNext()) {
+                    BuildingPortalEffect effect = portalIterator.next();
+
+                    if ("Factory".equals(effect.getBuildingType())) {
+                        double distance = Point.distance(
+                                effect.getX(), effect.getY(),
+                                destroyed.getX(), destroyed.getY()
+                        );
+
+                        if (distance < 350) {
+                            portalIterator.remove();
+                            System.out.println("🧹 Usunięto blokadę po zniszczonej fabryce (ręczne zniszczenie)");
+                        }
+                    }
+                }
+            }
         });
 
 
@@ -1849,14 +1873,35 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     toRemove.add(projectile);
 
                     if (factory.takeDamage()) {
-                        Factory.decreaseFactoryCount(); // 🟢 odejmuje 1
-                        factoryIterator.remove();       // 🧹 usuwa z listy
+                        // 💥 Usuwanie fabryki
+                        Factory.decreaseFactoryCount();
+                        factoryIterator.remove();
                         explosions.add(new Explosion(factory.getX(), factory.getY()));
+
+                        // 🔥 USUŃ BLOKADĘ BUDOWY (350px) i PORTAL
+                        Iterator<BuildingPortalEffect> portalIterator = buildingEffects.iterator();
+                        while (portalIterator.hasNext()) {
+                            BuildingPortalEffect effect = portalIterator.next();
+
+                            // usuwamy tylko portale fabryk
+                            if ("Factory".equals(effect.getBuildingType())) {
+                                double distance = Point.distance(
+                                        effect.getX(), effect.getY(),
+                                        factory.getX(), factory.getY()
+                                );
+
+                                if (distance < 350) {
+                                    portalIterator.remove();
+                                    System.out.println("🧹 Usunięto blokadę po zniszczonej fabryce (" + distance + " px)");
+                                }
+                            }
+                        }
                     }
 
-                    break;
+                    break; // zakończ po trafieniu w jedną fabrykę
                 }
             }
+
 
             for (BattleVehicle battleVehicle : battleVehicles) {
                 if (projectile.checkCollision(battleVehicle)) {
@@ -3361,6 +3406,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         Iterator<BuildingProgress> iterator = buildingProgressList.iterator();
         while (iterator.hasNext()) {
             BuildingProgress progress = iterator.next();
+
             if (progress.isFinished()) {
                 switch (progress.getType()) {
                     case "PowerPlant":
@@ -3399,13 +3445,21 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                         break;
                 }
 
-                // 🔹 DODAJ EFEKT PORTALU
-                portalEffects.add(new BuildingPortalEffect(progress.x, progress.y, BUILD_SIZE, 2800, progress.getType()));
+                // ✅ USUŃ efekt portalu (czyli odblokuj teren)
+                portalEffects.removeIf(effect ->
+                        effect.getX() == progress.x &&
+                                effect.getY() == progress.y &&
+                                effect.getBuildingType().equals(progress.getType())
+                );
 
-                // 🔹 Usuń budowę z listy aktywnych
+                // ❌ NIE dodawaj nowego efektu po zakończeniu budowy!
+                // portalEffects.add(...); // usunięte!
+
+                // ✅ Usuń budowę z listy aktywnych
                 iterator.remove();
             }
         }
+
         // Rysowanie żołnierzy
         for (Soldier soldier : soldiers) {
             soldier.draw(g);
