@@ -82,7 +82,9 @@ public class Valkiria {
         return currentDirectionIndex;
     }
 
-
+    public int getHealth() {
+        return health;
+    }
     public int getX() {
         return x;
     }

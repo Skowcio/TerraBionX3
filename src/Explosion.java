@@ -26,21 +26,23 @@ public class Explosion {
     }
 
     /**
-     * Wczytuje obrazy eksplozji z plików PNG.
+     * Wczytuje obrazy eksplozji na stale  z plików PNG.
      */
+    private static BufferedImage[] sharedFrames;
+
     private void loadExplosionImages() {
-        try {
-            frames = new BufferedImage[15]; // Zakładamy 6 klatek animacji eksplozji
-            for (int i = 0; i < frames.length; i++) {
-                // Wczytuje obrazy z folderu /explosion/ jako explosion1.png, explosion2.png, itd.
-                frames[i] = ImageIO.read(getClass().getResource("/explosion/explosion" + (i + 1) + ".png"));
-                if (frames[i] == null) {
+        if (sharedFrames == null) {
+            try {
+                sharedFrames = new BufferedImage[15];
+                for (int i = 0; i < sharedFrames.length; i++) {
+                    sharedFrames[i] = ImageIO.read(getClass().getResource("/explosion/explosion" + (i + 1) + ".png"));
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Teraz tylko przypisujemy referencję
+        frames = sharedFrames;
     }
 
     /**

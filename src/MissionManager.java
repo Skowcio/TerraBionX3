@@ -132,6 +132,8 @@ public class MissionManager {
 
         // 🎯 Misja 2: przygotowana do wypełnienia
         Mission mission2 = new Mission("Hold the Line");
+
+        mission2.soldierPositions.add(new Point(1900, 1450)); // jest po to by "wlaczac " hive do testow na pojawianie sie duzej ilsoci wrogow
         mission2.soldierPositions.add(new Point(300, 400));
         mission2.builderPositions.add(new Point(320, 430));
         mission2.builderPositions.add(new Point(380, 450));
@@ -146,6 +148,7 @@ public class MissionManager {
 
         mission2.hiveTooPositions.add(new Point(1950, 1500));
         mission2.randomHiveCount = 30;
+
         mission2.hiveSpawnArea = new Rectangle(1800, 1300, 800, 800);
         mission2.enemyPositions.add(new Point(1800, 1300));
         // tu poajwiaja sie drugie hive, drugi sektor

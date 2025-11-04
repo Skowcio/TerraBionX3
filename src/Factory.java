@@ -96,6 +96,9 @@ public class Factory {
             totalFactories--;
         }
     }
+    public int getHealth() {
+        return health;
+    }
 
     // 🚀 Reset liczby fabryk np. przy nowej misji
     public static void resetFactoryCount() {

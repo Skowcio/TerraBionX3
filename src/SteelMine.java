@@ -36,6 +36,10 @@ public class  SteelMine {
         return health <= 0;
     }
 
+    public int getHealth() {
+        return health;
+    }
+
     public int getWidth() {
         return width;
     }

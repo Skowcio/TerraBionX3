@@ -21,6 +21,11 @@ public class SoldierBot {
     private long lastShotTime = 0;
     private Random random = new Random();
 
+    //  Czas ostatniego wyszukiwania celu
+    // 🕒 Czas ostatniego wyszukiwania celu
+    private long lastTargetSearchTime = 0;
+    private final long targetSearchCooldown = 850; // co 850 ms szuka celu (0.85 sekundy)
+
     private int wanderDirX = 0;
     private int wanderDirY = 0;
     private long lastWanderDirectionChange = 0;
@@ -63,7 +68,9 @@ public class SoldierBot {
             e.printStackTrace();
         }
     }
-
+    public int getHealth() {
+        return health;
+    }
     public SoldierBot(int x, int y) {
         this(x, y, new Rectangle(x - 200, y - 200, 400, 400));
     }
@@ -315,16 +322,35 @@ public class SoldierBot {
 
     }
     /// ///////////update laduje w GamePanel.update//////
-    public void update(List<Enemy> enemies, List<EnemyShooter> enemyShooters, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos,  List<SoldierBot> allBots, List<EnemyBehemoth> enemyBehemoths) {
-        Object target = getClosestTarget(enemies, enemyShooters, enemyToos, hives, hiveToos, enemyBehemoths);
+    // główna aktualizacja
+    public void update(
+            List<Enemy> enemies,
+            List<EnemyShooter> enemyShooters,
+            List<EnemyToo> enemyToos,
+            List<Hive> hives,
+            List<HiveToo> hiveToos,
+            List<SoldierBot> allBots,
+            List<EnemyBehemoth> enemyBehemoths
+    ) {
+        long now = System.currentTimeMillis();
 
-        if (target != null && patrolArea.contains(getTargetPosition(target))) {
-            moveTowardsTarget(target, allBots);
+        // 🔹 Szukaj nowego celu tylko co 500 ms
+        if (currentTarget == null || now - lastTargetSearchTime >= targetSearchCooldown) {
+            currentTarget = getClosestTarget(enemies, enemyShooters, enemyToos, hives, hiveToos, enemyBehemoths);
+            lastTargetSearchTime = now;
+        }
+
+        // 🔹 Jeśli mamy cel i znajduje się w obszarze patrolowym, idź do niego
+        if (currentTarget != null && patrolArea.contains(getTargetPosition(currentTarget))) {
+            moveTowardsTarget(currentTarget, allBots);
         } else {
+            // 🔹 W przeciwnym razie — zachowanie "wander"
             wander(allBots);
         }
+
         resolveHardOverlap(allBots);
     }
+
 
     /// /// to jest do tego by soldierBot zostal przesuniety gdy naszedl na siebie
 
@@ -423,55 +449,42 @@ public class SoldierBot {
         return new Point(0, 0);
     }
 
-    public Object getClosestTarget(List<Enemy> enemies, List<EnemyShooter> enemyShooters, List<EnemyToo> enemyToos, List<Hive> hives, List<HiveToo> hiveToos, List<EnemyBehemoth> enemyBehemoths) {
+
+    // 🧭 szukanie najbliższego celu (bez zmian, tylko używane rzadziej)
+    public Object getClosestTarget(
+            List<Enemy> enemies,
+            List<EnemyShooter> enemyShooters,
+            List<EnemyToo> enemyToos,
+            List<Hive> hives,
+            List<HiveToo> hiveToos,
+            List<EnemyBehemoth> enemyBehemoths
+    ) {
         Object closest = null;
         double minDistance = Double.MAX_VALUE;
 
         for (Enemy enemy : enemies) {
             double dist = enemy.getPosition().distance(x, y);
-            if (dist < minDistance) {
-                minDistance = dist;
-                closest = enemy;
-            }
+            if (dist < minDistance) { minDistance = dist; closest = enemy; }
         }
         for (EnemyShooter enemyShooter : enemyShooters){
             double dist = enemyShooter.getPosition().distance(x, y);
-            if (dist < minDistance) {
-                minDistance = dist;
-                closest = enemyShooter;
-            }
+            if (dist < minDistance) { minDistance = dist; closest = enemyShooter; }
         }
-
         for (EnemyToo enemyToo : enemyToos) {
             double dist = enemyToo.getPosition().distance(x, y);
-            if (dist < minDistance) {
-                minDistance = dist;
-                closest = enemyToo;
-            }
+            if (dist < minDistance) { minDistance = dist; closest = enemyToo; }
         }
-
         for (Hive hive : hives) {
             double dist = hive.getPosition().distance(x, y);
-            if (dist < minDistance) {
-                minDistance = dist;
-                closest = hive;
-            }
+            if (dist < minDistance) { minDistance = dist; closest = hive; }
         }
-
         for (HiveToo hiveToo : hiveToos) {
             double dist = hiveToo.getPosition().distance(x, y);
-            if (dist < minDistance) {
-                minDistance = dist;
-                closest = hiveToo;
-            }
+            if (dist < minDistance) { minDistance = dist; closest = hiveToo; }
         }
-
         for (EnemyBehemoth enemyBehemoth : enemyBehemoths) {
             double dist = enemyBehemoth.getPosition().distance(x, y);
-            if (dist < minDistance) {
-                minDistance = dist;
-                closest = enemyBehemoth;
-            }
+            if (dist < minDistance) { minDistance = dist; closest = enemyBehemoth; }
         }
 
         return closest;

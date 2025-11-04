@@ -19,6 +19,8 @@ public class ValkiriaTech {
         Valkiria.increaseMaxValkirias(1);
     }
 
+
+
     public void draw(Graphics g) {
         g.setColor(Color.MAGENTA); // testowo różowy kwadrat
         g.fillRect(x, y, width, height);

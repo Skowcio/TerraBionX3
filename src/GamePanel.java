@@ -3413,47 +3413,38 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                         powerPlants.add(new PowerPlant(progress.x, progress.y));
                         totalPower += PowerPlant.getPowerGenerated();
                         break;
-
                     case "SteelMine":
                         steelMines.add(new SteelMine(progress.x, progress.y));
                         totalPower -= 100;
                         break;
-
                     case "Baracks":
                         baracks.add(new Baracks(progress.x, progress.y));
                         totalPower -= 100;
                         break;
-
                     case "ResearchCenter":
                         researchCenters.add(new ResearchCenter(progress.x, progress.y));
                         totalPower -= 200;
                         break;
-
                     case "ValkiriaTech":
                         valkiriaTechs.add(new ValkiriaTech(progress.x, progress.y));
                         totalPower -= 200;
                         break;
-
                     case "Factory":
                         factories.add(new Factory(progress.x, progress.y));
                         totalPower -= 150;
                         break;
-
                     case "Artylery":
                         artylerys.add(new Artylery(progress.x, progress.y));
                         totalPower -= 50;
                         break;
                 }
 
-                // ✅ USUŃ efekt portalu (czyli odblokuj teren)
-                portalEffects.removeIf(effect ->
-                        effect.getX() == progress.x &&
-                                effect.getY() == progress.y &&
-                                effect.getBuildingType().equals(progress.getType())
+                // 🧹 Usuń efekt portalu po zakończeniu budowy
+                buildingEffects.removeIf(effect ->
+                        effect.getBuildingType().equals(progress.getType()) &&
+                                Point.distance(effect.getX(), effect.getY(), progress.x, progress.y) < 10
                 );
-
-                // ❌ NIE dodawaj nowego efektu po zakończeniu budowy!
-                // portalEffects.add(...); // usunięte!
+                System.out.println("🧹 Usunięto efekt portalu po zakończeniu budowy: " + progress.getType());
 
                 // ✅ Usuń budowę z listy aktywnych
                 iterator.remove();

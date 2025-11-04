@@ -105,6 +105,7 @@ public class HiveToo {
                 enemyShooters.add(new EnemyShooter(spawnX, spawnY));
                 lastSpawnTime = currentTime;
             }
+            /// // on ma wpisane 0 , by na razie nie respily sie one w testach
             for (int i = 0; i < 0; i++) {
                 int spawnX = random.nextInt(size * 5) + x - size; // Wokół Hive
                 int spawnY = random.nextInt(size * 5) + y - size;
