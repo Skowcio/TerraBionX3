@@ -11,7 +11,7 @@ public class Hive {
     private final int size = 100; // Rozmiar Hive
 //    private long lastSpawnTime = System.currentTimeMillis(); // to potrzebne do czasowego respa
     private final int SPAWN_INTERVAL = 20000; // 20 sekund w milisekundach
-    private final int width = 80, height = 80;
+    private final int width = 100, height = 100;
     private long lastSpawnTime;
     private Random random = new Random();
     private BufferedImage hiveImage;

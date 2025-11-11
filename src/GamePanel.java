@@ -70,9 +70,13 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<EnemyShooter> enemyShooters;
     private ArrayList<BuilderVehicle> builderVehicles;
 
+    private ArrayList<Qube> qubes;
+
     private ArrayList<EnemyToo> enemiesToo; // Nowa lista dla EnemyToo
 //    private ArrayList<Marsh> marshes;
     private ArrayList<EnemyHunter> enemyHunters;
+
+
 
 
     private ArrayList<Bullet> bullets; // Lista pocisków
@@ -180,6 +184,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
     private Timer shootingTimer2;
     private Timer enemyShootingTimer;
     private ArrayList<Projectile> projectiles;
+    private ArrayList<QubeBullet> qubeBullets;
     private ArrayList<ResourcesSteel> resources;
     private ArrayList<PowerPlant> powerPlants;
     private int collectedSteel = 40000; // Przechowuje zebraną ilość stali
@@ -385,6 +390,10 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             factories.add(new Factory(p.x, p.y));
         }
 
+        for (Point p : mission.qubePositions) {
+            qubes.add(new Qube(p.x, p.y));
+        }
+
 
         for (Point p : mission.enemyPositions) {
             enemies.add(new Enemy(p.x, p.y));
@@ -508,7 +517,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         System.out.println("🎉 Wywołano onMissionCompleted()!");
         missionCompleted = true;
 
-        JOptionPane.showMessageDialog(this, "Misja ukończona!");
+        JOptionPane.showMessageDialog(mainFrame, "Misja ukończona!");
 
         // 🔹 Sprawdź, czy jest kolejna misja
         if (missionManager.getCurrentMissionIndex() + 1 < missionManager.getTotalMissions()) {
@@ -740,6 +749,10 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         this.battleVehicles = new ArrayList<>();
         this.artylerys = new ArrayList<>();
         this.builderVehicles = new ArrayList<>();
+
+        this.qubes = new ArrayList<>();
+
+
         this.enemies = new ArrayList<>();
         this.enemyBehemoths = new ArrayList<>();
         this.enemyShooters = new ArrayList<>();
@@ -770,6 +783,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
         this.projectiles = new ArrayList<>();
+        this.qubeBullets = new ArrayList<>();
         this.baracks = new ArrayList<>();
         this.factories = new ArrayList<>();
         this.steelMines = new ArrayList<>();
@@ -1521,6 +1535,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             shootEnemies();
             minigunnerBulletshoot();
             updateProjectiles();
+            updateQubeBullet();
 //            updateCryopits(); // Dodane do obsługi rozrostu Cryopit
 
             for (Baracks b : baracks) {
@@ -1702,7 +1717,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
     }
 
 
-    //
+    // to jest strzelanie Enemy - tego zwyklego, nie enemyShooter
     private void enemyShoot() {
         for (Enemy enemy : enemies) {
             Projectile projectile = enemy.shootAtNearestSoldier(soldiers);
@@ -1764,8 +1779,254 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 //            lastCryopitSpawnTime = currentTime;
 //        }
 //    }
+private  void updateQubeBullet(){
+ ArrayList<QubeBullet> toRemove = new ArrayList<>();
+ for (QubeBullet qubeBullet : qubeBullets){
+     qubeBullet.move();
 
-    // tu jest gdy Enemy strzela w twoje jednostki
+     // Sprawdź kolizję z żołnierzami
+     for (Soldier soldier : soldiers) {
+         if (qubeBullet.checkCollision(soldier)) {
+             toRemove.add(qubeBullet);
+             if (soldier.takeDamage()) {
+                 soldiers.remove(soldier); // Usuń żołnierza po trafieniu
+                 explosions.add(new Explosion(soldier.getX(), soldier.getY()));
+             }break;
+         }
+     }
+     for (Valkiria valkiria : valkirias) {
+         if (qubeBullet.checkCollision(valkiria)) {
+             toRemove.add(qubeBullet);
+             if (valkiria.takeDamage()) {
+                 valkirias.remove(valkiria); // Usuń żołnierza po trafieniu
+                 explosions.add(new Explosion(valkiria.getX(), valkiria.getY()));
+             }break;
+         }
+     }
+     Iterator<Baracks> iterator2 = baracks.iterator();
+     while (iterator2.hasNext()) {
+         Baracks baracks = iterator2.next();
+         if (qubeBullet.checkCollision(baracks)){
+             toRemove.add(qubeBullet);
+             if (baracks.takeDamage()){
+                 missionFailed = true;
+                 showMissionFailScreen();
+                 iterator2.remove();
+             }
+             break;
+         }
+     }
+
+     Iterator<SoldierBot> iterator = soldierBots.iterator();
+     while (iterator.hasNext()) {
+         SoldierBot soldierBot = iterator.next();
+         if (qubeBullet.checkCollision(soldierBot)) {
+             toRemove.add(qubeBullet);
+             if (soldierBot.takeDamage()) {
+                 iterator.remove(); // usuń tylko jeśli health <= 0
+                 explosions.add(new Explosion(soldierBot.getX(), soldierBot.getY()));
+             }
+             break; // zakończ pętlę po trafieniu
+         }
+     }
+     Iterator<BuilderVehicle> it = builderVehicles.iterator();
+     while(it.hasNext()) {
+         BuilderVehicle bv = it.next();
+         if (qubeBullet.checkCollision(bv)) {
+             toRemove.add(qubeBullet);
+             if (bv.takeDamage()) {
+                 it.remove();
+                 explosions.add(new Explosion(bv.getX(), bv.getY()));
+             }
+             break;
+         }
+     }
+     for (PowerPlant powerPlant : powerPlants) {
+         if (qubeBullet.checkCollision(powerPlant)) {
+             toRemove.add(qubeBullet);
+             if (powerPlant.takeDamage()){
+                 powerPlants.remove(powerPlant);
+                 explosions.add(new Explosion(powerPlant.getX(), powerPlant.getY()));
+             }
+             break;
+         }
+     }
+     for (SteelMine steelMine : steelMines) {
+         if (qubeBullet.checkCollision(steelMine)) {
+             toRemove.add(qubeBullet);
+             if (steelMine.takeDamage()){
+                 steelMines.remove(steelMine);
+                 explosions.add(new Explosion(steelMine.getX(), steelMine.getY()));
+             }
+             break;
+         }
+     }
+     Iterator<Artylery> artyleryIterator = artylerys.iterator();
+
+     while (artyleryIterator.hasNext()) {
+         Artylery artylery = artyleryIterator.next();
+
+         if (qubeBullet.checkCollision(artylery)) {
+             toRemove.add(qubeBullet);
+
+             if (artylery.takeDamage()) {
+                 Artylery.decreaseArtysCount(); // 🟢 odejmuje 1
+                 artyleryIterator.remove();       // 🧹 usuwa z listy
+                 explosions.add(new Explosion(artylery.getX(), artylery.getY()));
+
+             }
+             break;
+         }
+     }
+     Iterator<EnemyShooter> enemyShooterIterator = enemyShooters.iterator();
+     while (enemyShooterIterator.hasNext()) {
+         EnemyShooter enemyShooter = enemyShooterIterator.next();
+         if (qubeBullet.checkCollision(enemyShooter)) {
+             toRemove.add(qubeBullet);
+             hitFlashes.add(new HitFlash(enemyShooter.getX() + 15, enemyShooter.getY() + 15));
+             if (enemyShooter.takeDamage()) {
+                 enemyShooterIterator.remove();
+                 addKillPoints(1); // 🟢 +1 punkt
+             }
+             break;
+         }
+     }
+     Iterator<EnemyToo> enemyTooIterator = enemiesToo.iterator();
+     while (enemyTooIterator.hasNext()) {
+         EnemyToo enemyToo = enemyTooIterator.next();
+         if (qubeBullet.checkCollision(enemyToo)) {
+             toRemove.add(qubeBullet);
+             hitFlashes.add(new HitFlash(enemyToo.getX() + 15, enemyToo.getY() + 15));
+
+             if (enemyToo.takeDamage2()) {
+                 enemyTooIterator.remove();
+                 addKillPoints(1); // 🟢 +1 punkt za zabicie
+             }
+             break;
+         }
+     }
+
+     /// //bez enemy bo chce by Qube omijal zwykle enemy
+//     for (Enemy enemy : enemies) {
+//         if (qubeBullet.checkCollision(enemy)) {
+//             toRemove.add(qubeBullet);
+//             hitFlashes.add(new HitFlash(enemy.getX() + 15, enemy.getY() + 15));
+//             if (enemy.takeDamage2()) {
+//                 enemies.remove(enemy);
+//                 addKillPoints(1); // 🟢 +1 punkt za zabicie
+//             }
+//             break;
+//         }
+//     }
+
+     for (Hive hive : new ArrayList<>(hives)) {
+         if (qubeBullet.checkCollision(hive)) {
+             toRemove.add(qubeBullet);
+             hitFlashes.add(new HitFlash(hive.getX() + 15, hive.getY() + 15));
+             if (hive.takeDamage()) {
+                 hives.remove(hive);
+                 destroyedHiveCount++;
+                 addKillPoints(3); //  większy wróg = więcej punktów
+
+                 System.out.println("Hive zniszczony! Liczba zniszczonych: " + destroyedHiveCount);
+             }
+             break;
+         }
+     }
+     for (HiveToo hiveToo : hiveToos) {
+         if (qubeBullet.checkCollision(hiveToo)) {
+             toRemove.add(qubeBullet);
+             hitFlashes.add(new HitFlash(hiveToo.getX() + 15, hiveToo.getY() + 15));
+
+             if (hiveToo.takeDamage()) {
+                 hiveToos.remove(hiveToo);
+                 addKillPoints(3); //  większy wróg = więcej punktów
+             }
+             break;
+         }
+
+     }
+
+     for (EnemyBehemoth enemyBehemoth : enemyBehemoths) {
+         if (qubeBullet.checkCollision(enemyBehemoth)) {
+             toRemove.add(qubeBullet);
+             hitFlashes.add(new HitFlash(enemyBehemoth.getX() + 15, enemyBehemoth.getY() + 15));
+//                        hit = true;
+             if (enemyBehemoth.takeDamage()) {
+                 enemyBehemoths.remove(enemyBehemoth);
+                 addKillPoints(3); //  większy wróg = więcej punktów
+             }
+             break;
+         }
+     }
+     Iterator<Factory> factoryIterator = factories.iterator();
+
+     while (factoryIterator.hasNext()) {
+         Factory factory = factoryIterator.next();
+
+         if (qubeBullet.checkCollision(factory)) {
+             toRemove.add(qubeBullet);
+
+             if (factory.takeDamage()) {
+                 // 💥 Usuwanie fabryki
+                 Factory.decreaseFactoryCount();
+                 factoryIterator.remove();
+                 explosions.add(new Explosion(factory.getX(), factory.getY()));
+
+                 // 🔥 USUŃ BLOKADĘ BUDOWY (350px) i PORTAL
+                 Iterator<BuildingPortalEffect> portalIterator = buildingEffects.iterator();
+                 while (portalIterator.hasNext()) {
+                     BuildingPortalEffect effect = portalIterator.next();
+
+                     // usuwamy tylko portale fabryk
+                     if ("Factory".equals(effect.getBuildingType())) {
+                         double distance = Point.distance(
+                                 effect.getX(), effect.getY(),
+                                 factory.getX(), factory.getY()
+                         );
+
+                         if (distance < 350) {
+                             portalIterator.remove();
+                             System.out.println("🧹 Usunięto blokadę po zniszczonej fabryce (" + distance + " px)");
+                         }
+                     }
+                 }
+             }
+
+             break; // zakończ po trafieniu w jedną fabrykę
+         }
+     }
+     for (BattleVehicle battleVehicle : battleVehicles) {
+         if (qubeBullet.checkCollision(battleVehicle)) {
+             toRemove.add(qubeBullet);
+             if (battleVehicle.takeDamage()) {
+                 battleVehicles.remove(battleVehicle);
+
+             } // Usuń żołnierza po trafieniu
+             break;
+         }
+
+     }
+     for (Harvester harvester : harvesters) {
+         if (qubeBullet.checkCollision(harvester)) {
+             toRemove.add(qubeBullet);
+             harvesters.remove(harvester);
+             break;
+         }
+     }
+
+     // Usuń pociski, które wyszły poza planszę
+     if (qubeBullet.isOutOfBounds(getWidth(), getHeight())) {
+         toRemove.add(qubeBullet);
+     }
+ }
+    projectiles.removeAll(toRemove);
+    repaint();
+
+}
+    // tu jest gdy EnemyShooter strzela w twoje jednostki itp
+
+// to jest do update pociskow samych w sobie pociskow by niszczyly wrogow itp
     private void updateProjectiles() {
         ArrayList<Projectile> toRemove = new ArrayList<>();
         for (Projectile projectile : projectiles) {
@@ -1803,6 +2064,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
                     break;
                 }
             }
+
             Iterator<SoldierBot> iterator = soldierBots.iterator();
             while (iterator.hasNext()) {
                 SoldierBot soldierBot = iterator.next();
@@ -1930,6 +2192,214 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         projectiles.removeAll(toRemove);
         repaint();
     }
+
+
+
+    private void shootEnemiesart() {
+        ArrayList<ArtBullet> artBulletsToRemove = new ArrayList<>();
+
+        for (ArtBullet artBullet : artBullets) {
+            artBullet.move();
+
+            // Jeśli pocisk dotarł do celu, twórz eksplozję
+            if (artBullet.hasReachedTarget()) {
+                createExplosion((int) artBullet.getX(), (int) artBullet.getY()); // Tworzymy eksplozję w miejscu pocisku
+                artBulletsToRemove.add(artBullet); // Dodajemy pocisk do usunięcia, ponieważ osiągnął cel
+            }
+        }
+
+        // Usuwamy pociski, które dotarły do celu
+        artBullets.removeAll(artBulletsToRemove);
+    }
+
+    private void minigunnerBulletshoot() { // to do strzelania w wrogow
+        ArrayList<MinigunnerBullet> minigunnerBulletToRemove = new ArrayList<>();
+
+        for (MinigunnerBullet minigunnerBullet : minigunnerBullets) {
+            minigunnerBullet.move();
+            if (minigunnerBullet.isOutOfBounds(getWidth(), getHeight())) {
+                minigunnerBulletToRemove.add(minigunnerBullet);
+
+            } else {
+                for (Enemy enemy : enemies) {
+                    if (minigunnerBullet.checkCollision(enemy)) {
+                        minigunnerBulletToRemove.add(minigunnerBullet);
+                        if (enemy.takeDamage()) {
+                            enemies.remove(enemy);
+                        }
+                        break;
+                    }
+                }
+//                boolean hit = false;
+                for (Hive hive : hives) {
+                    if (minigunnerBullet.checkCollision(hive)) {
+                        minigunnerBulletToRemove.add(minigunnerBullet);
+//                        hit = true;
+                        if (hive.takeDamage()) {
+                            hives.remove(hive);
+                            destroyedHiveCount++;
+                        }
+                        break;
+                    }
+                }
+
+                for (EnemyShooter enemyShooter : enemyShooters) {
+                    if (minigunnerBullet.checkCollision(enemyShooter)) {
+                        minigunnerBulletToRemove.add(minigunnerBullet);
+//                        hit = true;
+                        if (enemyShooter.takeDamage()) {
+                            enemyShooters.remove(enemyShooter);
+                        }
+                        break;
+                    }
+                }
+                for (EnemyHunter enemyHunter : enemyHunters) {
+                    if (minigunnerBullet.checkCollision(enemyHunter)) {
+                        minigunnerBulletToRemove.add(minigunnerBullet);
+//                        hit = true;
+                        if (enemyHunter.takeDamage()) {
+                            enemyHunters.remove(enemyHunter);
+                        }
+                        break;
+                    }
+                }
+
+                // Sprawdzanie kolizji z EnemyToo
+                for (EnemyToo enemyToo : enemiesToo) {
+                    if (minigunnerBullet.checkCollision(enemyToo)) {
+                        minigunnerBulletToRemove.add(minigunnerBullet);
+                        if (enemyToo.takeDamage()) {
+                            enemiesToo.remove(enemyToo);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        minigunnerBullets.removeAll(minigunnerBulletToRemove);
+
+        repaint();
+    }
+
+    /// ///////////////////////////////////////////////////////////////////////////////////////
+    private void shootEnemies() { // to do strzelania w wrogow za pomoca bullet
+        ArrayList<Bullet> bulletsToRemove = new ArrayList<>();
+
+        for (Bullet bullet : bullets) {
+            bullet.move();
+            if (bullet.isOutOfBounds(getWidth(), getHeight())) {
+                bulletsToRemove.add(bullet);
+
+            } else {
+                for (Enemy enemy : enemies) {
+                    if (bullet.checkCollision(enemy)) {
+                        bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(enemy.getX() + 15, enemy.getY() + 15));
+                        if (enemy.takeDamage2()) {
+                            enemies.remove(enemy);
+                            addKillPoints(1); // 🟢 +1 punkt za zabicie
+                        }
+                        break;
+                    }
+                }
+
+                for (Hive hive : new ArrayList<>(hives)) {
+                    if (bullet.checkCollision(hive)) {
+                        bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(hive.getX() + 15, hive.getY() + 15));
+                        if (hive.takeDamage()) {
+                            hives.remove(hive);
+                            destroyedHiveCount++;
+                            addKillPoints(3); //  większy wróg = więcej punktów
+
+                            System.out.println("Hive zniszczony! Liczba zniszczonych: " + destroyedHiveCount);
+                        }
+                        break;
+                    }
+                }
+                for (HiveToo hiveToo : hiveToos) {
+                    if (bullet.checkCollision(hiveToo)) {
+                        bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(hiveToo.getX() + 15, hiveToo.getY() + 15));
+
+                        if (hiveToo.takeDamage()) {
+                            hiveToos.remove(hiveToo);
+                            addKillPoints(3); //  większy wróg = więcej punktów
+                        }
+                        break;
+                    }
+
+                }
+                Iterator<EnemyShooter> enemyShooterIterator = enemyShooters.iterator();
+                while (enemyShooterIterator.hasNext()) {
+                    EnemyShooter enemyShooter = enemyShooterIterator.next();
+                    if (bullet.checkCollision(enemyShooter)) {
+                        bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(enemyShooter.getX() + 15, enemyShooter.getY() + 15));
+                        if (enemyShooter.takeDamage()) {
+                            enemyShooterIterator.remove();
+                            addKillPoints(1); // 🟢 +1 punkt
+                        }
+                        break;
+                    }
+                }
+
+                for (EnemyHunter enemyHunter : enemyHunters) {
+                    if (bullet.checkCollision(enemyHunter)) {
+                        bulletsToRemove.add(bullet);
+
+//                        hit = true;
+                        if (enemyHunter.takeDamage()) {
+                            enemyHunters.remove(enemyHunter);
+                        }
+                        break;
+                    }
+                }
+
+                for (EnemyBehemoth enemyBehemoth : enemyBehemoths) {
+                    if (bullet.checkCollision(enemyBehemoth)) {
+                        bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(enemyBehemoth.getX() + 15, enemyBehemoth.getY() + 15));
+//                        hit = true;
+                        if (enemyBehemoth.takeDamage()) {
+                            enemyBehemoths.remove(enemyBehemoth);
+                            addKillPoints(3); //  większy wróg = więcej punktów
+                        }
+                        break;
+                    }
+                }
+
+
+                // Sprawdzanie kolizji z EnemyToo
+                Iterator<EnemyToo> enemyTooIterator = enemiesToo.iterator();
+                while (enemyTooIterator.hasNext()) {
+                    EnemyToo enemyToo = enemyTooIterator.next();
+                    if (bullet.checkCollision(enemyToo)) {
+                        bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(enemyToo.getX() + 15, enemyToo.getY() + 15));
+
+                        if (enemyToo.takeDamage2()) {
+                            enemyTooIterator.remove();
+                            addKillPoints(1); // 🟢 +1 punkt za zabicie
+                        }
+                        break;
+                    }
+                }
+
+            }
+        }
+        bullets.removeAll(bulletsToRemove);
+
+        repaint();
+    }
+
+    /// /////////////
+    /// ///////
+    /// ////           BLOK Z MOVE jednostek
+    ///
+    ///
+    ///
+
 
     private void moveSoldiers() {
         for (Soldier soldier : soldiers) {
@@ -2146,206 +2616,6 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         }
         repaint();
     }
-
-
-    private void shootEnemiesart() {
-        ArrayList<ArtBullet> artBulletsToRemove = new ArrayList<>();
-
-        for (ArtBullet artBullet : artBullets) {
-            artBullet.move();
-
-            // Jeśli pocisk dotarł do celu, twórz eksplozję
-            if (artBullet.hasReachedTarget()) {
-                createExplosion((int) artBullet.getX(), (int) artBullet.getY()); // Tworzymy eksplozję w miejscu pocisku
-                artBulletsToRemove.add(artBullet); // Dodajemy pocisk do usunięcia, ponieważ osiągnął cel
-            }
-        }
-
-        // Usuwamy pociski, które dotarły do celu
-        artBullets.removeAll(artBulletsToRemove);
-    }
-
-    private void minigunnerBulletshoot() { // to do strzelania w wrogow
-        ArrayList<MinigunnerBullet> minigunnerBulletToRemove = new ArrayList<>();
-
-        for (MinigunnerBullet minigunnerBullet : minigunnerBullets) {
-            minigunnerBullet.move();
-            if (minigunnerBullet.isOutOfBounds(getWidth(), getHeight())) {
-                minigunnerBulletToRemove.add(minigunnerBullet);
-
-            } else {
-                for (Enemy enemy : enemies) {
-                    if (minigunnerBullet.checkCollision(enemy)) {
-                        minigunnerBulletToRemove.add(minigunnerBullet);
-                        if (enemy.takeDamage()) {
-                            enemies.remove(enemy);
-                        }
-                        break;
-                    }
-                }
-//                boolean hit = false;
-                for (Hive hive : hives) {
-                    if (minigunnerBullet.checkCollision(hive)) {
-                        minigunnerBulletToRemove.add(minigunnerBullet);
-//                        hit = true;
-                        if (hive.takeDamage()) {
-                            hives.remove(hive);
-                            destroyedHiveCount++;
-                        }
-                        break;
-                    }
-                }
-
-                for (EnemyShooter enemyShooter : enemyShooters) {
-                    if (minigunnerBullet.checkCollision(enemyShooter)) {
-                        minigunnerBulletToRemove.add(minigunnerBullet);
-//                        hit = true;
-                        if (enemyShooter.takeDamage()) {
-                            enemyShooters.remove(enemyShooter);
-                        }
-                        break;
-                    }
-                }
-                for (EnemyHunter enemyHunter : enemyHunters) {
-                    if (minigunnerBullet.checkCollision(enemyHunter)) {
-                        minigunnerBulletToRemove.add(minigunnerBullet);
-//                        hit = true;
-                        if (enemyHunter.takeDamage()) {
-                            enemyHunters.remove(enemyHunter);
-                        }
-                        break;
-                    }
-                }
-
-                // Sprawdzanie kolizji z EnemyToo
-                for (EnemyToo enemyToo : enemiesToo) {
-                    if (minigunnerBullet.checkCollision(enemyToo)) {
-                        minigunnerBulletToRemove.add(minigunnerBullet);
-                        if (enemyToo.takeDamage()) {
-                            enemiesToo.remove(enemyToo);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        minigunnerBullets.removeAll(minigunnerBulletToRemove);
-
-        repaint();
-    }
-
-    /// ///////////////////////////////////////////////////////////////////////////////////////
-    private void shootEnemies() { // to do strzelania w wrogow za pomoca bullet
-        ArrayList<Bullet> bulletsToRemove = new ArrayList<>();
-
-        for (Bullet bullet : bullets) {
-            bullet.move();
-            if (bullet.isOutOfBounds(getWidth(), getHeight())) {
-                bulletsToRemove.add(bullet);
-
-            } else {
-                for (Enemy enemy : enemies) {
-                    if (bullet.checkCollision(enemy)) {
-                        bulletsToRemove.add(bullet);
-                        hitFlashes.add(new HitFlash(enemy.getX() + 15, enemy.getY() + 15));
-                        if (enemy.takeDamage2()) {
-                            enemies.remove(enemy);
-                            addKillPoints(1); // 🟢 +1 punkt za zabicie
-                        }
-                        break;
-                    }
-                }
-
-                for (Hive hive : new ArrayList<>(hives)) {
-                    if (bullet.checkCollision(hive)) {
-                        bulletsToRemove.add(bullet);
-                        hitFlashes.add(new HitFlash(hive.getX() + 15, hive.getY() + 15));
-                        if (hive.takeDamage()) {
-                            hives.remove(hive);
-                            destroyedHiveCount++;
-                            addKillPoints(3); //  większy wróg = więcej punktów
-
-                            System.out.println("Hive zniszczony! Liczba zniszczonych: " + destroyedHiveCount);
-                        }
-                        break;
-                    }
-                }
-                for (HiveToo hiveToo : hiveToos) {
-                    if (bullet.checkCollision(hiveToo)) {
-                        bulletsToRemove.add(bullet);
-                        hitFlashes.add(new HitFlash(hiveToo.getX() + 15, hiveToo.getY() + 15));
-
-                        if (hiveToo.takeDamage()) {
-                            hiveToos.remove(hiveToo);
-                            addKillPoints(3); //  większy wróg = więcej punktów
-                        }
-                        break;
-                    }
-
-                }
-                Iterator<EnemyShooter> enemyShooterIterator = enemyShooters.iterator();
-                while (enemyShooterIterator.hasNext()) {
-                    EnemyShooter enemyShooter = enemyShooterIterator.next();
-                    if (bullet.checkCollision(enemyShooter)) {
-                        bulletsToRemove.add(bullet);
-                        hitFlashes.add(new HitFlash(enemyShooter.getX() + 15, enemyShooter.getY() + 15));
-                        if (enemyShooter.takeDamage()) {
-                            enemyShooterIterator.remove();
-                            addKillPoints(1); // 🟢 +1 punkt
-                        }
-                        break;
-                    }
-                }
-
-                for (EnemyHunter enemyHunter : enemyHunters) {
-                    if (bullet.checkCollision(enemyHunter)) {
-                        bulletsToRemove.add(bullet);
-
-//                        hit = true;
-                        if (enemyHunter.takeDamage()) {
-                            enemyHunters.remove(enemyHunter);
-                        }
-                        break;
-                    }
-                }
-
-                for (EnemyBehemoth enemyBehemoth : enemyBehemoths) {
-                    if (bullet.checkCollision(enemyBehemoth)) {
-                        bulletsToRemove.add(bullet);
-                        hitFlashes.add(new HitFlash(enemyBehemoth.getX() + 15, enemyBehemoth.getY() + 15));
-//                        hit = true;
-                        if (enemyBehemoth.takeDamage()) {
-                            enemyBehemoths.remove(enemyBehemoth);
-                            addKillPoints(3); //  większy wróg = więcej punktów
-                        }
-                        break;
-                    }
-                }
-
-
-                // Sprawdzanie kolizji z EnemyToo
-                Iterator<EnemyToo> enemyTooIterator = enemiesToo.iterator();
-                while (enemyTooIterator.hasNext()) {
-                    EnemyToo enemyToo = enemyTooIterator.next();
-                    if (bullet.checkCollision(enemyToo)) {
-                        bulletsToRemove.add(bullet);
-                        hitFlashes.add(new HitFlash(enemyToo.getX() + 15, enemyToo.getY() + 15));
-
-                        if (enemyToo.takeDamage2()) {
-                            enemyTooIterator.remove();
-                            addKillPoints(1); // 🟢 +1 punkt za zabicie
-                        }
-                        break;
-                    }
-                }
-
-            }
-        }
-        bullets.removeAll(bulletsToRemove);
-
-        repaint();
-    }
-
     private void updateGameresources() {
         for (Harvester harvester : harvesters) { // Iteracja po liście harvesterów
             for (ResourcesSteel resource : resources) { // Iteracja po zasobach
@@ -2481,6 +2751,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         bullets.removeIf(bullet -> bullet.isOutOfBounds(getWidth(), getHeight()) || bullet.isExpired());
         projectiles.removeIf(projectile -> projectile.isOutOfBounds(getWidth(), getHeight()) || projectile.isExpired());
         minigunnerBullets.removeIf(minigunnerBullet -> minigunnerBullet.isOutOfBounds(getWidth(), getHeight()) || minigunnerBullet.isExpired());
+        qubeBullets.removeIf( qubeBullet -> qubeBullet.isOutOfBounds(getWidth(), getHeight()) || qubeBullet.isExpired());
 
 
 
@@ -2491,6 +2762,13 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         for (EnemyShooter enemyShooter : enemyShooters) {
             enemyShooter.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories, steelMines);
         }
+        for (EnemyShooter enemyShooter : enemyShooters) {
+            enemyShooter.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories, steelMines);
+        }
+        for (Qube qube : qubes) {
+            qube.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories, steelMines,  enemies, enemiesToo, enemyShooters, enemyBehemoths, hives, hiveToos);
+        }
+
         for (SoldierBot soldierBot : new ArrayList<>(soldierBots)) {
             soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots, enemyBehemoths);
         }
@@ -3630,7 +3908,14 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         for (EnemyToo enemyToo : enemiesToo) {
             enemyToo.draw(g);
         }
-
+// rysowanie Qube units + by strzelal pociskami - on je rsyuje a pozniej tworzy strzal - shoot wywyołuje
+        for (Qube q : qubes) {
+            q.draw(g);
+            q.shoot(g, qubeBullets,
+                    soldiers, valkirias, soldierBots, battleVehicles, factories,
+                    steelMines, powerPlants, builderVehicles, artylerys, baracks,
+                    enemiesToo, enemyShooters, enemyBehemoths, hives, hiveToos);
+        }
 
         for (MinigunnerBullet minigunnerBullet : minigunnerBullets){
             minigunnerBullet.draw(g);
@@ -3653,6 +3938,9 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
             projectile.draw(g);
         }
 
+        for (QubeBullet qubeBullet : qubeBullets) {
+            qubeBullet.draw(g);
+        }
 
         for (Bullet bullet : bullets) {
             bullet.draw(g);

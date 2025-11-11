@@ -41,6 +41,14 @@ public class EnemyShooter {
         return false;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
     public boolean isDead() { return dead; }
     public void markAsDead() { this.dead = true; }
 
@@ -163,6 +171,7 @@ public class EnemyShooter {
         else if (currentTarget instanceof Artylery a) { tx = a.getX(); ty = a.getY(); }
         else if (currentTarget instanceof Baracks b) { tx = b.getX(); ty = b.getY(); }
 
+
         double distance = Point.distance(x, y, tx, ty);
 
         // 🔹 Jeśli cel jest w zasięgu, strzelaj
@@ -173,7 +182,7 @@ public class EnemyShooter {
         }
     }
     // ==============================
-    // 🔹 Aktualizacja logiki (co klatkę)
+    // Aktualizacja logiki (co klatkę)
     // ==============================
     public void update(
             List<SoldierBot> soldierBots,
@@ -190,7 +199,7 @@ public class EnemyShooter {
     ) {
         long currentTime = System.currentTimeMillis();
 
-        // 🔹 Szukaj celu tylko co 0.5 sekundy
+        //  Szukaj celu tylko co 0.8 sekundy
         if (currentTarget == null || currentTime - lastTargetSearchTime >= TARGET_SEARCH_INTERVAL) {
             currentTarget = getClosestTarget(
                     soldierBots, soldiers, valkirias, powerPlants,
@@ -204,7 +213,7 @@ public class EnemyShooter {
     }
 
     // ==============================
-    // 🔹 Rysowanie przeciwnika
+    //  Rysowanie przeciwnika
     // ==============================
     public void draw(Graphics g) {
         g.setColor(new Color(109, 0, 24)); // bordowy

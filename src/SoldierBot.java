@@ -21,6 +21,8 @@ public class SoldierBot {
     private long lastShotTime = 0;
     private Random random = new Random();
 
+
+
     //  Czas ostatniego wyszukiwania celu
     // 🕒 Czas ostatniego wyszukiwania celu
     private long lastTargetSearchTime = 0;
@@ -37,8 +39,8 @@ public class SoldierBot {
     private boolean dead = false;
 
 
-    private Image dir0, dir1, dir2, dir3, dir4, dir5, dir6, dir7;
-    private Image dir8, dir9, dir10, dir11, dir12, dir13, dir14, dir15;
+    private static Image dir0, dir1, dir2, dir3, dir4, dir5, dir6, dir7;
+    private static Image dir8, dir9, dir10, dir11, dir12, dir13, dir14, dir15;
 
     private int currentDirection = 0; // 0 - 15
 
@@ -47,23 +49,31 @@ public class SoldierBot {
         this.y = y;
         this.patrolArea = patrolArea;
 
+        loadImages(); // tylko raz na całą klasę
+    }
+    private static boolean imagesLoaded = false;
+
+    private static void loadImages() {
+        if (imagesLoaded) return; // już załadowane
+
         try {
-            dir0 = ImageIO.read(getClass().getResource("/jet/jet0.png"));
-            dir1 = ImageIO.read(getClass().getResource("/jet/jet15.png"));
-            dir2 = ImageIO.read(getClass().getResource("/jet/jet14.png"));
-            dir3 = ImageIO.read(getClass().getResource("/jet/jet13.png"));
-            dir4 = ImageIO.read(getClass().getResource("/jet/jet12.png"));
-            dir5 = ImageIO.read(getClass().getResource("/jet/jet11.png"));
-            dir6 = ImageIO.read(getClass().getResource("/jet/jet10.png"));
-            dir7 = ImageIO.read(getClass().getResource("/jet/jet9.png"));
-            dir8 = ImageIO.read(getClass().getResource("/jet/jet8.png"));
-            dir9 = ImageIO.read(getClass().getResource("/jet/jet7.png"));
-            dir10 = ImageIO.read(getClass().getResource("/jet/jet6.png"));
-            dir11 = ImageIO.read(getClass().getResource("/jet/jet5.png"));
-            dir12 = ImageIO.read(getClass().getResource("/jet/jet4.png"));
-            dir13 = ImageIO.read(getClass().getResource("/jet/jet3.png"));
-            dir14 = ImageIO.read(getClass().getResource("/jet/jet2.png"));
-            dir15 = ImageIO.read(getClass().getResource("/jet/jet1.png"));
+            dir0 = ImageIO.read(SoldierBot.class.getResource("/jet/jet0.png"));
+            dir1 = ImageIO.read(SoldierBot.class.getResource("/jet/jet15.png"));
+            dir2 = ImageIO.read(SoldierBot.class.getResource("/jet/jet14.png"));
+            dir3 = ImageIO.read(SoldierBot.class.getResource("/jet/jet13.png"));
+            dir4 = ImageIO.read(SoldierBot.class.getResource("/jet/jet12.png"));
+            dir5 = ImageIO.read(SoldierBot.class.getResource("/jet/jet11.png"));
+            dir6 = ImageIO.read(SoldierBot.class.getResource("/jet/jet10.png"));
+            dir7 = ImageIO.read(SoldierBot.class.getResource("/jet/jet9.png"));
+            dir8 = ImageIO.read(SoldierBot.class.getResource("/jet/jet8.png"));
+            dir9 = ImageIO.read(SoldierBot.class.getResource("/jet/jet7.png"));
+            dir10 = ImageIO.read(SoldierBot.class.getResource("/jet/jet6.png"));
+            dir11 = ImageIO.read(SoldierBot.class.getResource("/jet/jet5.png"));
+            dir12 = ImageIO.read(SoldierBot.class.getResource("/jet/jet4.png"));
+            dir13 = ImageIO.read(SoldierBot.class.getResource("/jet/jet3.png"));
+            dir14 = ImageIO.read(SoldierBot.class.getResource("/jet/jet2.png"));
+            dir15 = ImageIO.read(SoldierBot.class.getResource("/jet/jet1.png"));
+            imagesLoaded = true;
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -15,13 +15,13 @@ public class Valkiria {
     private boolean selected;
     private int width = 50, height = 50;
     private int health = 20;
-    private final int maxHealth = 10;       // maksymalne HP
+    private final int maxHealth = 20;       // maksymalne HP
     private long lastRegenTime = 0;         // czas ostatniej regeneracji
     private final long regenCooldown = 20_000; // 10 sekund w ms
     private boolean dead = false;
     private Point target;
-    private final int range = 220;
-    private final int shootCooldown = 200;
+    private final int range = 230;
+    private final int shootCooldown = 150;
     private Object currentTarget;
     private long lastShotTime = 0;
 

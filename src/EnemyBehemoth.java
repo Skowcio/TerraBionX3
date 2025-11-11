@@ -103,6 +103,14 @@ public class EnemyBehemoth {
         currentDirection = (int) Math.round(angle / 22.5) % 16;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
 
     private void pickNewPatrolTarget() {
         // Losujemy punkt w obrębie patrolRange od spawn
@@ -187,7 +195,11 @@ public class EnemyBehemoth {
     public void markAsDead() {
         this.dead = true;
     }
+
+
     /// /////////// sekcja strzelania
+    ///
+    ///
 
     public boolean isInRange(Soldier soldier) {
         int dx = soldier.getX() - x;

@@ -48,6 +48,14 @@ public class EnemyToo {
         return false;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
     public boolean isDead() { return dead; }
     public void markAsDead() { this.dead = true; }
 
@@ -194,6 +202,7 @@ public class EnemyToo {
             if (destroyed){
                 list.remove(s);
                 explosions.add(new Explosion(s.getX(), s.getY())); // efekt wybuchu
+                currentTarget = null; // zapobiega wielokrotnemu wybuchowi
             }
         } else if (target instanceof Harvester h && bounds.intersects(h.getBounds())) {
             list.remove(h);
@@ -201,12 +210,14 @@ public class EnemyToo {
             boolean destroyed = b.takeDamage();
             if (destroyed){
                 explosions.add(new Explosion(b.getX(), b.getY())); // efekt wybuchu
+                currentTarget = null; // zapobiega wielokrotnemu wybuchowi
             }
         } else if (target instanceof BuilderVehicle bv && bounds.intersects(bv.getBounds())) {
             boolean destroyed = bv.takeDamage();
             if (destroyed){
                 list.remove(bv);
                 explosions.add(new Explosion(bv.getX(), bv.getY())); // efekt wybuchu
+                currentTarget = null; // zapobiega wielokrotnemu wybuchowi
             }
         } else if (target instanceof Artylery a && bounds.intersects(a.getBounds())) {
             boolean destroyed = a.takeDamage();
@@ -214,23 +225,28 @@ public class EnemyToo {
                 list.remove(a);
                 Artylery.decreaseArtysCount();
                 explosions.add(new Explosion(a.getX(), a.getY()));
+                currentTarget = null; // zapobiega wielokrotnemu wybuchowi
             }
         } else if (target instanceof BattleVehicle bv && bounds.intersects(bv.getBounds())) {
             list.remove(bv);
         } else if (target instanceof PowerPlant pp && bounds.intersects(pp.getBounds())) {
             list.remove(pp);
             explosions.add(new Explosion(pp.getX(), pp.getY()));
+            currentTarget = null; // zapobiega wielokrotnemu wybuchowi
+
         } else if (target instanceof SoldierBot sb && bounds.intersects(sb.getBounds())) {
             boolean destroyed = sb.takeDamage();
             if (destroyed){
                 list.remove(sb);
                 explosions.add(new Explosion(sb.getX(), sb.getY()));
+                currentTarget = null; // zapobiega wielokrotnemu wybuchowi
             }
         } else if (target instanceof Valkiria v && bounds.intersects(v.getBounds())) {
             boolean destroyed = v.takeDamage();
             if (destroyed){
                 list.remove(v);
                 explosions.add(new Explosion(v.getX(), v.getY()));
+                currentTarget = null; // zapobiega wielokrotnemu wybuchowi
             }
         } else if (target instanceof Factory f && bounds.intersects(f.getBounds())) {
             boolean destroyed = f.takeDamage();
@@ -238,6 +254,7 @@ public class EnemyToo {
                 list.remove(f);
                 Factory.decreaseFactoryCount();
                 explosions.add(new Explosion(f.getX(), f.getY()));
+                currentTarget = null; // zapobiega wielokrotnemu wybuchowi
             }
         } else if (target instanceof SteelMine sm && bounds.intersects(sm.getBounds())) {
             boolean destroyed = sm.takeDamage();
@@ -245,6 +262,7 @@ public class EnemyToo {
                 list.remove(sm);
                 Factory.decreaseFactoryCount();
                 explosions.add(new Explosion(sm.getX(), sm.getY()));
+                currentTarget = null; // zapobiega wielokrotnemu wybuchowi
             }
         }
     }
