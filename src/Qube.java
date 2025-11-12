@@ -1,21 +1,30 @@
 
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Point;
 
 public class Qube {
     private int x, y;
     private final int range = 250;
-    private final int width = 35, height = 35;
-    private int health = 30;
+    private final int width = 70, height = 70;
+    private int health = 40;
     private int speed = 3;
-    private final int shootCooldown = 1100; // czas między strzałami (ms)
+    private final int shootCooldown = 850; // czas między strzałami (ms)
     private Object currentTarget;
     private long lastShotTime = 0;
     private boolean dead = false;
     private Random random = new Random();
+
+    private BufferedImage vehicleImage;
 
     //  czas ostatniego wyszukiwania celu dla kazdego indywidualnie
     private long lastTargetSearchTime = 0;
@@ -25,6 +34,14 @@ public class Qube {
     public Qube(int x, int y) {
         this.x = x;
         this.y = y;
+
+        try {
+            vehicleImage = ImageIO.read(getClass().getResource("Qube/qube.png"));
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getX() { return x; }
@@ -267,11 +284,15 @@ public class Qube {
     // 🔹 Rysowanie przeciwnika
     // ==============================
     public void draw(Graphics g) {
-        g.setColor(new Color(24, 64, 204)); // bordowy
-        g.fillRect(x, y, width, height);
+        Graphics2D g2d = (Graphics2D) g;
 
-        int maxHealth = 30;
-        int barWidth = 35;
+        if (vehicleImage != null) {
+            g.drawImage(vehicleImage, x, y, height, height, null);
+
+        }
+
+        int maxHealth = 40;
+        int barWidth = 75;
         int hpWidth = (int) ((health / (double) maxHealth) * barWidth);
 
         g.setColor(Color.GREEN);
