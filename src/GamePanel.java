@@ -3911,6 +3911,7 @@ private  void updateQubeBullet(){
 // rysowanie Qube units + by strzelal pociskami - on je rsyuje a pozniej tworzy strzal - shoot wywyołuje
         for (Qube q : qubes) {
             q.draw(g);
+            q.updateFly(deltaTime);
             q.shoot(g, qubeBullets,
                     soldiers, valkirias, soldierBots, battleVehicles, factories,
                     steelMines, powerPlants, builderVehicles, artylerys, baracks,

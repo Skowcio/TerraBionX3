@@ -18,6 +18,12 @@ public class Qube {
     private final int width = 70, height = 70;
     private int health = 40;
     private int speed = 3;
+
+    private double hoverOffset = 0;           // Przesunięcie do rysowania w pionie
+    private double hoverTime = 0;             // Czas do animacji unoszenia
+    private final double hoverSpeed = 0.003;  // Im mniejsze, tym wolniejsze falowanie
+    private final int hoverAmplitude = 4;
+
     private final int shootCooldown = 850; // czas między strzałami (ms)
     private Object currentTarget;
     private long lastShotTime = 0;
@@ -56,6 +62,13 @@ public class Qube {
             return true;
         }
         return false;
+    }
+
+    public void updateFly(long deltaTime) {
+        // 🔁 Aktualizacja efektu "unoszenia się"
+        hoverTime += deltaTime;
+        hoverOffset = Math.sin(hoverTime * hoverSpeed) * hoverAmplitude;
+
     }
 
     public boolean isDead() { return dead; }
@@ -167,22 +180,22 @@ public class Qube {
 
         int tx = 0, ty = 0;
 
-        if (target instanceof Soldier s) { tx = s.getX(); ty = s.getY(); }
-        else if (target instanceof Valkiria v) { tx = v.getX(); ty = v.getY(); }
-        else if (target instanceof SoldierBot sb) { tx = sb.getX(); ty = sb.getY(); }
-        else if (target instanceof PowerPlant pp) { tx = pp.getX(); ty = pp.getY(); }
-        else if (target instanceof BattleVehicle bv) { tx = bv.getX(); ty = bv.getY(); }
-        else if (target instanceof Artylery a) { tx = a.getX(); ty = a.getY(); }
-        else if (target instanceof Baracks b) { tx = b.getX(); ty = b.getY(); }
-        else if (target instanceof Factory f) { tx = f.getX(); ty = f.getY(); }
-        else if (target instanceof SteelMine sm) { tx = sm.getX(); ty = sm.getY(); }
-        else if (target instanceof BuilderVehicle bb) { tx = bb.getX(); ty = bb.getY(); }
-        else if (target instanceof Enemy e) { tx = e.getX(); ty = e.getY(); }
-        else if (target instanceof EnemyToo et) { tx = et.getX(); ty = et.getY(); }
-        else if (target instanceof EnemyShooter es) { tx = es.getX(); ty = es.getY(); }
-        else if (target instanceof EnemyBehemoth eb) { tx = eb.getX(); ty = eb.getY(); }
-        else if (target instanceof HiveToo ht) { tx = ht.getX(); ty = ht.getY(); }
-        else if (target instanceof Hive h) { tx = h.getX(); ty = h.getY(); }
+        if (target instanceof Soldier s) { tx = s.getX() + s.getWidth() / 2; ty = s.getY() + s.getHeight() / 2; }
+        else if (target instanceof Valkiria v) { tx = v.getX() + v.getWidth() / 2; ty = v.getY() + v.getHeight() / 2; }
+        else if (target instanceof SoldierBot sb) { tx = sb.getX() + sb.getWidth() / 2; ty = sb.getY() + sb.getHeight() / 2; }
+        else if (target instanceof PowerPlant pp) { tx = pp.getX() + pp.getWidth() / 2; ty = pp.getY() + pp.getHeight() / 2; }
+        else if (target instanceof BattleVehicle bv) { tx = bv.getX() + bv.getWidth() / 2; ty = bv.getY() + bv.getHeight() / 2; }
+        else if (target instanceof Artylery a) { tx = a.getX() + a.getWidth() / 2; ty = a.getY() + a.getHeight() / 2; }
+        else if (target instanceof Baracks b) { tx = b.getX() + b.getWidth() / 2; ty = b.getY() + b.getHeight() / 2; }
+        else if (target instanceof Factory f) { tx = f.getX() + f.getWidth() / 2; ty = f.getY() + f.getHeight() / 2; }
+        else if (target instanceof SteelMine sm) { tx = sm.getX() + sm.getWidth() / 2; ty = sm.getY() + sm.getHeight() / 2; }
+        else if (target instanceof BuilderVehicle bb) { tx = bb.getX() + bb.getWidth() / 2; ty = bb.getY() + bb.getHeight() / 2; }
+        else if (target instanceof Enemy e) { tx = e.getX() + e.getWidth() / 2; ty = e.getY() + e.getHeight() / 2; }
+        else if (target instanceof EnemyToo et) { tx = et.getX() + et.getWidth() / 2; ty = et.getY() + et.getHeight() / 2; }
+        else if (target instanceof EnemyShooter es) { tx = es.getX() + es.getWidth() / 2; ty = es.getY() + es.getHeight() / 2; }
+        else if (target instanceof EnemyBehemoth eb) { tx = eb.getX() + eb.getWidth() / 2; ty = eb.getY() + eb.getHeight() / 2; }
+        else if (target instanceof HiveToo ht) { tx = ht.getX() + ht.getWidth() / 2; ty = ht.getY() + ht.getHeight() / 2; }
+        else if (target instanceof Hive h) { tx = h.getX() + h.getWidth() / 2; ty = h.getY() + h.getHeight() / 2; }
 
 
         int dx = tx - x;
@@ -218,21 +231,67 @@ public class Qube {
 
         // 🔹 Pobierz współrzędne celu
         int tx = 0, ty = 0;
-        if (currentTarget instanceof Soldier s) { tx = s.getX(); ty = s.getY(); }
-        else if (currentTarget instanceof Valkiria v) { tx = v.getX(); ty = v.getY(); }
-        else if (currentTarget instanceof SoldierBot sb) { tx = sb.getX(); ty = sb.getY(); }
-        else if (currentTarget instanceof BattleVehicle bv) { tx = bv.getX(); ty = bv.getY(); }
-        else if (currentTarget instanceof Factory f) { tx = f.getX(); ty = f.getY(); }
-        else if (currentTarget instanceof SteelMine sm) { tx = sm.getX(); ty = sm.getY(); }
-        else if (currentTarget instanceof PowerPlant pp) { tx = pp.getX(); ty = pp.getY(); }
-        else if (currentTarget instanceof BuilderVehicle bld) { tx = bld.getX(); ty = bld.getY(); }
-        else if (currentTarget instanceof Artylery a) { tx = a.getX(); ty = a.getY(); }
-        else if (currentTarget instanceof Baracks b) { tx = b.getX(); ty = b.getY(); }
-        else if (currentTarget instanceof EnemyToo et) { tx = et.getX(); ty = et.getY(); }
-        else if (currentTarget instanceof EnemyShooter es) { tx = es.getX(); ty = es.getY(); }
-        else if (currentTarget instanceof EnemyBehemoth eb) { tx = eb.getX(); ty = eb.getY(); }
-        else if (currentTarget instanceof Hive h) { tx = h.getX(); ty = h.getY(); }
-        else if (currentTarget instanceof HiveToo ht) { tx = ht.getX(); ty = ht.getY(); }
+        if (currentTarget instanceof Soldier s) {
+            tx = s.getX() + s.getWidth() / 2;
+            ty = s.getY() + s.getHeight() / 2;
+        }
+        else if (currentTarget instanceof Valkiria v) {
+            tx = v.getX() + v.getWidth() / 2;
+            ty = v.getY() + v.getHeight() / 2;
+        }
+        else if (currentTarget instanceof SoldierBot sb) {
+            tx = sb.getX() + sb.getWidth() / 2;
+            ty = sb.getY() + sb.getHeight() / 2;
+        }
+        else if (currentTarget instanceof BattleVehicle bv) {
+            tx = bv.getX() + bv.getWidth() / 2;
+            ty = bv.getY() + bv.getHeight() / 2;
+        }
+        else if (currentTarget instanceof Factory f) {
+            tx = f.getX() + f.getWidth() / 2;
+            ty = f.getY() + f.getHeight() / 2;
+        }
+        else if (currentTarget instanceof SteelMine sm) {
+            tx = sm.getX() + sm.getWidth() / 2;
+            ty = sm.getY() + sm.getHeight() / 2;
+        }
+        else if (currentTarget instanceof PowerPlant pp) {
+            tx = pp.getX() + pp.getWidth() / 2;
+            ty = pp.getY() + pp.getHeight() / 2;
+        }
+        else if (currentTarget instanceof BuilderVehicle bld) {
+            tx = bld.getX() + bld.getWidth() / 2;
+            ty = bld.getY() + bld.getHeight() / 2;
+        }
+        else if (currentTarget instanceof Artylery a) {
+            tx = a.getX() + a.getWidth() / 2;
+            ty = a.getY() + a.getHeight() / 2;
+        }
+        else if (currentTarget instanceof Baracks b) {
+            tx = b.getX() + b.getWidth() / 2;
+            ty = b.getY() + b.getHeight() / 2;
+        }
+        else if (currentTarget instanceof EnemyToo et) {
+            tx = et.getX() + et.getWidth() / 2;
+            ty = et.getY() + et.getHeight() / 2;
+        }
+        else if (currentTarget instanceof EnemyShooter es) {
+            tx = es.getX() + es.getWidth() / 2;
+            ty = es.getY() + es.getHeight() / 2;
+        }
+        else if (currentTarget instanceof EnemyBehemoth eb) {
+            tx = eb.getX() + eb.getWidth() / 2;
+            ty = eb.getY() + eb.getHeight() / 2;
+        }
+        else if (currentTarget instanceof Hive h) {
+            tx = h.getX() + h.getWidth() / 2;
+            ty = h.getY() + h.getHeight() / 2;
+        }
+        else if (currentTarget instanceof HiveToo ht) {
+            tx = ht.getX() + ht.getWidth() / 2;
+            ty = ht.getY() + ht.getHeight() / 2;
+        }
+
 
         double distance = Point.distance(x, y, tx, ty);
 
@@ -287,18 +346,24 @@ public class Qube {
         Graphics2D g2d = (Graphics2D) g;
 
         if (vehicleImage != null) {
-            g.drawImage(vehicleImage, x, y, height, height, null);
-
+            int drawX = x;
+            int drawY = (int) (y + hoverOffset); // ✨ unoszenie
+            g2d.drawImage(vehicleImage, drawX, drawY, height, height, null);
         }
 
+        // Pasek życia (cały zestaw przesuwany razem z hoverOffset)
         int maxHealth = 40;
         int barWidth = 75;
         int hpWidth = (int) ((health / (double) maxHealth) * barWidth);
 
+        int barY = (int) (y + hoverOffset) - 5; // pasek razem z unoszeniem
+
         g.setColor(Color.GREEN);
-        g.fillRect(x, y - 5, hpWidth, 3);
+        g.fillRect(x, barY, hpWidth, 3);
+
         g.setColor(Color.BLACK);
-        g.drawRect(x, y - 5, barWidth, 3);
+        g.drawRect(x, barY, barWidth, 3);
     }
+
 }
 

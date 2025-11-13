@@ -3,7 +3,7 @@ import java.awt.*;
 public class QubeBullet {
     private int x, y;
     private int dx, dy;
-    private final int speed = 15; // Prędkość pocisku
+    private final int speed = 20; // Prędkość pocisku
     private final long lifetime = 3000; // Czas życia pocisku w milisekundach
     private final long creationTime;
 
