@@ -400,6 +400,11 @@ public class Soldier {
         int dy = enemyToos.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    public boolean isInRange(Qube qubes) {
+        int dx = qubes.getX() - x;
+        int dy = qubes.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
 
     public void shoot(
             Graphics g,
@@ -411,6 +416,7 @@ public class Soldier {
             ArrayList<EnemyShooter> enemyShooters,
             ArrayList<EnemyHunter> enemyHunters,
             ArrayList<EnemyBehemoth> enemyBehemoths,
+            ArrayList<Qube> qubes,
             int cameraX, int cameraY,
             int screenWidth, int screenHeight
     ) {
@@ -424,6 +430,7 @@ public class Soldier {
         if (currentTarget instanceof EnemyShooter es && !enemyShooters.contains(es)) outOfRange = true;
         if (currentTarget instanceof EnemyHunter eh && !enemyHunters.contains(eh)) outOfRange = true;
         if (currentTarget instanceof  EnemyBehemoth eb && !enemyBehemoths.contains(eb)) outOfRange = true;
+        if (currentTarget instanceof  Qube q && !qubes.contains(q)) outOfRange = true;
 
         boolean notInRange =
                 !(currentTarget instanceof Enemy e && isInRange(e)) &&
@@ -432,10 +439,11 @@ public class Soldier {
                         !(currentTarget instanceof HiveToo ht && isInRange(ht)) &&
                         !(currentTarget instanceof EnemyShooter es && isInRange(es)) &&
                         !(currentTarget instanceof EnemyHunter eh && isInRange(eh)) &&
-                        !(currentTarget instanceof EnemyBehemoth eb && isInRange(eb));
+                        !(currentTarget instanceof EnemyBehemoth eb && isInRange(eb)) &&
+        !(currentTarget instanceof Qube q && isInRange(q));
 
         if (currentTarget == null || outOfRange || notInRange) {
-            chooseTarget(enemies, enemyToos, hives, hiveToos, enemyShooters, enemyHunters, enemyBehemoths);
+            chooseTarget(enemies, enemyToos, hives, hiveToos, enemyShooters, enemyHunters, enemyBehemoths, qubes);
         }
 
         if (currentTarget != null && currentTime - lastShotTime >= shootCooldown) {
@@ -459,13 +467,16 @@ public class Soldier {
             } else if (currentTarget instanceof EnemyBehemoth eb && isInRange(eb)) {
                 Bullets.add(new Bullet(startX, startY, eb.getX() + 15, eb.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             }
+            else if (currentTarget instanceof Qube q && isInRange(q)) {
+                Bullets.add(new Bullet(startX, startY, q.getX() + 15, q.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+            }
 
             lastShotTime = currentTime;
         }
     }
 
 
-    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths) {
+    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths, ArrayList<Qube> qubes) {
         currentTarget = null;
 
         // Szukaj najbliższego Enemy w zasięgu
@@ -513,6 +524,12 @@ public class Soldier {
                 return; // Znaleziono cel
             }
         }
+        for (Qube qube : qubes) {
+            if (isInRange(qube)) {
+                currentTarget = qube;
+                return; // Znaleziono cel
+            }
+        }
     }
 
 
@@ -523,6 +540,19 @@ public class Soldier {
         // ✨ przesunięcie w osi Y o hoverOffset
         int drawX = x;
         int drawY = (int)(y + hoverOffset);
+        // --- CIEŃ POD ŻOŁNIERZEM ---
+        g2d.setColor(new Color(0, 0, 0, 85));
+        int shadowW = width;
+        int shadowH = 15;
+
+        int shadowX = x;
+        int shadowY = y + height - 10;
+
+        g2d.rotate(Math.toRadians(currentDirectionIndex * 22.5), shadowX + shadowW/2, shadowY + shadowH/2);
+        g2d.setColor(new Color(0, 0, 0, 40));
+        g2d.fillOval(shadowX, shadowY, shadowW, shadowH);
+// cofnięcie obrotu
+        g2d.rotate(-Math.toRadians(currentDirectionIndex * 22.5), shadowX + shadowW/2, shadowY + shadowH/2);
 
         // Rysowanie sprite'a
         Image imgToDraw = directionSprites[currentDirectionIndex];

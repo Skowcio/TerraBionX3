@@ -2368,6 +2368,17 @@ private  void updateQubeBullet(){
                         break;
                     }
                 }
+                for (Qube qube : qubes) {
+                    if (bullet.checkCollision(qube)) {
+                        bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(qube.getX() + 15, qube.getY() + 15));
+                        if (qube.takeDamage()) {
+                            qubes.remove(qube);
+                            addKillPoints(20); //  większy wróg = więcej punktów
+                        }
+                        break;
+                    }
+                }
 
 
                 // Sprawdzanie kolizji z EnemyToo
@@ -2770,7 +2781,7 @@ private  void updateQubeBullet(){
         }
 
         for (SoldierBot soldierBot : new ArrayList<>(soldierBots)) {
-            soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots, enemyBehemoths);
+            soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots, enemyBehemoths, qubes);
         }
         for (EnemyHunter enemyHunter : new ArrayList<>(enemyHunters)){
             enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters);
@@ -3747,6 +3758,7 @@ private  void updateQubeBullet(){
                     enemyHunters,
 
                     enemyBehemoths,
+                    qubes,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
@@ -3790,6 +3802,7 @@ private  void updateQubeBullet(){
                     enemyShooters,
                     enemyHunters,
                     enemyBehemoths,
+                    qubes,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,

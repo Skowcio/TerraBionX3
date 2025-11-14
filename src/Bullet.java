@@ -121,6 +121,10 @@ public class Bullet { // Bullet jest używany przez Soldier
         Rectangle bulletRect = new Rectangle(x, y, 10, 10);
         return bulletRect.intersects(enemyBehemoth.getBounds());
     }
+    public boolean checkCollision(Qube qube) {
+        Rectangle bulletRect = new Rectangle(x, y, 10, 10);
+        return bulletRect.intersects(qube.getBounds());
+    }
 
 
     public boolean isOutOfBounds(int width, int height) {

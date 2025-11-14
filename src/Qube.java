@@ -16,7 +16,7 @@ public class Qube {
     private int x, y;
     private final int range = 250;
     private final int width = 70, height = 70;
-    private int health = 40;
+    private int health = 70;
     private int speed = 3;
 
     private double hoverOffset = 0;           // Przesunięcie do rysowania w pionie
@@ -352,7 +352,7 @@ public class Qube {
         }
 
         // Pasek życia (cały zestaw przesuwany razem z hoverOffset)
-        int maxHealth = 40;
+        int maxHealth = 70;
         int barWidth = 75;
         int hpWidth = (int) ((health / (double) maxHealth) * barWidth);
 

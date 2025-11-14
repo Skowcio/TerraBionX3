@@ -352,6 +352,14 @@ public class BuilderVehicle {
 
             g2d.drawImage(vehicleImage, transform, null);
         }
+        // Cień izometryczny
+        int shadowW = width;
+        int shadowH = (int)(height * 0.35); // spłaszczony
+        int shadowX = x + (width - shadowW) / 2;
+        int shadowY = y + height - shadowH/2;
+
+        g2d.setColor(new Color(0, 0, 0, 35)); // delikatna przezroczystość
+        g2d.fillOval(shadowX, shadowY, shadowW, shadowH);
 
         // Obramowanie przy zaznaczeniu
         // Obramowanie przy zaznaczeniu
