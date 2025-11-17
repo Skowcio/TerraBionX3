@@ -85,6 +85,8 @@ public class Soldier {
         }
         return false;
     }
+
+
     public boolean isDead() {
         return dead;
     }

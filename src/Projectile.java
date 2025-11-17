@@ -113,4 +113,7 @@ public class Projectile {
     public boolean checkCollision(Harvester harvester) {
         return intersectsWithShrink(harvester.getX(), harvester.getY(), harvester.getWidth(), harvester.getHeight(), 8);
     }
+    public boolean checkCollision(Qube qube) {
+        return intersectsWithShrink(qube.getX(), qube.getY(), qube.getWidth(), qube.getHeight(), 8);
+    }
 }

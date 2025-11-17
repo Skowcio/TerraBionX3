@@ -2183,6 +2183,16 @@ private  void updateQubeBullet(){
                     break;
                 }
             }
+            for (Qube qube : qubes) {
+                if (projectile.checkCollision(qube)) {
+                    toRemove.add(projectile);
+                    if (qube.takeDamage()){
+                        qubes.remove(qube);
+                        explosions.add(new Explosion(qube.getX(), qube.getY()));
+                    }
+                    break;
+                }
+            }
 
             // Usuń pociski, które wyszły poza planszę
             if (projectile.isOutOfBounds(getWidth(), getHeight())) {
@@ -2771,11 +2781,9 @@ private  void updateQubeBullet(){
         }
 
         for (EnemyShooter enemyShooter : enemyShooters) {
-            enemyShooter.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories, steelMines);
+            enemyShooter.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories, steelMines,qubes);
         }
-        for (EnemyShooter enemyShooter : enemyShooters) {
-            enemyShooter.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories, steelMines);
-        }
+
         for (Qube qube : qubes) {
             qube.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories, steelMines,  enemies, enemiesToo, enemyShooters, enemyBehemoths, hives, hiveToos);
         }
@@ -2787,7 +2795,7 @@ private  void updateQubeBullet(){
             enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters);
         }
         for (EnemyBehemoth enemyBehemoth : new ArrayList<>(enemyBehemoths)){
-            enemyBehemoth.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, valkirias, enemyHunters, explosions);
+            enemyBehemoth.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, valkirias, enemyHunters, explosions, qubes);
         }
         for (Enemy enemy : enemies) {
             enemy.move();
@@ -3781,6 +3789,7 @@ private  void updateQubeBullet(){
                     enemyShooters,
                     enemyHunters,
                     enemyBehemoths,
+                    qubes,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
@@ -3827,6 +3836,7 @@ private  void updateQubeBullet(){
                     hives,
                     enemyShooters,
                     enemyHunters,
+                    qubes,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
@@ -3899,7 +3909,7 @@ private  void updateQubeBullet(){
         for (EnemyBehemoth enemyBehemoth : enemyBehemoths){
             enemyBehemoth.draw(g);
             enemyBehemoth.updateFly(deltaTime);
-            enemyBehemoth.shoot(g, projectiles, soldiers, valkirias, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks);
+            enemyBehemoth.shoot(g, projectiles, soldiers, valkirias, soldierBots, battleVehicles, factories, powerPlants, builderVehicles, artylerys, baracks, qubes);
         }
 
 
@@ -3910,7 +3920,7 @@ private  void updateQubeBullet(){
 
         for (EnemyShooter enemyShooter : enemyShooters){
             enemyShooter.draw(g);
-            enemyShooter.shoot(g, projectiles, soldiers, valkirias, soldierBots, battleVehicles, factories, steelMines, powerPlants, builderVehicles, artylerys, baracks);
+            enemyShooter.shoot(g, projectiles, soldiers, valkirias, soldierBots, battleVehicles, factories, steelMines, powerPlants, builderVehicles, artylerys, baracks, qubes);
         }
         //budowniczy
         for (BuilderVehicle builderVehicle :builderVehicles) {
@@ -3925,10 +3935,15 @@ private  void updateQubeBullet(){
         for (Qube q : qubes) {
             q.draw(g);
             q.updateFly(deltaTime);
+            Rectangle viewRect = getVisibleRect();
             q.shoot(g, qubeBullets,
                     soldiers, valkirias, soldierBots, battleVehicles, factories,
                     steelMines, powerPlants, builderVehicles, artylerys, baracks,
-                    enemiesToo, enemyShooters, enemyBehemoths, hives, hiveToos);
+                    enemiesToo, enemyShooters, enemyBehemoths, hives, hiveToos,
+                    viewRect.x,
+                    viewRect.y,
+                    viewRect.width,
+                    viewRect.height);
         }
 
         for (MinigunnerBullet minigunnerBullet : minigunnerBullets){

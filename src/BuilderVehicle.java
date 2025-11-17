@@ -124,7 +124,7 @@ public class BuilderVehicle {
 
             // mogą na siebie nachodzić w 2/3
             if (getAllowedBounds().intersects(other.getAllowedBounds())) {
-                // ❌ ale jeśli pełne hitboxy też się stykają → teleport
+                //  ale jeśli pełne hitboxy też się stykają → teleport
                 if (getStrictBounds().intersects(other.getStrictBounds())) {
                     teleportAway(allVehicles);
                 }
@@ -169,17 +169,8 @@ public class BuilderVehicle {
     }
 
 
-    public boolean isInRange(Enemy enemy) {
-        int dx = enemy.getX() - x;
-        int dy = enemy.getY() - y;
-        return Math.sqrt(dx * dx + dy * dy) <= range;
-    }
 
-    public boolean isInRange(EnemyShooter enemyShooter) {
-        int dx = enemyShooter.getX() - x;
-        int dy = enemyShooter.getY() - y;
-        return Math.sqrt(dx * dx + dy * dy) <= range;
-    }
+
     /// /////efekt unoszenia i opadania /////////////////////////////////////////////////////////////
     public void update(long deltaTime) {
         // 🔁 Aktualizacja efektu "unoszenia się"
@@ -225,6 +216,17 @@ public class BuilderVehicle {
 
         return from + difference * progress;
     }
+    public boolean isInRange(Enemy enemy) {
+        int dx = enemy.getX() - x;
+        int dy = enemy.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
+
+    public boolean isInRange(EnemyShooter enemyShooter) {
+        int dx = enemyShooter.getX() - x;
+        int dy = enemyShooter.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
     public boolean isInRange(Hive hive){
         int dx = hive.getX() - x;
         int dy = hive.getY() - y;
@@ -241,7 +243,11 @@ public class BuilderVehicle {
         int dy = enemyToos.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
-
+    public boolean isInRange(Qube qubes) {
+        int dx = qubes.getX() - x;
+        int dy = qubes.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
     public void shoot(
             Graphics g,
             ArrayList<Bullet> Bullets,
@@ -250,6 +256,7 @@ public class BuilderVehicle {
             ArrayList<Hive> hives,
             ArrayList<EnemyShooter> enemyShooters,
             ArrayList<EnemyHunter> enemyHunters,
+            ArrayList<Qube> qubes,
             int cameraX, int cameraY,
             int screenWidth, int screenHeight
     ) {
@@ -261,16 +268,19 @@ public class BuilderVehicle {
         if (currentTarget instanceof Hive h && !hives.contains(h)) outOfRange = true;
         if (currentTarget instanceof EnemyShooter es && !enemyShooters.contains(es)) outOfRange = true;
         if (currentTarget instanceof EnemyHunter eh && !enemyHunters.contains(eh)) outOfRange = true;
+        if (currentTarget instanceof Qube q && !qubes.contains(q)) outOfRange = true;
 
         boolean notInRange =
                 !(currentTarget instanceof Enemy e && isInRange(e)) &&
                         !(currentTarget instanceof EnemyToo et && isInRange(et)) &&
                         !(currentTarget instanceof Hive h && isInRange(h)) &&
                         !(currentTarget instanceof EnemyShooter es && isInRange(es)) &&
-                        !(currentTarget instanceof EnemyHunter eh && isInRange(eh));
+                        !(currentTarget instanceof EnemyHunter eh && isInRange(eh))&&
+        !(currentTarget instanceof Qube q && isInRange(q));
+
 
         if (currentTarget == null || outOfRange || notInRange) {
-            chooseTarget(enemies, enemyToos, hives, enemyShooters, enemyHunters);
+            chooseTarget(enemies, enemyToos, hives, enemyShooters, enemyHunters, qubes);
         }
 
         if (currentTarget != null && currentTime - lastShotTime >= shootCooldown) {
@@ -288,13 +298,16 @@ public class BuilderVehicle {
             } else if (currentTarget instanceof EnemyHunter eh && isInRange(eh)) {
                 Bullets.add(new Bullet(startX, startY, eh.getX() + 15, eh.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             }
+            else if (currentTarget instanceof Qube q && isInRange(q)) {
+                Bullets.add(new Bullet(startX, startY, q.getX() + 15, q.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+            }
 
             lastShotTime = currentTime;
         }
     }
 
 
-    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters) {
+    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<Qube> qubes) {
         currentTarget = null;
 
         // Szukaj najbliższego Enemy w zasięgu
@@ -327,6 +340,12 @@ public class BuilderVehicle {
         for (Hive hive : hives) {
             if (isInRange(hive)) {
                 currentTarget = hive;
+                return; // Znaleziono cel
+            }
+        }
+        for (Qube qube : qubes) {
+            if (isInRange(qube)) {
+                currentTarget = qube;
                 return; // Znaleziono cel
             }
         }

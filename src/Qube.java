@@ -19,10 +19,17 @@ public class Qube {
     private int health = 70;
     private int speed = 3;
 
+    //unoszenie
     private double hoverOffset = 0;           // Przesunięcie do rysowania w pionie
     private double hoverTime = 0;             // Czas do animacji unoszenia
     private final double hoverSpeed = 0.003;  // Im mniejsze, tym wolniejsze falowanie
     private final int hoverAmplitude = 4;
+
+    // ===== Pole siłowe =====
+    private int shield = 20;                    // ile ma dodatkowego życia
+    private final int maxShield = 20;           // maksymalna pojemność
+    private long lastShieldRegenTime = 0;       // czas ostatniej regeneracji
+    private final long shieldRegenInterval = 3000; // co 3 sekundy
 
     private final int shootCooldown = 850; // czas między strzałami (ms)
     private Object currentTarget;
@@ -49,13 +56,29 @@ public class Qube {
             e.printStackTrace();
         }
     }
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 
     public int getX() { return x; }
     public int getY() { return y; }
+
     public Rectangle getBounds() { return new Rectangle(x, y, width, height); }
     public Point getPosition() { return new Point(x, y); }
 
     public boolean takeDamage() {
+
+        // Najpierw schodzi z pola siłowego
+        if (shield > 0) {
+            shield--;
+            return false; // Qube żyje
+        }
+
+        // Dopiero potem z HP
         health--;
         if (health <= 0) {
             markAsDead();
@@ -223,7 +246,9 @@ public class Qube {
                       List<EnemyShooter> enemyShooters,
                       List<EnemyBehemoth> enemyBehemoths,
                       List<Hive> hives,
-                      List<HiveToo> hiveToos
+                      List<HiveToo> hiveToos,
+                      int cameraX, int cameraY,
+                      int screenWidth, int screenHeight
     ) {
 
         long currentTime = System.currentTimeMillis();
@@ -298,7 +323,14 @@ public class Qube {
         // 🔹 Jeśli cel jest w zasięgu, strzelaj
         if (distance <= range && currentTime - lastShotTime >= shootCooldown) {
             // 👇 dopasowane do Twojego konstruktora (4 parametry)
-            qubeBullets.add(new QubeBullet(x + width / 2, y + height / 2, tx, ty));
+            qubeBullets.add(new QubeBullet(
+                    x + width / 2,
+                    y + height / 2,
+                    tx,
+                    ty,
+                    cameraX, cameraY,
+                    screenWidth, screenHeight
+            ));
             lastShotTime = currentTime;
         }
     }
@@ -324,8 +356,17 @@ public class Qube {
             List<Hive> hives,
             List<HiveToo> hiveToos
     ) {
+
         long currentTime = System.currentTimeMillis();
 
+        // 🔋 Regeneracja pola siłowego
+        long now = System.currentTimeMillis();
+        if (now - lastShieldRegenTime >= shieldRegenInterval) {
+            if (shield < maxShield) {
+                shield++; // regeneracja 1 punktu
+            }
+            lastShieldRegenTime = now;
+        }
         // 🔹 Szukaj celu tylko co 0.5 sekundy
         if (currentTarget == null || currentTime - lastTargetSearchTime >= TARGET_SEARCH_INTERVAL) {
             currentTarget = getClosestTarget(
@@ -340,7 +381,7 @@ public class Qube {
     }
 
     // ==============================
-    // 🔹 Rysowanie przeciwnika
+    //  Rysowanie Qube
     // ==============================
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
@@ -350,19 +391,60 @@ public class Qube {
             int drawY = (int) (y + hoverOffset); // ✨ unoszenie
             g2d.drawImage(vehicleImage, drawX, drawY, height, height, null);
         }
+        // Cień izometryczny
+        int shadowW = width;
+        int shadowH = (int)(height * 0.35); // spłaszczony
+        int shadowX = x + (width - shadowW) / 2;
+        int shadowY = y + height - shadowH/2;
+
+        g2d.setColor(new Color(0, 0, 0, 65)); // delikatna przezroczystość
+        g2d.fillOval(shadowX, shadowY, shadowW, shadowH);
+
+
+        // ===== RYSOWANIE POLA SIŁOWEGO =====
+        if (shield > 0) {
+            int drawX = x + width/2;
+            int drawY = (int)(y + hoverOffset + height/2);
+
+            int r = width + 22;
+//otoczka
+            g2d.setColor(new Color(0, 170, 255, 80));
+            g2d.fillOval(drawX - r/2, drawY - r/2, r, r);
+//pole
+            g2d.setColor(new Color(100, 200, 255, 140));
+            g2d.setStroke(new BasicStroke(3f));
+            g2d.drawOval(drawX - r/2, drawY - r/2, r, r);
+
+            //  MUSI BYĆ! Inaczej paski robią się czarne
+            g2d.setColor(Color.BLACK);
+            g2d.setStroke(new BasicStroke(1f));
+        }
 
         // Pasek życia (cały zestaw przesuwany razem z hoverOffset)
         int maxHealth = 70;
         int barWidth = 75;
         int hpWidth = (int) ((health / (double) maxHealth) * barWidth);
 
+        int maxShield = 20;
+        int barW = 75;
+        int shiledW = (int) ((shield / (double) maxShield) * barW);
+
+
         int barY = (int) (y + hoverOffset) - 5; // pasek razem z unoszeniem
+        int barYy = (int) (y + hoverOffset) - 10; // pasek shield
 
         g.setColor(Color.GREEN);
         g.fillRect(x, barY, hpWidth, 3);
 
+        g.setColor(Color.RED);
+        g.fillRect(x, barYy, shiledW, 3);
+
+
         g.setColor(Color.BLACK);
         g.drawRect(x, barY, barWidth, 3);
+
+        g.setColor(Color.BLACK);
+        g.drawRect(x, barYy, barW, 3);
     }
 
 }

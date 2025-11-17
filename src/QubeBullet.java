@@ -1,9 +1,11 @@
 import java.awt.*;
+import javax.sound.sampled.*;
+import java.io.File;
 
 public class QubeBullet {
     private int x, y;
     private int dx, dy;
-    private final int speed = 20; // Prędkość pocisku
+    private final int speed = 25; // Prędkość pocisku
     private final long lifetime = 3000; // Czas życia pocisku w milisekundach
     private final long creationTime;
 
@@ -22,6 +24,46 @@ public class QubeBullet {
 
         // Ustawiamy czas utworzenia pocisku
         this.creationTime = System.currentTimeMillis();
+    }
+
+    public QubeBullet(int startX, int startY, int targetX, int targetY,
+                      int cameraX, int cameraY, int screenWidth, int screenHeight) {
+        this(startX, startY, targetX, targetY);  // ← używasz swojego głównego konstruktora
+        playShootSound(cameraX, cameraY, screenWidth, screenHeight);
+    }
+
+    private void playShootSound(int cameraX, int cameraY, int screenWidth, int screenHeight) {
+        try {
+            File soundFile = new File("F:\\projekty JAVA\\TerraBionX3\\src\\shoot\\shoot3.wav");
+            if (!soundFile.exists()) {
+                System.err.println("Nie znaleziono dźwięku: " + soundFile.getAbsolutePath());
+                return;
+            }
+
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioIn);
+
+            // Środek widoku
+            int viewCenterX = cameraX + screenWidth / 2;
+            int viewCenterY = cameraY + screenHeight / 2;
+
+            double dx = this.x - viewCenterX;
+            double dy = this.y - viewCenterY;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+
+            float maxDistance = 1800f;
+            float volume = (float) Math.pow(Math.max(0f, 1.0f - distance / maxDistance), 0.7);
+
+            FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            float dB = (float) (20f * Math.log10(Math.max(0.01, volume)));
+            gainControl.setValue(dB);
+
+            clip.start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void move() {
@@ -61,7 +103,7 @@ public class QubeBullet {
 
         // Jasny rdzeń pocisku
         g2d.setColor(new Color(200, 255, 255, 230));
-        g2d.fillOval(x - 3, y - 3, 6, 6);
+        g2d.fillOval(x - 5, y - 5, 10, 10);
 
         // Delikatna poświata wokół rdzenia
         for (int i = 0; i < 3; i++) {

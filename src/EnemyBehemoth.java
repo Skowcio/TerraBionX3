@@ -246,7 +246,11 @@ public class EnemyBehemoth {
         int dy = baracks.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
-
+    public boolean isInRange(Qube qube) {
+        int dx = qube.getX() - x;
+        int dy = qube.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
 
     private void chooseTarget(
             ArrayList<Soldier> soldiers,
@@ -257,7 +261,8 @@ public class EnemyBehemoth {
             ArrayList<PowerPlant> powerPlants,
             ArrayList<BuilderVehicle> builderVehicles, // 🆕 BuilderVehicle
             ArrayList<Artylery> artyleries,
-            ArrayList<Baracks> baracks
+            ArrayList<Baracks> baracks,
+            ArrayList<Qube> qubes
     )
     {
         currentTarget = null;
@@ -317,6 +322,12 @@ public class EnemyBehemoth {
                 return;
             }
         }
+        for (Qube q : qubes) {
+            if (isInRange(q)) {
+                currentTarget = q;
+                return;
+            }
+        }
     }
 
     public void shoot(
@@ -330,7 +341,8 @@ public class EnemyBehemoth {
             ArrayList<PowerPlant> powerPlants,
             ArrayList<BuilderVehicle> builderVehicles,
             ArrayList<Artylery> artyleries,
-            ArrayList<Baracks> baracks)
+            ArrayList<Baracks> baracks,
+            ArrayList<Qube> qubes)
     // 🆕 BuilderVehicle
 
     {
@@ -347,6 +359,7 @@ public class EnemyBehemoth {
                 (currentTarget instanceof Artylery && !artyleries.contains(currentTarget))||
                 (currentTarget instanceof Baracks && !baracks.contains(currentTarget))||
                 (currentTarget instanceof Valkiria && !valkirias.contains(currentTarget))||
+                (currentTarget instanceof Qube && !qubes.contains(currentTarget))||
 
                 !(currentTarget instanceof Soldier soldier && isInRange(soldier)) &&
                         !(currentTarget instanceof SoldierBot soldierBot&& isInRange(soldierBot)) &&
@@ -356,7 +369,8 @@ public class EnemyBehemoth {
                         !(currentTarget instanceof BuilderVehicle builderVehicle && isInRange(builderVehicle)) &&
                         !(currentTarget instanceof Artylery artylery && isInRange(artylery)) &&
                         !(currentTarget instanceof  Baracks b && isInRange(b)) &&
-                        !(currentTarget instanceof  Valkiria v && isInRange(v))
+                        !(currentTarget instanceof  Valkiria v && isInRange(v)) &&
+                        !(currentTarget instanceof  Qube q && isInRange(q))
 
         )
         {
@@ -369,7 +383,8 @@ public class EnemyBehemoth {
                     powerPlants,
                     builderVehicles,
                     artyleries,
-                    baracks
+                    baracks,
+                    qubes
             );
         }
 
@@ -430,12 +445,12 @@ public class EnemyBehemoth {
                     lastShotTime = currentTime;
                 }
             }
-//            else if (currentTarget instanceof Hive hive) {
-//                if (isInRange(hive)) {
-//                    bullets.add(new Bullet(x + 15, y + 15, hive.getX() + 15, hive.getY() + 15));
-//                    lastShotTime = currentTime;
-//                }
-//            }
+            if (currentTarget instanceof Qube qube) {
+                if (isInRange(qube)) {
+                    projectiles.add(new Projectile(x + 15, y + 15, qube.getX() + 15, qube.getY() + 15));
+                    lastShotTime = currentTime;
+                }
+            }
         }
     }
     /// ////////////////////////////////////////
@@ -451,15 +466,18 @@ public class EnemyBehemoth {
                        List<SoldierBot> soldierBots,
                        List<Valkiria> valkirias,
                        List<EnemyHunter> enemies,
-                        List<Explosion> explosions){
+                        List<Explosion> explosions,
+                       List<Qube> qubes){
 
         // jeśli ktoś jest w aggroRange → atakuj
         Soldier closestSoldier = getClosestSoldier(soldiers);
         BattleVehicle closestVehicle = getClosestBattleVehicle(battleVehicles);
         SoldierBot closestBot = getClosestSoldierBot(soldierBots);
         Valkiria closestValkiria = getClosestValkiria(valkirias);
+        Qube closestQube = getClosestQube(qubes);
 
-        if (closestSoldier != null || closestVehicle != null || closestBot != null || closestValkiria != null) {
+        if (closestSoldier != null || closestVehicle != null || closestBot != null || closestValkiria != null || closestQube != null)
+        {
             // atak jak wcześniej
             moveTowardsSoldier(soldiers);
             moveTowardsBattleVehicle(battleVehicles);
@@ -470,8 +488,10 @@ public class EnemyBehemoth {
             moveTowardsValkiria(valkirias);
             moveTowardsFactory(factorys);
             moveTowardsSoldierBot(soldierBots);
-            attackClosestSoldier(soldiers, soldierBots, valkirias, builderVehicles, explosions);
-        } else {
+            moveTowardsQube(qubes);
+            attackClosestSoldier(soldiers, soldierBots, valkirias, builderVehicles, qubes, explosions);
+        }
+        else {
             // jeśli nikt nie jest w zasięgu → patrol
             movePatrol();
             regenerateHealth();
@@ -479,11 +499,12 @@ public class EnemyBehemoth {
     }
 
     /// ///////////////tu jest to co atakuje jak dotknienb
-    private void attackClosestSoldier(List<Soldier> soldiers, List<SoldierBot> soldierBots, List<Valkiria> valkirias, List<BuilderVehicle> builderVehicles, List<Explosion> explosions ) {
+    private void attackClosestSoldier(List<Soldier> soldiers, List<SoldierBot> soldierBots, List<Valkiria> valkirias, List<BuilderVehicle> builderVehicles, List<Qube> qubes, List<Explosion> explosions ) {
         Soldier closestSoldier = getClosestSoldier(soldiers);
         SoldierBot closestSoldierBot = getClosestSoldierBot(soldierBots);
         Valkiria closestValkiria = getClosestValkiria(valkirias);
         BuilderVehicle closestBuilder = getClosestBuldierVehicle(builderVehicles);
+        Qube closestQube = getClosestQube(qubes);
 
         if (closestSoldier != null && getBounds().intersects(closestSoldier.getBounds())) {
             boolean dead = closestSoldier.takeDamage(); // zadaj 1 dmg (albo więcej)
@@ -519,6 +540,15 @@ public class EnemyBehemoth {
             if (dead) {
                 builderVehicles.remove(closestBuilder);
                 explosions.add(new Explosion(closestBuilder.getX(), closestBuilder.getY()));
+
+            }
+        }
+        if (closestQube != null && getBounds().intersects(closestQube.getBounds())) {
+            boolean dead = closestQube.takeDamage();
+
+            if (dead) {
+                qubes.remove(closestQube);
+                explosions.add(new Explosion(closestQube.getX(), closestQube.getY()));
 
             }
         }
@@ -566,6 +596,19 @@ public class EnemyBehemoth {
         return closest;
     }
 
+    private Qube getClosestQube(java.util.List<Qube> qubes) {
+        Qube closest = null;
+        double minDistance = Double.MAX_VALUE;
+
+        for (Qube qube : qubes) {
+            double distance = qube.getPosition().distance(x, y);
+            if (distance < minDistance && distance <= aggroRange) { // tylko w zasięgu!
+                minDistance = distance;
+                closest = qube;
+            }
+        }
+        return closest;
+    }
     private BattleVehicle getClosestBattleVehicle(java.util.List<BattleVehicle> battleVehicles) {
         BattleVehicle closest = null;
         double minDistance = Double.MAX_VALUE;
@@ -796,6 +839,22 @@ public class EnemyBehemoth {
             }
         }
 
+    }
+    public void moveTowardsQube(List<Qube> qubes) {
+        Qube closestQube = getClosestQube(qubes);
+
+        if (closestQube != null) {
+            int dx = closestQube.getX() - x;
+            int dy = closestQube.getY() - y;
+            double distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > 0) {
+                updateDirection(dx, dy); // 🔽 dodaj tutaj
+                x += (int) (speed * dx / distance);
+                y += (int) (speed * dy / distance);
+            }
+
+        }
     }
 
 }

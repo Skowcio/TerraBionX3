@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class EnemyToo {
     private int x, y;
-    private int width = 30, height = 30;
+    private int width = 35, height = 35;
     private int speed = 4;
     private int health = 20;
     private boolean dead = false;
@@ -30,7 +30,7 @@ public class EnemyToo {
         g.setColor(Color.GREEN);
         g.fillRect(x, y, width, height);
         int maxHealth = 20;
-        int healthBarWidth = 20;
+        int healthBarWidth = 35;
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         g.setColor(Color.GREEN);

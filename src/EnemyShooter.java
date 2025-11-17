@@ -65,7 +65,8 @@ public class EnemyShooter {
             List<BuilderVehicle> builderVehicles,
             List<Artylery> artyleries,
             List<Baracks> baracks,
-            List<SteelMine> steelMines
+            List<SteelMine> steelMines,
+            List<Qube> qubes
     ) {
         Object closest = null;
         double minDist = Double.MAX_VALUE;
@@ -110,6 +111,10 @@ public class EnemyShooter {
             double d = bv.getPosition().distance(x, y);
             if (d < minDist) { minDist = d; closest = bv; }
         }
+        for (Qube q : qubes) {
+            double d = q.getPosition().distance(x, y);
+            if (d < minDist) { minDist = d; closest = q; }
+        }
 
         return closest;
     }
@@ -132,6 +137,7 @@ public class EnemyShooter {
         else if (target instanceof Factory f) { tx = f.getX(); ty = f.getY(); }
         else if (target instanceof SteelMine sm) { tx = sm.getX(); ty = sm.getY(); }
         else if (target instanceof BuilderVehicle bb) { tx = bb.getX(); ty = bb.getY(); }
+        else if (target instanceof Qube q) { tx = q.getX(); ty = q.getY(); }
 
         int dx = tx - x;
         int dy = ty - y;
@@ -153,7 +159,8 @@ public class EnemyShooter {
                       List<PowerPlant> powerPlants,
                       List<BuilderVehicle> builderVehicles,
                       List<Artylery> artylerys,
-                      List<Baracks> baracks) {
+                      List<Baracks> baracks,
+    List<Qube> qubes) {
 
         long currentTime = System.currentTimeMillis();
         if (currentTarget == null || dead) return;
@@ -170,6 +177,7 @@ public class EnemyShooter {
         else if (currentTarget instanceof BuilderVehicle bld) { tx = bld.getX(); ty = bld.getY(); }
         else if (currentTarget instanceof Artylery a) { tx = a.getX(); ty = a.getY(); }
         else if (currentTarget instanceof Baracks b) { tx = b.getX(); ty = b.getY(); }
+        else if (currentTarget instanceof Qube q) { tx = q.getX(); ty = q.getY(); }
 
 
         double distance = Point.distance(x, y, tx, ty);
@@ -195,7 +203,8 @@ public class EnemyShooter {
             List<BattleVehicle> battleVehicles,
             List<PowerPlant> powerPlants,
             List<Factory> factories,
-            List<SteelMine> steelMines
+            List<SteelMine> steelMines,
+            List<Qube> qubes
     ) {
         long currentTime = System.currentTimeMillis();
 
@@ -204,7 +213,7 @@ public class EnemyShooter {
             currentTarget = getClosestTarget(
                     soldierBots, soldiers, valkirias, powerPlants,
                     battleVehicles, factories, builderVehicles,
-                    artylerys, baracks, steelMines
+                    artylerys, baracks, steelMines, qubes
             );
             lastTargetSearchTime = currentTime;
         }
