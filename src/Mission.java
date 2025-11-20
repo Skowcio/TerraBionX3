@@ -17,6 +17,7 @@ public class Mission {
     public ArrayList<Point> floraPositions = new ArrayList<>();
     public ArrayList<Point> barackPositions = new ArrayList<>();
     public ArrayList<Point> factoryPositions = new ArrayList<>();
+    public ArrayList<Point> qubeTowerPosittions = new ArrayList<>();
 
     public ArrayList<String> floraTypes = new ArrayList<>(); // do wyboru typu np. "marsh", "Tree"
 

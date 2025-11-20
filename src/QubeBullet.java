@@ -34,7 +34,7 @@ public class QubeBullet {
 
     private void playShootSound(int cameraX, int cameraY, int screenWidth, int screenHeight) {
         try {
-            File soundFile = new File("F:\\projekty JAVA\\TerraBionX3\\src\\shoot\\shoot3.wav");
+            File soundFile = new File("F:\\projekty JAVA\\TerraBionX3\\src\\shoot\\qubePlazma.wav");
             if (!soundFile.exists()) {
                 System.err.println("Nie znaleziono dźwięku: " + soundFile.getAbsolutePath());
                 return;

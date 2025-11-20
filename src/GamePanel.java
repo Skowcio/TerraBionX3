@@ -71,6 +71,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private ArrayList<BuilderVehicle> builderVehicles;
 
     private ArrayList<Qube> qubes;
+    private ArrayList<QubeTower> qubeTowers;
+    private ArrayList<QubeBullet> qubeBullets;
 
     private ArrayList<EnemyToo> enemiesToo; // Nowa lista dla EnemyToo
 //    private ArrayList<Marsh> marshes;
@@ -184,7 +186,6 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
     private Timer shootingTimer2;
     private Timer enemyShootingTimer;
     private ArrayList<Projectile> projectiles;
-    private ArrayList<QubeBullet> qubeBullets;
     private ArrayList<ResourcesSteel> resources;
     private ArrayList<PowerPlant> powerPlants;
     private int collectedSteel = 40000; // Przechowuje zebraną ilość stali
@@ -392,6 +393,9 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
         for (Point p : mission.qubePositions) {
             qubes.add(new Qube(p.x, p.y));
+        }
+        for (Point p : mission.qubeTowerPosittions) {
+            qubeTowers.add(new QubeTower(p.x, p.y));
         }
 
 
@@ -751,6 +755,8 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         this.builderVehicles = new ArrayList<>();
 
         this.qubes = new ArrayList<>();
+        this.qubeTowers = new ArrayList<>();
+        this.qubeBullets = new ArrayList<>();
 
 
         this.enemies = new ArrayList<>();
@@ -3899,6 +3905,20 @@ private  void updateQubeBullet(){
         for (HiveToo hiveToo : hiveToos) {
             hiveToo.draw(g);
             hiveToo.spawnEnemiesToo(g, enemiesToo, enemyShooters, enemyHunters); // Aktualizuje Hive i spawnuje EnemyToo
+        }
+        for (QubeTower qubeTower : qubeTowers) {
+            qubeTower.draw(g);
+
+            Rectangle viewRect = getVisibleRect();
+            qubeTower.shoot(g, qubeBullets,
+                    soldiers, valkirias, soldierBots, battleVehicles, factories,
+                    steelMines, powerPlants, builderVehicles, artylerys, baracks,
+                    enemiesToo, enemyShooters, enemyBehemoths, hives, hiveToos,
+                    viewRect.x,
+                    viewRect.y,
+                    viewRect.width,
+                    viewRect.height);
+
         }
 
 

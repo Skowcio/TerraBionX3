@@ -26,6 +26,7 @@ public class MissionManager {
         mission1.crystalPositions.add(new Point(680, 700));
 
         mission1.qubePositions.add(new Point(1800,1000));
+        mission1.qubeTowerPosittions.add(new Point(1600,900));
 
         mission1.floraPositions.add(new Point(400, 20));
         mission1.floraTypes.add("marsh");
@@ -63,7 +64,7 @@ public class MissionManager {
         mission1.resourcesPositions.add(new Point(850, 600));
 
 
-//        mission1.enemyBehemothPositions.add(new Point(1100, 1300));
+        mission1.enemyBehemothPositions.add(new Point(1100, 1300));
 //
 //        mission1.enemyPositions.add(new Point(1050, 1200));
 //        mission1.enemyPositions.add(new Point(1100, 1200));
