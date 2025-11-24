@@ -335,7 +335,8 @@ public class Qube {
         }
     }
     // ==============================
-    //  Aktualizacja logiki (co klatkę)
+    //  Aktualizacja logiki (co klatkę), w gamePanel wpisz: for (Qube qube : qubes) {qube.update
+
     // ==============================
     public void update(
             List<SoldierBot> soldierBots,

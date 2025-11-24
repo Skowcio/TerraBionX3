@@ -2396,6 +2396,18 @@ private  void updateQubeBullet(){
                     }
                 }
 
+                for (QubeTower qubeTower : qubeTowers) {
+                    if (bullet.checkCollision(qubeTower)) {
+                        bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(qubeTower.getX() + 15, qubeTower.getY() + 15));
+                        if (qubeTower.takeDamage()) {
+                            qubeTowers.remove(qubeTower);
+                            addKillPoints(20); //  większy wróg = więcej punktów
+                        }
+                        break;
+                    }
+                }
+
 
                 // Sprawdzanie kolizji z EnemyToo
                 Iterator<EnemyToo> enemyTooIterator = enemiesToo.iterator();
@@ -2794,8 +2806,12 @@ private  void updateQubeBullet(){
             qube.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories, steelMines,  enemies, enemiesToo, enemyShooters, enemyBehemoths, hives, hiveToos);
         }
 
+        for (QubeTower qubeTower : qubeTowers) {
+            qubeTower.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories, steelMines,  enemies, enemiesToo, enemyShooters, enemyBehemoths, hives, hiveToos);
+        }
+
         for (SoldierBot soldierBot : new ArrayList<>(soldierBots)) {
-            soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots, enemyBehemoths, qubes);
+            soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots, enemyBehemoths, qubes, qubeTowers);
         }
         for (EnemyHunter enemyHunter : new ArrayList<>(enemyHunters)){
             enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters);
@@ -3773,6 +3789,7 @@ private  void updateQubeBullet(){
 
                     enemyBehemoths,
                     qubes,
+                    qubeTowers,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
@@ -3796,6 +3813,7 @@ private  void updateQubeBullet(){
                     enemyHunters,
                     enemyBehemoths,
                     qubes,
+                    qubeTowers,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
@@ -3818,6 +3836,7 @@ private  void updateQubeBullet(){
                     enemyHunters,
                     enemyBehemoths,
                     qubes,
+                    qubeTowers,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
@@ -3908,7 +3927,6 @@ private  void updateQubeBullet(){
         }
         for (QubeTower qubeTower : qubeTowers) {
             qubeTower.draw(g);
-
             Rectangle viewRect = getVisibleRect();
             qubeTower.shoot(g, qubeBullets,
                     soldiers, valkirias, soldierBots, battleVehicles, factories,

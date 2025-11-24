@@ -438,6 +438,11 @@ public void resolveSoftOverlapWithValkirias(ArrayList<Valkiria> allValkirias) {
         int dy = qube.getY() - y;
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
+    public boolean isInRange(QubeTower qubeTower) {
+        int dx = qubeTower.getX() - x;
+        int dy = qubeTower.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+    }
 
     public void shoot(
             Graphics g,
@@ -450,6 +455,7 @@ public void resolveSoftOverlapWithValkirias(ArrayList<Valkiria> allValkirias) {
             ArrayList<EnemyHunter> enemyHunters,
             ArrayList<EnemyBehemoth> enemyBehemoths,
             ArrayList<Qube> qubes,
+            ArrayList<QubeTower> qubeTowers,
             int cameraX, int cameraY,
             int screenWidth, int screenHeight
     ) {
@@ -475,6 +481,7 @@ public void resolveSoftOverlapWithValkirias(ArrayList<Valkiria> allValkirias) {
         if (currentTarget instanceof EnemyHunter eh && !enemyHunters.contains(eh)) outOfRange = true;
         if (currentTarget instanceof  EnemyBehemoth eb && !enemyBehemoths.contains(eb)) outOfRange = true;
         if (currentTarget instanceof  Qube q && !qubes.contains(q)) outOfRange = true;
+        if (currentTarget instanceof  QubeTower qt && !qubeTowers.contains(qt)) outOfRange = true;
 
         boolean notInRange =
                 !(currentTarget instanceof Enemy e && isInRange(e)) &&
@@ -484,10 +491,11 @@ public void resolveSoftOverlapWithValkirias(ArrayList<Valkiria> allValkirias) {
                         !(currentTarget instanceof EnemyShooter es && isInRange(es)) &&
                         !(currentTarget instanceof EnemyHunter eh && isInRange(eh)) &&
                         !(currentTarget instanceof EnemyBehemoth eb && isInRange(eb))&&
-                         !(currentTarget instanceof Qube q && isInRange(q));
+                         !(currentTarget instanceof Qube q && isInRange(q))&&
+        !(currentTarget instanceof QubeTower qt && isInRange(qt));
 
         if (currentTarget == null || outOfRange || notInRange) {
-            chooseTarget(enemies, enemyToos, hives, hiveToos, enemyShooters, enemyHunters, enemyBehemoths, qubes);
+            chooseTarget(enemies, enemyToos, hives, hiveToos, enemyShooters, enemyHunters, enemyBehemoths, qubes, qubeTowers);
         }
 
         if (currentTarget != null && currentTime - lastShotTime >= shootCooldown) {
@@ -523,13 +531,16 @@ public void resolveSoftOverlapWithValkirias(ArrayList<Valkiria> allValkirias) {
             else if (currentTarget instanceof Qube q && isInRange(q)) {
                 Bullets.add(new Bullet(startX, startY, q.getX() + 15, q.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
             }
+            else if (currentTarget instanceof QubeTower qt && isInRange(qt)) {
+                Bullets.add(new Bullet(startX, startY, qt.getX() + 15, qt.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
+            }
             bulletsLeft--; // zmniejszamy liczbę pocisków w magazynku
             lastShotTime = currentTime;
         }
     }
 
 
-    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths, ArrayList<Qube> qubes) {
+    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths, ArrayList<Qube> qubes, ArrayList<QubeTower> qubeTowers) {
         currentTarget = null;
 
         // Szukaj najbliższego Enemy w zasięgu
@@ -581,6 +592,12 @@ public void resolveSoftOverlapWithValkirias(ArrayList<Valkiria> allValkirias) {
         for (Qube qube : qubes) {
             if (isInRange(qube)) {
                 currentTarget = qube;
+                return; // Znaleziono cel
+            }
+        }
+        for (QubeTower qubeTower : qubeTowers) {
+            if (isInRange(qubeTower)) {
+                currentTarget = qubeTower;
                 return; // Znaleziono cel
             }
         }

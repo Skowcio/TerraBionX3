@@ -19,7 +19,7 @@ public class QubeTower implements Serializable {
     private Point target;
     private final int range = 440;
     private int width = 100, height = 150;
-    private final int shootCooldown = 4500; // Czas odnowienia strzału (ms)
+    private final int shootCooldown = 450; // Czas odnowienia strzału (ms)
     private Object currentTarget; // Aktualny cel (Enemy lub EnemyToo)
     private int health = 90;
     private long lastShotTime = 0; // Czas ostatniego strzału
@@ -89,8 +89,22 @@ public class QubeTower implements Serializable {
     }
 
     public boolean takeDamage() {
+
+        // Najpierw schodzi tarcza
+        if (shield > 0) {
+            shield--;
+            return false; // żyje
+        }
+
+        // Dopiero później HP
         health--;
-        return health <= 0;
+
+        if (health <= 0) {
+            markAsDead();
+            return true;
+        }
+
+        return false;
     }
 
     public void destroy() {
@@ -303,13 +317,14 @@ public class QubeTower implements Serializable {
 
 
         double distance = Point.distance(x, y, tx, ty);
+        int shootOffsetY = -50; // ile pikseli wyżej ma być pozycja startowa pocisku
 
         // 🔹 Jeśli cel jest w zasięgu, strzelaj
         if (distance <= range && currentTime - lastShotTime >= shootCooldown) {
             // 👇 dopasowane do Twojego konstruktora (4 parametry)
             qubeBullets.add(new QubeBullet(
                     x + width / 2,
-                    y + height / 2,
+                    y + height / 2 + shootOffsetY,
                     tx,
                     ty,
                     cameraX, cameraY,
@@ -370,7 +385,7 @@ public class QubeTower implements Serializable {
 
         // ===== RYSOWANIE POJAZDU =====
         if (qubeTowerImage != null) {
-            g2d.drawImage(qubeTowerImage, x, y, height, height, null);
+            g2d.drawImage(qubeTowerImage, x, y, width, height, null);
         }
 
         // ===== RYSOWANIE POLA SIŁOWEGO =====
@@ -378,7 +393,7 @@ public class QubeTower implements Serializable {
             int centerX = x + width / 2;
             int centerY = y + height / 2;
 
-            int r = width + 22;
+            int r = width + 34;
 
             // otoczka
             g2d.setColor(new Color(0, 170, 255, 80));
@@ -395,16 +410,16 @@ public class QubeTower implements Serializable {
         }
 
         // ===== PASEK ŻYCIA =====
-        int maxHealth = 70;
-        int barWidth = 75;
+        int maxHealth = 90;
+        int barWidth = 100;
         int hpWidth = (int) ((health / (double) maxHealth) * barWidth);
 
         // ===== PASEK TARCZY =====
         int maxShield = 20;
-        int barW = 75;
+        int barW = 100;
         int shiledW = (int) ((shield / (double) maxShield) * barW);
 
-        // pasek nad pojazdem (bez hover)
+        // pasek nad
         int barY = y - 5;   // HP
         int barYy = y - 10; // Shield
 
