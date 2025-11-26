@@ -23,8 +23,8 @@ public class SoldierBot {
 
 
 
-    //  Czas ostatniego wyszukiwania celu
-    // 🕒 Czas ostatniego wyszukiwania celu
+    //  Czas ostatniego wyszukiwania celu - wazne by nie dochodzilo do przeszukiwania celow ciagle
+
     private long lastTargetSearchTime = 0;
     private final long targetSearchCooldown = 850; // co 850 ms szuka celu (0.85 sekundy)
 
@@ -227,7 +227,7 @@ public class SoldierBot {
 
     public void shoot(
             Graphics g,
-            ArrayList<Bullet> Bullets,
+            ArrayList<Bullet> bullets,
             ArrayList<Enemy> enemies,
             ArrayList<EnemyToo> enemyToos,
             ArrayList<Hive> hives,
@@ -242,60 +242,85 @@ public class SoldierBot {
     ) {
         long currentTime = System.currentTimeMillis();
 
-        boolean outOfRange = false;
-        if (currentTarget instanceof Enemy e && !enemies.contains(e)) outOfRange = true;
-        if (currentTarget instanceof EnemyToo et && !enemyToos.contains(et)) outOfRange = true;
-        if (currentTarget instanceof Hive h && !hives.contains(h)) outOfRange = true;
-        if (currentTarget instanceof HiveToo ht && !hiveToos.contains(ht)) outOfRange = true;
-        if (currentTarget instanceof EnemyShooter es && !enemyShooters.contains(es)) outOfRange = true;
-        if (currentTarget instanceof EnemyHunter eh && !enemyHunters.contains(eh)) outOfRange = true;
-        if (currentTarget instanceof  EnemyBehemoth eb && !enemyBehemoths.contains(eb)) outOfRange = true;
-        if (currentTarget instanceof  Qube q && !qubes.contains(q)) outOfRange = true;
-        if (currentTarget instanceof  QubeTower qt && !qubeTowers.contains(qt)) outOfRange = true;
-
-        boolean notInRange =
-                !(currentTarget instanceof Enemy e && isInRange(e)) &&
-                        !(currentTarget instanceof EnemyToo et && isInRange(et)) &&
-                        !(currentTarget instanceof Hive h && isInRange(h)) &&
-                        !(currentTarget instanceof HiveToo ht && isInRange(ht)) &&
-                        !(currentTarget instanceof EnemyShooter es && isInRange(es)) &&
-                        !(currentTarget instanceof EnemyHunter eh && isInRange(eh)) &&
-                        !(currentTarget instanceof EnemyBehemoth eb && isInRange(eb)) &&
-        !(currentTarget instanceof Qube q && isInRange(q))&&
-        !(currentTarget instanceof QubeTower qt && isInRange(qt));
-
-        if (currentTarget == null || outOfRange || notInRange) {
-            chooseTarget(enemies, enemyToos, hives, hiveToos, enemyShooters, enemyHunters, enemyBehemoths, qubes, qubeTowers);
+        // jeśli nie ma celu lub jest poza zasięgiem → wybierz nowy
+        if (currentTarget == null || !isStillValidTarget(currentTarget,
+                enemies, enemyToos, hives, hiveToos,
+                enemyShooters, enemyHunters, enemyBehemoths,
+                qubes, qubeTowers)) {
+            chooseTarget(enemies, enemyToos, hives, hiveToos,
+                    enemyShooters, enemyHunters, enemyBehemoths,
+                    qubes, qubeTowers);
         }
 
-        if (currentTarget != null && currentTime - lastShotTime >= shootCooldown) {
-            int startX = x + 15;
-            int startY = y + 15;
+        if (currentTarget == null) return; // dalej nie ma celu
 
-            if (currentTarget instanceof Enemy e && isInRange(e)) {
-                Bullets.add(new Bullet(startX, startY, e.getX() + 15, e.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            } else if (currentTarget instanceof EnemyToo et && isInRange(et)) {
-                Bullets.add(new Bullet(startX, startY, et.getX() + 15, et.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            } else if (currentTarget instanceof Hive h && isInRange(h)) {
-                Bullets.add(new Bullet(startX, startY, h.getX() + 15, h.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            } else if (currentTarget instanceof HiveToo h && isInRange(h)) {
-                Bullets.add(new Bullet(startX, startY, h.getX() + 15, h.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            } else if (currentTarget instanceof EnemyShooter es && isInRange(es)) {
-                Bullets.add(new Bullet(startX, startY, es.getX() + 15, es.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            } else if (currentTarget instanceof EnemyHunter eh && isInRange(eh)) {
-                Bullets.add(new Bullet(startX, startY, eh.getX() + 15, eh.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            } else if (currentTarget instanceof EnemyBehemoth eb && isInRange(eb)) {
-                Bullets.add(new Bullet(startX, startY, eb.getX() + 15, eb.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            }
-            else if (currentTarget instanceof Qube q && isInRange(q)) {
-                Bullets.add(new Bullet(startX, startY, q.getX() + 15, q.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            }
-            else if (currentTarget instanceof QubeTower qt && isInRange(qt)) {
-                Bullets.add(new Bullet(startX, startY, qt.getX() + 15, qt.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            }
+        // cooldown
+        if (currentTime - lastShotTime < shootCooldown) return;
 
-            lastShotTime = currentTime;
-        }
+        // start pocisku
+        int startX = x + width / 2;
+        int startY = y + height / 2;
+
+        // pobranie środka celu
+        Point p = getTargetCenter(currentTarget);
+
+        // 🔥 obrót bota do strzału
+        updateDirection(p.x - startX, p.y - startY);
+
+        // tworzymy kulę
+        bullets.add(new Bullet(startX, startY,
+                p.x, p.y,
+                cameraX, cameraY,
+                screenWidth, screenHeight));
+
+        lastShotTime = currentTime;
+    }
+
+    private boolean isStillValidTarget(Object t,
+                                       List<Enemy> enemies,
+                                       List<EnemyToo> enemyToos,
+                                       List<Hive> hives,
+                                       List<HiveToo> hiveToos,
+                                       List<EnemyShooter> enemyShooters,
+                                       List<EnemyHunter> enemyHunters,
+                                       List<EnemyBehemoth> enemyBehemoths,
+                                       List<Qube> qubes,
+                                       List<QubeTower> qubeTowers) {
+
+        if (t instanceof Enemy e) return enemies.contains(e) && isInRange(e);
+        if (t instanceof EnemyToo e) return enemyToos.contains(e) && isInRange(e);
+        if (t instanceof Hive h) return hives.contains(h) && isInRange(h);
+        if (t instanceof HiveToo h) return hiveToos.contains(h) && isInRange(h);
+        if (t instanceof EnemyShooter es) return enemyShooters.contains(es) && isInRange(es);
+        if (t instanceof EnemyHunter eh) return enemyHunters.contains(eh) && isInRange(eh);
+        if (t instanceof EnemyBehemoth eb) return enemyBehemoths.contains(eb) && isInRange(eb);
+        if (t instanceof Qube q) return qubes.contains(q) && isInRange(q);
+        if (t instanceof QubeTower q) return qubeTowers.contains(q) && isInRange(q);
+
+        return false;
+    }
+
+    private Point getTargetCenter(Object target) {
+        if (target instanceof Enemy e)
+            return new Point(e.getX() + e.getWidth() / 2, e.getY() + e.getHeight() / 2);
+        if (target instanceof EnemyToo e)
+            return new Point(e.getX() + e.getWidth() / 2, e.getY() + e.getHeight() / 2);
+        if (target instanceof Hive h)
+            return new Point(h.getX() + h.getWidth() / 2, h.getY() + h.getHeight() / 2);
+        if (target instanceof HiveToo h)
+            return new Point(h.getX() + h.getWidth() / 2, h.getY() + h.getHeight() / 2);
+        if (target instanceof EnemyShooter es)
+            return new Point(es.getX() + es.getWidth() / 2, es.getY() + es.getHeight() / 2);
+        if (target instanceof EnemyHunter eh)
+            return new Point(eh.getX() + eh.getWidth() / 2, eh.getY() + eh.getHeight() / 2);
+        if (target instanceof EnemyBehemoth eb)
+            return new Point(eb.getX() + eb.getWidth() / 2, eb.getY() + eb.getHeight() / 2);
+        if (target instanceof Qube q)
+            return new Point(q.getX() + q.getWidth() / 2, q.getY() + q.getHeight() / 2);
+        if (target instanceof QubeTower qt)
+            return new Point(qt.getX() + qt.getWidth() / 2, qt.getY() + qt.getHeight() / 2);
+
+        return new Point(x, y);
     }
 
 

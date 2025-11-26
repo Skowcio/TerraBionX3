@@ -19,12 +19,17 @@ public class EnemyShooter {
 
     //  czas ostatniego wyszukiwania celu dla kazdego indywidualnie
     private long lastTargetSearchTime = 0;
-    //  odstęp między wyszukiwaniami (ms)
+    //  odstęp między wyszukiwaniami celow  (ms)
     private static final long TARGET_SEARCH_INTERVAL = 800;
 
     public EnemyShooter(int x, int y) {
         this.x = x;
         this.y = y;
+
+
+        // INDYWIDUALNY LOSOWY OFFSET
+        this.lastTargetSearchTime = System.currentTimeMillis()
+                - new Random().nextInt((int) TARGET_SEARCH_INTERVAL);
     }
 
     public int getX() { return x; }

@@ -10,6 +10,9 @@ public class Bullet { // Bullet jest używany przez Soldier
     private final int speed = 30;
     private final long creationTime; // Czas utworzenia pocisku
     private static final long LIFETIME = 900; // Czas życia pocisku w milisekundach
+    private static int playingSounds = 0;
+    private static final int MAX_SIMULTANEOUS_SOUNDS = 8;
+
 
     public Bullet(int x, int y, int targetX, int targetY) {
         this.x = x;
@@ -31,6 +34,11 @@ public class Bullet { // Bullet jest używany przez Soldier
     }
     private void playShootSound(int cameraX, int cameraY, int screenWidth, int screenHeight) {
         try {
+            // --- LIMIT RÓWNOLEGŁYCH DŹWIĘKÓW ---
+            if (playingSounds >= MAX_SIMULTANEOUS_SOUNDS) {
+                return;
+            }
+
             File soundFile = new File("F:\\projekty JAVA\\TerraBionX3\\src\\shoot\\shoot3.wav");
             if (!soundFile.exists()) {
                 System.err.println("Nie znaleziono pliku dźwięku: " + soundFile.getAbsolutePath());
@@ -41,24 +49,32 @@ public class Bullet { // Bullet jest używany przez Soldier
             Clip clip = AudioSystem.getClip();
             clip.open(audioIn);
 
-            // 🔹 Oblicz dystans do środka widoku
+            playingSounds++;   // 🟦 zwiększamy licznik grających dźwięków
+
+            // Kiedy dźwięk się kończy:
+            clip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    clip.close();
+                    playingSounds--;   // 🟥 zmniejszamy licznik
+                }
+            });
+
+            // --- OBLICZANIE GŁOŚNOŚCI WG DYSTANSU ---
             int viewCenterX = cameraX + screenWidth / 2;
             int viewCenterY = cameraY + screenHeight / 2;
             double dx = this.x - viewCenterX;
             double dy = this.y - viewCenterY;
             double distance = Math.sqrt(dx * dx + dy * dy);
 
-            // 🔹 Przelicz dystans na skalę głośności
-            float maxDistance = 1800f; // dystans, po którym już nic nie słychać - jak daleko slychac
-            float volume = (float) Math.pow(Math.max(0f, 1.0f - distance / maxDistance), 0.7); // wolniejsze ściszanie
+            float maxDistance = 1800f;
+            float volume = (float) Math.pow(Math.max(0f, 1.0 - distance / maxDistance), 0.7);
 
-
-            // 🔹 Zmień głośność
             FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-            float dB = (float) (20f * Math.log10(Math.max(0.01, volume))); // dB logarytmiczny
+            float dB = (float) (20f * Math.log10(Math.max(0.01f, volume)));
             gainControl.setValue(dB);
 
             clip.start();
+
         } catch (Exception e) {
             e.printStackTrace();
         }

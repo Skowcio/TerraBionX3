@@ -5,7 +5,7 @@ import java.io.File;
 public class QubeBullet {
     private int x, y;
     private int dx, dy;
-    private final int speed = 25; // Prędkość pocisku
+    private final int speed = 20; // Prędkość pocisku
     private final long lifetime = 3000; // Czas życia pocisku w milisekundach
     private final long creationTime;
 
@@ -103,6 +103,7 @@ public class QubeBullet {
 
         // Jasny rdzeń pocisku
         g2d.setColor(new Color(200, 255, 255, 230));
+        //tu jest wielkosc pocisku
         g2d.fillOval(x - 5, y - 5, 10, 10);
 
         // Delikatna poświata wokół rdzenia

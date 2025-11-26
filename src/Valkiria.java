@@ -444,6 +444,8 @@ public void resolveSoftOverlapWithValkirias(ArrayList<Valkiria> allValkirias) {
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
 
+
+
     public void shoot(
             Graphics g,
             ArrayList<Bullet> Bullets,

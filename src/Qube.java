@@ -15,8 +15,8 @@ import java.awt.Point;
 public class Qube {
     private int x, y;
     private final int range = 250;
-    private final int width = 70, height = 70;
-    private int health = 70;
+    private final int width = 90, height = 90;
+    private int health = 90;
     private int speed = 3;
 
     //unoszenie
@@ -26,8 +26,8 @@ public class Qube {
     private final int hoverAmplitude = 4;
 
     // ===== Pole siłowe =====
-    private int shield = 20;                    // ile ma dodatkowego życia
-    private final int maxShield = 20;           // maksymalna pojemność
+    private int shield = 30;                    // ile ma dodatkowego życia
+    private final int maxShield = 30;           // maksymalna pojemność
     private long lastShieldRegenTime = 0;       // czas ostatniej regeneracji
     private final long shieldRegenInterval = 3000; // co 3 sekundy
 
@@ -408,11 +408,11 @@ public class Qube {
             int drawY = (int)(y + hoverOffset + height/2);
 
             int r = width + 22;
-//otoczka
-            g2d.setColor(new Color(0, 170, 255, 80));
+//otoczka, wartosc 40 to przezroczystosc
+            g2d.setColor(new Color(0, 170, 255, 40));
             g2d.fillOval(drawX - r/2, drawY - r/2, r, r);
-//pole
-            g2d.setColor(new Color(100, 200, 255, 140));
+//pole, wartos 80 to przezroczystosc
+            g2d.setColor(new Color(100, 200, 255, 80));
             g2d.setStroke(new BasicStroke(3f));
             g2d.drawOval(drawX - r/2, drawY - r/2, r, r);
 
@@ -422,12 +422,12 @@ public class Qube {
         }
 
         // Pasek życia (cały zestaw przesuwany razem z hoverOffset)
-        int maxHealth = 70;
-        int barWidth = 75;
+        int maxHealth = 90;
+        int barWidth = 85;
         int hpWidth = (int) ((health / (double) maxHealth) * barWidth);
 
-        int maxShield = 20;
-        int barW = 75;
+        int maxShield = 30;
+        int barW = 85;
         int shiledW = (int) ((shield / (double) maxShield) * barW);
 
 

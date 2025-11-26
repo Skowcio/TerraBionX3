@@ -458,32 +458,45 @@ public class Soldier {
         }
 
         if (currentTarget != null && currentTime - lastShotTime >= shootCooldown) {
-            int startX = x + 15;
-            int startY = y + 15;
 
-            if (currentTarget instanceof Enemy e && isInRange(e)) {
-                Bullets.add(new Bullet(startX, startY, e.getX() + 15, e.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            } else if (currentTarget instanceof EnemyToo et && isInRange(et)) {
-                Bullets.add(new Bullet(startX, startY, et.getX() + 15, et.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            } else if (currentTarget instanceof Hive h && isInRange(h)) {
-                Bullets.add(new Bullet(startX, startY, h.getX() + 40, h.getY() + 40, cameraX, cameraY, screenWidth, screenHeight));
+            // punkt startu pocisku (środek żołnierza)
+            int startX = x + width / 2;
+            int startY = y + height / 2;
+
+            // --- UNIWERSALNE CELUJ W ŚRODEK DOWOLNEGO OBIEKTU ---
+            int tx = 0, ty = 0;
+
+            if (currentTarget instanceof Enemy e) {
+                tx = e.getX() + e.getWidth() / 2;
+                ty = e.getY() + e.getHeight() / 2;
+            } else if (currentTarget instanceof EnemyToo et) {
+                tx = et.getX() + et.getWidth() / 2;
+                ty = et.getY() + et.getHeight() / 2;
+            } else if (currentTarget instanceof Hive h) {
+                tx = h.getX() + h.getWidth() / 2;
+                ty = h.getY() + h.getHeight() / 2;
+            } else if (currentTarget instanceof HiveToo ht) {
+                tx = ht.getX() + ht.getWidth() / 2;
+                ty = ht.getY() + ht.getHeight() / 2;
+            } else if (currentTarget instanceof EnemyShooter es) {
+                tx = es.getX() + es.getWidth() / 2;
+                ty = es.getY() + es.getHeight() / 2;
+            } else if (currentTarget instanceof EnemyHunter eh) {
+                tx = eh.getX() + eh.getWidth() / 2;
+                ty = eh.getY() + eh.getHeight() / 2;
+            } else if (currentTarget instanceof EnemyBehemoth eb) {
+                tx = eb.getX() + eb.getWidth() / 2;
+                ty = eb.getY() + eb.getHeight() / 2;
+            } else if (currentTarget instanceof Qube q) {
+                tx = q.getX() + q.getWidth() / 2;
+                ty = q.getY() + q.getHeight() / 2;
+            } else if (currentTarget instanceof QubeTower qt) {
+                tx = qt.getX() + qt.getWidth() / 2;
+                ty = qt.getY() + qt.getHeight() / 2;
             }
-            else if (currentTarget instanceof HiveToo ht && isInRange(ht)) {
-                Bullets.add(new Bullet(startX, startY, ht.getX() + 40, ht.getY() + 40, cameraX, cameraY, screenWidth, screenHeight));
-            }
-            else if (currentTarget instanceof EnemyShooter es && isInRange(es)) {
-                Bullets.add(new Bullet(startX, startY, es.getX() + 15, es.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            } else if (currentTarget instanceof EnemyHunter eh && isInRange(eh)) {
-                Bullets.add(new Bullet(startX, startY, eh.getX() + 15, eh.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            } else if (currentTarget instanceof EnemyBehemoth eb && isInRange(eb)) {
-                Bullets.add(new Bullet(startX, startY, eb.getX() + 15, eb.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            }
-            else if (currentTarget instanceof Qube q && isInRange(q)) {
-                Bullets.add(new Bullet(startX, startY, q.getX() + 15, q.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            }
-            else if (currentTarget instanceof QubeTower qt && isInRange(qt)) {
-                Bullets.add(new Bullet(startX, startY, qt.getX() + 15, qt.getY() + 15, cameraX, cameraY, screenWidth, screenHeight));
-            }
+
+            // --- STRZAŁ ---
+            Bullets.add(new Bullet(startX, startY, tx, ty, cameraX, cameraY, screenWidth, screenHeight));
 
             lastShotTime = currentTime;
         }
