@@ -113,6 +113,11 @@ public class Bullet { // Bullet jest używany przez Soldier
         Rectangle bulletRect = new Rectangle(hive.getX(), hive.getY(), 80, 80);
         return hiveRect.intersects(bulletRect);
     }
+    public boolean checkCollision(QubeFactory qubeFactory) {
+        Rectangle hiveRect = new Rectangle(x, y, 5, 5);
+        Rectangle bulletRect = new Rectangle(qubeFactory.getX(), qubeFactory.getY(), 80, 80);
+        return hiveRect.intersects(bulletRect);
+    }
     public boolean checkCollision(HiveToo hiveToo) {
         Rectangle hiveRect = new Rectangle(x, y, 5, 5);
         Rectangle bulletRect = new Rectangle(hiveToo.getX(), hiveToo.getY(), 80, 80);

@@ -25,8 +25,14 @@ public class MissionManager {
 
         mission1.crystalPositions.add(new Point(680, 700));
 
+
+
         mission1.qubePositions.add(new Point(1800,1250));
+
+        mission1.qubeFactoryPositions.add(new Point(1850, 800));
 //        mission1.qubeTowerPosittions.add(new Point(1600,900));
+
+
 
         mission1.floraPositions.add(new Point(400, 20));
         mission1.floraTypes.add("marsh");

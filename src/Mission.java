@@ -9,7 +9,7 @@ public class Mission {
     public ArrayList<Point> builderPositions = new ArrayList<>();
     public ArrayList<Point> enemyPositions = new ArrayList<>();
     public ArrayList<Point> enemyBehemothPositions = new ArrayList<>();
-    public ArrayList<Point> qubePositions = new ArrayList<>();
+
     public ArrayList<Point> resourcesPositions = new ArrayList<>();
     public ArrayList<Point> powerPlantPositions = new ArrayList<>();
     public ArrayList<Point> crystalPositions = new ArrayList<>();
@@ -18,6 +18,8 @@ public class Mission {
     public ArrayList<Point> barackPositions = new ArrayList<>();
     public ArrayList<Point> factoryPositions = new ArrayList<>();
     public ArrayList<Point> qubeTowerPosittions = new ArrayList<>();
+    public ArrayList<Point> qubePositions = new ArrayList<>();
+    public ArrayList<Point> qubeFactoryPositions = new ArrayList<>();
 
     public ArrayList<String> floraTypes = new ArrayList<>(); // do wyboru typu np. "marsh", "Tree"
 

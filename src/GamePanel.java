@@ -72,6 +72,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     private ArrayList<Qube> qubes;
     private ArrayList<QubeTower> qubeTowers;
+    private ArrayList<QubeFactory> qubeFactorys;
     private ArrayList<QubeBullet> qubeBullets;
 
     private ArrayList<EnemyToo> enemiesToo; // Nowa lista dla EnemyToo
@@ -396,6 +397,10 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
         }
         for (Point p : mission.qubeTowerPosittions) {
             qubeTowers.add(new QubeTower(p.x, p.y));
+        }
+
+        for (Point p : mission.qubeFactoryPositions) {
+            qubeFactorys.add(new QubeFactory(p.x, p.y));
         }
 
 
@@ -756,6 +761,7 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
         this.qubes = new ArrayList<>();
         this.qubeTowers = new ArrayList<>();
+        this.qubeFactorys = new ArrayList<>();
         this.qubeBullets = new ArrayList<>();
 
 
@@ -2322,7 +2328,7 @@ private  void updateQubeBullet(){
                 for (Hive hive : new ArrayList<>(hives)) {
                     if (bullet.checkCollision(hive)) {
                         bulletsToRemove.add(bullet);
-                        hitFlashes.add(new HitFlash(hive.getX() + 15, hive.getY() + 15));
+                        hitFlashes.add(new HitFlash(hive.getX() + 30, hive.getY() + 30));
                         if (hive.takeDamage()) {
                             hives.remove(hive);
                             destroyedHiveCount++;
@@ -2336,10 +2342,23 @@ private  void updateQubeBullet(){
                 for (HiveToo hiveToo : hiveToos) {
                     if (bullet.checkCollision(hiveToo)) {
                         bulletsToRemove.add(bullet);
-                        hitFlashes.add(new HitFlash(hiveToo.getX() + 15, hiveToo.getY() + 15));
+                        hitFlashes.add(new HitFlash(hiveToo.getX() + 30, hiveToo.getY() + 30));
 
                         if (hiveToo.takeDamage()) {
                             hiveToos.remove(hiveToo);
+                            addKillPoints(3); //  większy wróg = więcej punktów
+                        }
+                        break;
+                    }
+
+                }
+                for (QubeFactory qubeFactory : qubeFactorys) {
+                    if (bullet.checkCollision(qubeFactory)) {
+                        bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(qubeFactory.getX() + 25, qubeFactory.getY() + 25));
+
+                        if (qubeFactory.takeDamage()) {
+                            qubeFactorys.remove(qubeFactory);
                             addKillPoints(3); //  większy wróg = więcej punktów
                         }
                         break;
@@ -2387,7 +2406,7 @@ private  void updateQubeBullet(){
                 for (Qube qube : qubes) {
                     if (bullet.checkCollision(qube)) {
                         bulletsToRemove.add(bullet);
-                        hitFlashes.add(new HitFlash(qube.getX() + 15, qube.getY() + 15));
+                        hitFlashes.add(new HitFlash(qube.getX() + 30, qube.getY() + 30));
                         if (qube.takeDamage()) {
                             qubes.remove(qube);
                             addKillPoints(20); //  większy wróg = więcej punktów
@@ -3915,6 +3934,11 @@ private  void updateQubeBullet(){
         for (Hive hive : hives) {
             hive.draw(g);
             hive.updateActivationAndSpawning(g, soldiers, soldierBots, builderVehicles, enemiesToo, enemyShooters, enemyHunters); // jesdnostki ktore akttywuja tez respa
+        }
+
+        for (QubeFactory qubeFactory : qubeFactorys){
+            qubeFactory.draw(g);
+            qubeFactory.updateActivationAndSpawning(g, soldiers, enemiesToo, enemyShooters, soldierBots, builderVehicles, qubes);
         }
 
 //        for (Hive hive : hives) {
