@@ -3844,6 +3844,7 @@ private  void updateQubeBullet(){
                     enemyBehemoths,
                     qubes,
                     qubeTowers,
+                    qubeFactorys,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
