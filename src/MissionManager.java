@@ -27,7 +27,7 @@ public class MissionManager {
 
 
 
-        mission1.qubePositions.add(new Point(1800,1250));
+//        mission1.qubePositions.add(new Point(1800,1250));
 
         mission1.qubeFactoryPositions.add(new Point(1850, 800));
 //        mission1.qubeTowerPosittions.add(new Point(1600,900));

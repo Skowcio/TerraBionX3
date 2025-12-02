@@ -2352,19 +2352,7 @@ private  void updateQubeBullet(){
                     }
 
                 }
-                for (QubeFactory qubeFactory : qubeFactorys) {
-                    if (bullet.checkCollision(qubeFactory)) {
-                        bulletsToRemove.add(bullet);
-                        hitFlashes.add(new HitFlash(qubeFactory.getX() + 25, qubeFactory.getY() + 25));
 
-                        if (qubeFactory.takeDamage()) {
-                            qubeFactorys.remove(qubeFactory);
-                            addKillPoints(3); //  większy wróg = więcej punktów
-                        }
-                        break;
-                    }
-
-                }
                 Iterator<EnemyShooter> enemyShooterIterator = enemyShooters.iterator();
                 while (enemyShooterIterator.hasNext()) {
                     EnemyShooter enemyShooter = enemyShooterIterator.next();
@@ -2426,6 +2414,20 @@ private  void updateQubeBullet(){
                         break;
                     }
                 }
+                for (QubeFactory qubeFactory : qubeFactorys) {
+                    if (bullet.checkCollision(qubeFactory)) {
+                        bulletsToRemove.add(bullet);
+                        hitFlashes.add(new HitFlash(qubeFactory.getX() + 155, qubeFactory.getY() + 135));
+
+                        if (qubeFactory.takeDamage()) {
+                            qubeFactorys.remove(qubeFactory);
+                            addKillPoints(3); //  większy wróg = więcej punktów
+                        }
+                        break;
+                    }
+
+                }
+
 
 
                 // Sprawdzanie kolizji z EnemyToo
@@ -2828,9 +2830,12 @@ private  void updateQubeBullet(){
         for (QubeTower qubeTower : qubeTowers) {
             qubeTower.update(soldierBots,soldiers, valkirias, harvesters, builderVehicles, artylerys, baracks, battleVehicles, powerPlants, factories, steelMines,  enemies, enemiesToo, enemyShooters, enemyBehemoths, hives, hiveToos);
         }
+        for (QubeFactory qubeFactory : qubeFactorys) {
+            qubeFactory.update();
+        }
 
         for (SoldierBot soldierBot : new ArrayList<>(soldierBots)) {
-            soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots, enemyBehemoths, qubes, qubeTowers);
+            soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots, enemyBehemoths, qubes, qubeTowers, qubeFactorys);
         }
         for (EnemyHunter enemyHunter : new ArrayList<>(enemyHunters)){
             enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters);
@@ -3682,6 +3687,11 @@ private  void updateQubeBullet(){
         {
             researchCenter.draw(g);
         }
+        for (QubeFactory qubeFactory : qubeFactorys){
+            qubeFactory.draw(g);
+            qubeFactory.updateActivationAndSpawning(g, soldiers, enemiesToo, enemyShooters, soldierBots, builderVehicles, qubes);
+        }
+
         for (Factory factory : factories) {
             factory.draw(g);
             factory.updateValkiriaProduction(valkirias); // <-- NOWE
@@ -3809,6 +3819,7 @@ private  void updateQubeBullet(){
                     enemyBehemoths,
                     qubes,
                     qubeTowers,
+                    qubeFactorys,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
@@ -3856,6 +3867,7 @@ private  void updateQubeBullet(){
                     enemyBehemoths,
                     qubes,
                     qubeTowers,
+                    qubeFactorys,
                     viewRect.x,
                     viewRect.y,
                     viewRect.width,
@@ -3936,10 +3948,7 @@ private  void updateQubeBullet(){
             hive.updateActivationAndSpawning(g, soldiers, soldierBots, builderVehicles, enemiesToo, enemyShooters, enemyHunters); // jesdnostki ktore akttywuja tez respa
         }
 
-        for (QubeFactory qubeFactory : qubeFactorys){
-            qubeFactory.draw(g);
-            qubeFactory.updateActivationAndSpawning(g, soldiers, enemiesToo, enemyShooters, soldierBots, builderVehicles, qubes);
-        }
+
 
 //        for (Hive hive : hives) {
 //            hive.draw(g); // Rysowanie Hive

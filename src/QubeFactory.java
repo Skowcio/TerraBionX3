@@ -2,20 +2,29 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
 
 public class QubeFactory {
     private int x, y;
     private int health = 200; // Liczba uderzeń, które Hive może wytrzymać
-    private final int size = 150; // Rozmiar Hive
+    private final int size = 200; // Rozmiar Hive
     //    private long lastSpawnTime = System.currentTimeMillis(); // to potrzebne do czasowego respa
-    private final int SPAWN_INTERVAL = 7000; // 20 sekund w milisekundach
-    private final int width = 150, height = 100;
+    private final int SPAWN_INTERVAL = 70000; // 20 sekund w milisekundach
+    private final int width = 360, height = 240;
     private long lastSpawnTime;
     private Random random = new Random();
     private BufferedImage hiveImage;
     private boolean activated = false;
+
+
+    private boolean dead = false;
+
+    private int shield = 100;                    // ile ma dodatkowego życia
+    private final int maxShield = 20;           // maksymalna pojemność
+    private long lastShieldRegenTime = 0;       // czas ostatniej regeneracji
+    private final long shieldRegenInterval = 3000; // co 3 sekundy
 
     public QubeFactory (int x, int y) {
         this.x = x;
@@ -102,7 +111,7 @@ public class QubeFactory {
 
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastSpawnTime >= SPAWN_INTERVAL) {
-            final int MAX_ENEMY_TOO = 10;
+
 
             final int MAX_ENEMY_QUBE = 2;
 
@@ -151,6 +160,7 @@ public class QubeFactory {
     }
 
     public void draw(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
         if (hiveImage != null) {
             g.drawImage(hiveImage,x, y, width, height, null);
         } else {
@@ -158,10 +168,38 @@ public class QubeFactory {
             g.setColor(Color.MAGENTA);
             g.fillRect(x, y, size, size);
         }
+        // ===== RYSOWANIE POLA SIŁOWEGO =====
+        if (shield > 0) {
+            int centerX = x + width / 2;
+            int centerY = y + height / 2;
+
+            int r = width + 20;
+
+            // otoczka
+            g2d.setColor(new Color(0, 170, 255, 40));
+            g2d.fillOval(centerX - r / 2, centerY - r / 2, r, r);
+
+            // pole siłowe
+            g2d.setColor(new Color(100, 200, 255, 80));
+            g2d.setStroke(new BasicStroke(3f));
+            g2d.drawOval(centerX - r / 2, centerY - r / 2, r, r);
+
+            // reset pędzla
+            g2d.setColor(Color.BLACK);
+            g2d.setStroke(new BasicStroke(1f));
+        }
 // Rysowanie paska zdrowia
         int maxHealth = 200; // Maksymalne zdrowie przeciwnika
-        int healthBarWidth = 150; // Stała długość paska zdrowia
+        int healthBarWidth = 360; // Stała długość paska zdrowia
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
+
+        // ===== PASEK TARCZY =====
+        int maxShield = 100;
+        int barW = 360;
+        int shiledW = (int) ((shield / (double) maxShield) * barW);
+
+        // pasek nad
+        int barYy = y - 10; // Shield
 
         g.setColor(Color.GREEN);
         g.fillRect(x, y - 5, currentHealthWidth, 3); // Pasek nad wrogiem
@@ -170,15 +208,51 @@ public class QubeFactory {
         g.setColor(Color.BLACK);
         g.drawRect(x, y - 5, healthBarWidth, 3);
 
+        g.setColor(Color.RED);
+        g.fillRect(x, barYy, shiledW, 3);
+
+        g.setColor(Color.BLACK);
+        g.drawRect(x, barYy, barW, 3);
+
+
+    }
+    public void update(
+
+    ) {
+
+        // 🔋 Regeneracja pola siłowego
+        long now = System.currentTimeMillis();
+        if (now - lastShieldRegenTime >= shieldRegenInterval) {
+            if (shield < maxShield) {
+                shield++; // regeneracja 1 punktu
+            }
+            lastShieldRegenTime = now;
+        }
 
     }
 
 
 
     public boolean takeDamage() {
+
+        // Najpierw schodzi tarcza
+        if (shield > 0) {
+            shield--;
+            return false; // żyje
+        }
+
+        // Dopiero później HP
         health--;
-        return health <= 0; // Zwraca true, jeśli Hive zostało zniszczone
+
+        if (health <= 0) {
+            markAsDead();
+            return true;
+        }
+
+        return false;
     }
+
+    public void markAsDead() { this.dead = true; }
 // spawn co 30s dobry do factory bedzie
 //    public void spawnEnemiesToo(Graphics g, ArrayList<EnemyToo> enemiesToo, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters) {
     ////        int numEnemies = random.nextInt(13) + 8; // Losowa liczba między 8 a 20

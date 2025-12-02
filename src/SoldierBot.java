@@ -188,6 +188,12 @@ public class SoldierBot {
         return Math.sqrt(dx * dx + dy * dy) <= range;
 
     }
+    public boolean isInRange(QubeFactory qubeFactorys) {
+        int dx = qubeFactorys.getX() - x;
+        int dy = qubeFactorys.getY() - y;
+        return Math.sqrt(dx * dx + dy * dy) <= range;
+
+    }
     private boolean isCollidingWithOtherBots(int targetX, int targetY, List<SoldierBot> allBots) {
         // Kolizja tylko na 2/3 szerokości i wysokości
         int collisionW = (int)(width * 0.67);   // np. 33px przy 50px
@@ -237,6 +243,7 @@ public class SoldierBot {
             ArrayList<EnemyBehemoth> enemyBehemoths,
             ArrayList<Qube> qubes,
             ArrayList<QubeTower> qubeTowers,
+            ArrayList<QubeFactory> qubeFactorys,
             int cameraX, int cameraY,
             int screenWidth, int screenHeight
     ) {
@@ -246,10 +253,10 @@ public class SoldierBot {
         if (currentTarget == null || !isStillValidTarget(currentTarget,
                 enemies, enemyToos, hives, hiveToos,
                 enemyShooters, enemyHunters, enemyBehemoths,
-                qubes, qubeTowers)) {
+                qubes, qubeTowers, qubeFactorys)) {
             chooseTarget(enemies, enemyToos, hives, hiveToos,
                     enemyShooters, enemyHunters, enemyBehemoths,
-                    qubes, qubeTowers);
+                    qubes, qubeTowers, qubeFactorys);
         }
 
         if (currentTarget == null) return; // dalej nie ma celu
@@ -285,7 +292,8 @@ public class SoldierBot {
                                        List<EnemyHunter> enemyHunters,
                                        List<EnemyBehemoth> enemyBehemoths,
                                        List<Qube> qubes,
-                                       List<QubeTower> qubeTowers) {
+                                       List<QubeTower> qubeTowers,
+                                       List<QubeFactory> qubeFactories) {
 
         if (t instanceof Enemy e) return enemies.contains(e) && isInRange(e);
         if (t instanceof EnemyToo e) return enemyToos.contains(e) && isInRange(e);
@@ -295,7 +303,8 @@ public class SoldierBot {
         if (t instanceof EnemyHunter eh) return enemyHunters.contains(eh) && isInRange(eh);
         if (t instanceof EnemyBehemoth eb) return enemyBehemoths.contains(eb) && isInRange(eb);
         if (t instanceof Qube q) return qubes.contains(q) && isInRange(q);
-        if (t instanceof QubeTower q) return qubeTowers.contains(q) && isInRange(q);
+        if (t instanceof QubeTower qt) return qubeTowers.contains(qt) && isInRange(qt);
+        if (t instanceof QubeFactory qf) return qubeTowers.contains(qf) && isInRange(qf);
 
         return false;
     }
@@ -319,12 +328,14 @@ public class SoldierBot {
             return new Point(q.getX() + q.getWidth() / 2, q.getY() + q.getHeight() / 2);
         if (target instanceof QubeTower qt)
             return new Point(qt.getX() + qt.getWidth() / 2, qt.getY() + qt.getHeight() / 2);
+        if (target instanceof QubeFactory qf)
+            return new Point(qf.getX() + qf.getWidth() / 2, qf.getY() + qf.getHeight() / 2);
 
         return new Point(x, y);
     }
 
 
-    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths, ArrayList<Qube> qubes, ArrayList<QubeTower> qubeTowers) {
+    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths, ArrayList<Qube> qubes, ArrayList<QubeTower> qubeTowers, ArrayList<QubeFactory> qubeFactorys) {
         currentTarget = null;
 
         // Szukaj najbliższego Enemy w zasięgu
@@ -384,6 +395,12 @@ public class SoldierBot {
                 return; // Znaleziono cel
             }
         }
+        for (QubeFactory qubeFactory : qubeFactorys) {
+            if (isInRange(qubeFactory)) {
+                currentTarget = qubeFactory;
+                return; // Znaleziono cel
+            }
+        }
     }
     public void updateFly(long deltaTime) {
         // 🔁 Aktualizacja efektu "unoszenia się"
@@ -402,13 +419,14 @@ public class SoldierBot {
             List<SoldierBot> allBots,
             List<EnemyBehemoth> enemyBehemoths,
             List<Qube> qubes,
-            List<QubeTower> qubeTowers
+            List<QubeTower> qubeTowers,
+            List<QubeFactory> qubeFactorys
     ) {
         long now = System.currentTimeMillis();
 
         // 🔹 Szukaj nowego celu tylko co 500 ms
         if (currentTarget == null || now - lastTargetSearchTime >= targetSearchCooldown) {
-            currentTarget = getClosestTarget(enemies, enemyShooters, enemyToos, hives, hiveToos, enemyBehemoths, qubes, qubeTowers);
+            currentTarget = getClosestTarget(enemies, enemyShooters, enemyToos, hives, hiveToos, enemyBehemoths, qubes, qubeTowers, qubeFactorys);
             lastTargetSearchTime = now;
         }
 
@@ -520,6 +538,7 @@ public class SoldierBot {
         if (target instanceof EnemyBehemoth eb) return eb.getPosition();
         if (target instanceof Qube q) return q.getPosition();
         if (target instanceof QubeTower qt) return qt.getPosition();
+        if (target instanceof QubeFactory qf) return qf.getPosition();
         return new Point(0, 0);
     }
 
@@ -533,7 +552,8 @@ public class SoldierBot {
             List<HiveToo> hiveToos,
             List<EnemyBehemoth> enemyBehemoths,
             List<Qube> qubes,
-            List<QubeTower> qubeTowers
+            List<QubeTower> qubeTowers,
+            List<QubeFactory> qubeFactorys
     ) {
         Object closest = null;
         double minDistance = Double.MAX_VALUE;
@@ -570,6 +590,10 @@ public class SoldierBot {
             double dist = qubeTower.getPosition().distance(x, y);
             if (dist < minDistance) { minDistance = dist; closest = qubeTower; }
         }
+        for (QubeFactory qubeFactory : qubeFactorys) {
+            double dist = qubeFactory.getPosition().distance(x, y);
+            if (dist < minDistance) { minDistance = dist; closest = qubeFactory; }
+        }
 
 
         return closest;
@@ -599,6 +623,9 @@ public class SoldierBot {
         }
         else if (target instanceof QubeTower qt) {
             tx = qt.getX(); ty = qt.getY();
+        }
+        else if (target instanceof QubeFactory qf) {
+            tx = qf.getX(); ty = qf.getY();
         }
 
         if (!patrolArea.contains(tx, ty)) {

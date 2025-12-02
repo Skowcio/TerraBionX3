@@ -115,7 +115,7 @@ public class Bullet { // Bullet jest używany przez Soldier
     }
     public boolean checkCollision(QubeFactory qubeFactory) {
         Rectangle hiveRect = new Rectangle(x, y, 5, 5);
-        Rectangle bulletRect = new Rectangle(qubeFactory.getX(), qubeFactory.getY(), 80, 80);
+        Rectangle bulletRect = new Rectangle(qubeFactory.getX(), qubeFactory.getY(), 200, 200);
         return hiveRect.intersects(bulletRect);
     }
     public boolean checkCollision(HiveToo hiveToo) {
@@ -150,6 +150,7 @@ public class Bullet { // Bullet jest używany przez Soldier
         Rectangle bulletRect = new Rectangle(x, y, 10, 10);
         return bulletRect.intersects(qubeTower.getBounds());
     }
+
 
 
     public boolean isOutOfBounds(int width, int height) {

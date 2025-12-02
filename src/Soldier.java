@@ -352,8 +352,42 @@ public class Soldier {
 //        Rectangle battleBounds = battleVehicle.getBounds();
 //        return targetBounds.intersects(battleBounds);
 //    }
+    /// //////////////////////
+    /// ////////////////
+    ///
+    /// SPECJALNA METODA NA DUZE OBIEKTY
+    ///
+    /// ///////////////////////////////
+// --- helper: zwraca dystans od środka żołnierza do najbliższego punktu prostokąta obiektu ---
+private double distanceToRectEdge(int ox, int oy, int ow, int oh) {
+    int sx = x + width / 2;   // środek żołnierza
+    int sy = y + height / 2;
 
+    int left = ox;
+    int right = ox + ow;
+    int top = oy;
+    int bottom = oy + oh;
 
+    int closestX = Math.max(left, Math.min(sx, right));
+    int closestY = Math.max(top, Math.min(sy, bottom));
+
+    double dx = closestX - sx;
+    double dy = closestY - sy;
+    return Math.sqrt(dx*dx + dy*dy);
+}
+
+    // --- uniwersalna metoda sprawdzania zasięgu względem prostokąta (krawędź) ---
+    private boolean isInRangeRectEdge(int ox, int oy, int ow, int oh) {
+        return distanceToRectEdge(ox, oy, ow, oh) <= range;
+    }
+
+    public boolean isInRange(QubeFactory qubeFactory) {
+        return isInRangeRectEdge(qubeFactory.getX(), qubeFactory.getY(), qubeFactory.getWidth(), qubeFactory.getHeight());
+    }
+/// //////////////////////////////
+///
+///
+/// ///////////////////////////
 
     public Point getTarget() {
         return target;
@@ -414,6 +448,14 @@ public class Soldier {
         return Math.sqrt(dx * dx + dy * dy) <= range;
     }
 
+//    public boolean isInRange(QubeFactory qubeFactory) {
+//        int dx = qubeFactory.getX() - x;
+//        int dy = qubeFactory.getY() - y;
+//        return Math.sqrt(dx * dx + dy * dy) <= range;
+//    }
+
+
+
     public void shoot(
             Graphics g,
             ArrayList<Bullet> Bullets,
@@ -426,6 +468,7 @@ public class Soldier {
             ArrayList<EnemyBehemoth> enemyBehemoths,
             ArrayList<Qube> qubes,
             ArrayList<QubeTower> qubeTowers,
+            ArrayList<QubeFactory> qubeFactorys,
             int cameraX, int cameraY,
             int screenWidth, int screenHeight
     ) {
@@ -441,6 +484,7 @@ public class Soldier {
         if (currentTarget instanceof  EnemyBehemoth eb && !enemyBehemoths.contains(eb)) outOfRange = true;
         if (currentTarget instanceof  Qube q && !qubes.contains(q)) outOfRange = true;
         if (currentTarget instanceof  QubeTower qt && !qubeTowers.contains(qt)) outOfRange = true;
+        if (currentTarget instanceof  QubeFactory qf && !qubeFactorys.contains(qf)) outOfRange = true;
 
         boolean notInRange =
                 !(currentTarget instanceof Enemy e && isInRange(e)) &&
@@ -451,10 +495,11 @@ public class Soldier {
                         !(currentTarget instanceof EnemyHunter eh && isInRange(eh)) &&
                         !(currentTarget instanceof EnemyBehemoth eb && isInRange(eb)) &&
                         !(currentTarget instanceof Qube q && isInRange(q))&&
-                        !(currentTarget instanceof QubeTower qt && isInRange(qt));
+                        !(currentTarget instanceof QubeTower qt && isInRange(qt))&&
+        !(currentTarget instanceof QubeFactory qf && isInRange(qf));
 
         if (currentTarget == null || outOfRange || notInRange) {
-            chooseTarget(enemies, enemyToos, hives, hiveToos, enemyShooters, enemyHunters, enemyBehemoths, qubes, qubeTowers);
+            chooseTarget(enemies, enemyToos, hives, hiveToos, enemyShooters, enemyHunters, enemyBehemoths, qubes, qubeTowers, qubeFactorys);
         }
 
         if (currentTarget != null && currentTime - lastShotTime >= shootCooldown) {
@@ -493,6 +538,9 @@ public class Soldier {
             } else if (currentTarget instanceof QubeTower qt) {
                 tx = qt.getX() + qt.getWidth() / 2;
                 ty = qt.getY() + qt.getHeight() / 2;
+            }else if (currentTarget instanceof QubeFactory qf) {
+                tx = qf.getX() + qf.getWidth() / 2;
+                ty = qf.getY() + qf.getHeight() / 2;
             }
 
             // --- STRZAŁ ---
@@ -503,7 +551,7 @@ public class Soldier {
     }
 
 
-    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths, ArrayList<Qube> qubes,  ArrayList<QubeTower> qubeTowers) {
+    private void chooseTarget(ArrayList<Enemy> enemies, ArrayList<EnemyToo> enemyToos, ArrayList<Hive> hives, ArrayList<HiveToo> hiveToos, ArrayList<EnemyShooter> enemyShooters, ArrayList<EnemyHunter> enemyHunters, ArrayList<EnemyBehemoth> enemyBehemoths, ArrayList<Qube> qubes,  ArrayList<QubeTower> qubeTowers, ArrayList<QubeFactory> qubeFactorys) {
         currentTarget = null;
 
         // Szukaj najbliższego Enemy w zasięgu
@@ -554,6 +602,19 @@ public class Soldier {
         for (Qube qube : qubes) {
             if (isInRange(qube)) {
                 currentTarget = qube;
+                return; // Znaleziono cel
+            }
+        }
+
+        for (QubeTower qubeTower : qubeTowers) {
+            if (isInRange(qubeTower)) {
+                currentTarget = qubeTower;
+                return; // Znaleziono cel
+            }
+        }
+        for (QubeFactory qubeFactory : qubeFactorys) {
+            if (isInRange(qubeFactory)) {
+                currentTarget = qubeFactory;
                 return; // Znaleziono cel
             }
         }
