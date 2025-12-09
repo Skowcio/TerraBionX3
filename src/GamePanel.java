@@ -987,7 +987,9 @@ private int enemyKillPoints = 0; // ile punktów uzyskał gracz (max 50)
 
             for (Factory factory : factories) {
                 if (factory.isSelected()) {
-                    factory.destroy(); // niszczy fabrykę
+//                    factory.destroy(); // niszczy fabrykę
+                    // 🔥 Niszczy fabrykę i WSZYSTKIE jej boty
+                    factory.destroyFactoryAndBots(explosions::add);
                     Factory.decreaseFactoryCount(); // zmniejsza licznik
                     explosions.add(new Explosion(factory.getX(), factory.getY()));
                     destroyedFactories.add(factory);
@@ -2148,6 +2150,9 @@ private  void updateQubeBullet(){
 
                     if (factory.takeDamage()) {
                         // 💥 Usuwanie fabryki
+                        // najpierw usuń powiązane boty
+                        factory.destroyFactoryAndBots();
+
                         Factory.decreaseFactoryCount();
                         factoryIterator.remove();
                         explosions.add(new Explosion(factory.getX(), factory.getY()));
@@ -2836,7 +2841,11 @@ private  void updateQubeBullet(){
 
         for (SoldierBot soldierBot : new ArrayList<>(soldierBots)) {
             soldierBot.update(enemies, enemyShooters, enemiesToo, hives, hiveToos, soldierBots, enemyBehemoths, qubes, qubeTowers, qubeFactorys);
+
         }
+        // USUNIĘCIE MARTWYCH BOTÓW — dodane tutaj, po aktualizacji wszystkich SoldierBotów
+        soldierBots.removeIf(SoldierBot::isDead);
+
         for (EnemyHunter enemyHunter : new ArrayList<>(enemyHunters)){
             enemyHunter.update(soldiers, harvesters, builderVehicles, artylerys, battleVehicles, powerPlants, factories, soldierBots, enemyHunters);
         }

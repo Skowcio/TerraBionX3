@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.function.Supplier;
 import java.util.function.Consumer;
 
+
 public class Factory {
     private int x, y;
     private int width = 140, height = 140;
@@ -99,6 +100,26 @@ public class Factory {
     public int getHealth() {
         return health;
     }
+
+    public void destroyFactoryAndBots(Consumer<Explosion> spawnExplosion) {
+        for (SoldierBot bot : producedBots) {
+            // eksplozja bota
+            spawnExplosion.accept(new Explosion(
+                    bot.getX() + bot.getWidth() / 2,
+                    bot.getY() + bot.getHeight() / 2
+            ));
+            bot.kill();
+        }
+
+        producedBots.clear();
+        this.health = 0;
+    }
+
+    // Stara metoda pozostaje - dla kompatybilności
+    public void destroyFactoryAndBots() {
+        destroyFactoryAndBots(expl -> {});
+    }
+
 
     // 🚀 Reset liczby fabryk np. przy nowej misji
     public static void resetFactoryCount() {

@@ -92,22 +92,22 @@ public class Hive {
             int currentEnemyTooCount = enemiesToo.size();
             int enemiesTooToSpawn = MAX_ENEMY_TOO - currentEnemyTooCount;
 
-            if (enemiesTooToSpawn > 0) {
-                int spawnCount = 1 + random.nextInt(3); // 1–3 losowo
-                spawnCount = Math.min(spawnCount, enemiesTooToSpawn);
-                for (int i = 0; i < spawnCount; i++) {
-                    int spawnX = random.nextInt(size * 2) + x - size;
-                    int spawnY = random.nextInt(size * 2) + y - size;
-                    enemiesToo.add(new EnemyToo(spawnX, spawnY));
-                }
-            }
+//            if (enemiesTooToSpawn > 0) {
+//                int spawnCount = 1 + random.nextInt(2); // 1–3 losowo
+//                spawnCount = Math.min(spawnCount, enemiesTooToSpawn);
+//                for (int i = 0; i < spawnCount; i++) {
+//                    int spawnX = random.nextInt(size * 2) + x - size;
+//                    int spawnY = random.nextInt(size * 2) + y - size;
+//                    enemiesToo.add(new EnemyToo(spawnX, spawnY));
+//                }
+//            }
 
             // ==== EnemyShooter ====
             int currentShooterCount = enemyShooters.size();
             int shootersToSpawn = MAX_ENEMY_SHOOTER - currentShooterCount;
 
             if (shootersToSpawn > 0) {
-                int spawnCount = 1 + random.nextInt(5); // 1–3 losowo
+                int spawnCount = 1 + random.nextInt(20); // 1–3 losowo
                 spawnCount = Math.min(spawnCount, shootersToSpawn);
                 for (int i = 0; i < spawnCount; i++) {
                     int spawnX = random.nextInt(size * 8) + x - size;

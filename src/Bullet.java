@@ -103,33 +103,33 @@ public class Bullet { // Bullet jest używany przez Soldier
         g2d.dispose();
     }
     public boolean checkCollision(Enemy enemy) {
-        Rectangle bulletRect = new Rectangle(x, y, 5, 5);
+        Rectangle bulletRect = new Rectangle(x, y, 5, 5);// hit box pocisku pamietaj
         Rectangle enemyRect = new Rectangle(enemy.getX(), enemy.getY(), 30, 30);
         return bulletRect.intersects(enemyRect);
     }
 
     public boolean checkCollision(Hive hive) {
-        Rectangle hiveRect = new Rectangle(x, y, 5, 5);
+        Rectangle hiveRect = new Rectangle(x, y, 5, 5); // hit box pocisku pamietaj
         Rectangle bulletRect = new Rectangle(hive.getX(), hive.getY(), 80, 80);
         return hiveRect.intersects(bulletRect);
     }
     public boolean checkCollision(QubeFactory qubeFactory) {
-        Rectangle hiveRect = new Rectangle(x, y, 5, 5);
-        Rectangle bulletRect = new Rectangle(qubeFactory.getX(), qubeFactory.getY(), 200, 200);
+        Rectangle hiveRect = new Rectangle(x, y, 5, 5);// hit box pocisku pamietaj
+        Rectangle bulletRect = new Rectangle(qubeFactory.getX(), qubeFactory.getY(), 280, 240);
         return hiveRect.intersects(bulletRect);
     }
     public boolean checkCollision(HiveToo hiveToo) {
-        Rectangle hiveRect = new Rectangle(x, y, 5, 5);
+        Rectangle hiveRect = new Rectangle(x, y, 5, 5);// hit box pocisku pamietaj
         Rectangle bulletRect = new Rectangle(hiveToo.getX(), hiveToo.getY(), 80, 80);
         return hiveRect.intersects(bulletRect);
     }
         public boolean checkCollision(EnemyShooter enemyShooter) {
-        Rectangle enemyShooterRect = new Rectangle(x, y, 5, 5);
+        Rectangle enemyShooterRect = new Rectangle(x, y, 5, 5);// hit box pocisku pamietaj
         Rectangle bulletRect = new Rectangle(enemyShooter.getX(), enemyShooter.getY(), 40, 40);
         return enemyShooterRect.intersects(bulletRect);
     }
     public boolean checkCollision(EnemyHunter enemyHunter) {
-        Rectangle enemyHunterRect = new Rectangle(x, y, 5, 5);
+        Rectangle enemyHunterRect = new Rectangle(x, y, 5, 5);// hit box pocisku pamietaj
         Rectangle bulletRect = new Rectangle(enemyHunter.getX(), enemyHunter.getY(), 40, 40);
         return enemyHunterRect.intersects(bulletRect);
     }

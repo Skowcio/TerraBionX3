@@ -12,7 +12,7 @@ public class QubeFactory {
     private final int size = 200; // Rozmiar Hive
     //    private long lastSpawnTime = System.currentTimeMillis(); // to potrzebne do czasowego respa
     private final int SPAWN_INTERVAL = 70000; // 20 sekund w milisekundach
-    private final int width = 360, height = 240;
+    private final int width = 290, height = 240;
     private long lastSpawnTime;
     private Random random = new Random();
     private BufferedImage hiveImage;
@@ -31,7 +31,7 @@ public class QubeFactory {
         this.y = y;
         // Ładowanie grafiki PNG
         try {
-            hiveImage = ImageIO.read(getClass().getResource("/Qube/QubeFactory.png"));
+            hiveImage = ImageIO.read(getClass().getResource("/Qube/QubeFactory2.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -190,12 +190,12 @@ public class QubeFactory {
         }
 // Rysowanie paska zdrowia
         int maxHealth = 200; // Maksymalne zdrowie przeciwnika
-        int healthBarWidth = 360; // Stała długość paska zdrowia
+        int healthBarWidth = 290; // Stała długość paska zdrowia
         int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
 
         // ===== PASEK TARCZY =====
         int maxShield = 100;
-        int barW = 360;
+        int barW = 290;
         int shiledW = (int) ((shield / (double) maxShield) * barW);
 
         // pasek nad

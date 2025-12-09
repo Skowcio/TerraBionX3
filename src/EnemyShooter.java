@@ -172,17 +172,50 @@ public class EnemyShooter {
 
         // 🔹 Pobierz współrzędne celu
         int tx = 0, ty = 0;
-        if (currentTarget instanceof Soldier s) { tx = s.getX(); ty = s.getY(); }
-        else if (currentTarget instanceof Valkiria v) { tx = v.getX(); ty = v.getY(); }
-        else if (currentTarget instanceof SoldierBot sb) { tx = sb.getX(); ty = sb.getY(); }
-        else if (currentTarget instanceof BattleVehicle bv) { tx = bv.getX(); ty = bv.getY(); }
-        else if (currentTarget instanceof Factory f) { tx = f.getX(); ty = f.getY(); }
-        else if (currentTarget instanceof SteelMine sm) { tx = sm.getX(); ty = sm.getY(); }
-        else if (currentTarget instanceof PowerPlant pp) { tx = pp.getX(); ty = pp.getY(); }
-        else if (currentTarget instanceof BuilderVehicle bld) { tx = bld.getX(); ty = bld.getY(); }
-        else if (currentTarget instanceof Artylery a) { tx = a.getX(); ty = a.getY(); }
-        else if (currentTarget instanceof Baracks b) { tx = b.getX(); ty = b.getY(); }
-        else if (currentTarget instanceof Qube q) { tx = q.getX(); ty = q.getY(); }
+        if (currentTarget instanceof Soldier s) {
+            tx = s.getX() + s.getWidth()/2;
+            ty = s.getY() + s.getHeight()/2;
+        }
+        else if (currentTarget instanceof Valkiria v) {
+            tx = v.getX() + v.getWidth()/2;
+            ty = v.getY() + v.getHeight()/2;
+        }
+        else if (currentTarget instanceof SoldierBot sb) {
+            tx = sb.getX() + sb.getWidth()/2;
+            ty = sb.getY() + sb.getHeight()/2;
+        }
+        else if (currentTarget instanceof BattleVehicle bv) {
+            tx = bv.getX() + bv.getWidth()/2;
+            ty = bv.getY() + bv.getHeight()/2;
+        }
+        else if (currentTarget instanceof Factory f) {
+            tx = f.getX() + f.getWidth()/2;
+            ty = f.getY() + f.getHeight()/2;
+        }
+        else if (currentTarget instanceof SteelMine sm) {
+            tx = sm.getX() + sm.getWidth()/2;
+            ty = sm.getY() + sm.getHeight()/2;
+        }
+        else if (currentTarget instanceof PowerPlant pp) {
+            tx = pp.getX() + pp.getWidth()/2;
+            ty = pp.getY() + pp.getHeight()/2;
+        }
+        else if (currentTarget instanceof BuilderVehicle bld) {
+            tx = bld.getX() + bld.getWidth()/2;
+            ty = bld.getY() + bld.getHeight()/2;
+        }
+        else if (currentTarget instanceof Artylery a) {
+            tx = a.getX() + a.getWidth()/2;
+            ty = a.getY() + a.getHeight()/2;
+        }
+        else if (currentTarget instanceof Baracks b) {
+            tx = b.getX() + b.getWidth()/2;
+            ty = b.getY() + b.getHeight()/2;
+        }
+        else if (currentTarget instanceof Qube q) {
+            tx = q.getX() + q.getWidth()/2;
+            ty = q.getY() + q.getHeight()/2;
+        }
 
 
         double distance = Point.distance(x, y, tx, ty);

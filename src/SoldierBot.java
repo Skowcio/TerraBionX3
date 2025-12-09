@@ -126,6 +126,10 @@ public class SoldierBot {
         this.dead = true;
     }
 
+    public void kill() {
+        dead = true;
+    }
+
     private void updateDirection(int dx, int dy) {
         if (dx == 0 && dy == 0) return;
 
@@ -304,7 +308,7 @@ public class SoldierBot {
         if (t instanceof EnemyBehemoth eb) return enemyBehemoths.contains(eb) && isInRange(eb);
         if (t instanceof Qube q) return qubes.contains(q) && isInRange(q);
         if (t instanceof QubeTower qt) return qubeTowers.contains(qt) && isInRange(qt);
-        if (t instanceof QubeFactory qf) return qubeTowers.contains(qf) && isInRange(qf);
+        if (t instanceof QubeFactory qf) return qubeFactories.contains(qf) && isInRangeRectEdge(qf.getX(), qf.getY(), qf.getWidth(), qf.getHeight());
 
         return false;
     }
@@ -329,9 +333,9 @@ public class SoldierBot {
         if (target instanceof QubeTower qt)
             return new Point(qt.getX() + qt.getWidth() / 2, qt.getY() + qt.getHeight() / 2);
         if (target instanceof QubeFactory qf)
-            return new Point(qf.getX() + qf.getWidth() / 2, qf.getY() + qf.getHeight() / 2);
+            return getClosestPointOnRect(qf.getX(), qf.getY(), qf.getWidth(), qf.getHeight());
 
-        return new Point(x, y);
+        return new Point(x + width/2, y + height/2);
     }
 
 
@@ -396,7 +400,7 @@ public class SoldierBot {
             }
         }
         for (QubeFactory qubeFactory : qubeFactorys) {
-            if (isInRange(qubeFactory)) {
+            if (isInRangeRectEdge(qubeFactory.getX(), qubeFactory.getY(), qubeFactory.getWidth(), qubeFactory.getHeight())) {
                 currentTarget = qubeFactory;
                 return; // Znaleziono cel
             }
@@ -542,6 +546,67 @@ public class SoldierBot {
         return new Point(0, 0);
     }
 
+    // zwraca dystans od środka bota do najbliższego punktu prostokąta (krawędź/obrzeże)
+    private double distanceToRectEdge(int ox, int oy, int ow, int oh) {
+        int sx = x + width / 2;
+        int sy = y + height / 2;
+
+        int left = ox;
+        int right = ox + ow;
+        int top = oy;
+        int bottom = oy + oh;
+
+        int closestX = Math.max(left, Math.min(sx, right));
+        int closestY = Math.max(top, Math.min(sy, bottom));
+
+        double dx = closestX - sx;
+        double dy = closestY - sy;
+        return Math.sqrt(dx*dx + dy*dy);
+    }
+
+    // sprawdza zasięg względem krawędzi prostokąta (nie środka)
+    private boolean isInRangeRectEdge(int ox, int oy, int ow, int oh) {
+        return distanceToRectEdge(ox, oy, ow, oh) <= range;
+    }
+
+    // zwraca najbliższy punkt NA KRAWĘDZI prostokąta względem środka bota.
+// Jeżeli środek bota jest na zewnątrz prostokąta -> punkt to najbliższa krawędź (lub narożnik).
+// Jeżeli środek bota jest wewnątrz prostokąta -> zwraca punkt na najbliższej krawędzi (będziemy "stać" przy ścianie).
+    private Point getClosestPointOnRect(int ox, int oy, int ow, int oh) {
+        int sx = x + width / 2;
+        int sy = y + height / 2;
+
+        int left = ox;
+        int right = ox + ow;
+        int top = oy;
+        int bottom = oy + oh;
+
+        // Punkt najbliższy wewnątrz prostokąta (ograniczamy)
+        int cx = Math.max(left, Math.min(sx, right));
+        int cy = Math.max(top, Math.min(sy, bottom));
+
+        // Jeśli punkt leży wewnątrz prostokąta (cx==sx && cy==sy), należy wybrać najbliższą krawędź:
+        if (cx == sx && cy == sy) {
+            int distLeft = Math.abs(sx - left);
+            int distRight = Math.abs(right - sx);
+            int distTop = Math.abs(sy - top);
+            int distBottom = Math.abs(bottom - sy);
+
+            int min = Math.min(Math.min(distLeft, distRight), Math.min(distTop, distBottom));
+            if (min == distLeft) cx = left;
+            else if (min == distRight) cx = right;
+            else if (min == distTop) cy = top;
+            else cy = bottom;
+        } else {
+            // jeżeli punkt leży na boku/poza prostokątem, to (cx,cy) już jest punktem na krawędzi lub narożniku
+            // ale chcemy dokładnie na krawędzi: jeżeli punkt był powiedzmy ograniczony do wewnątrz,
+            // to jest OK. (już daje nam najbliższy punkt krawędzi)
+        }
+
+        return new Point(cx, cy);
+    }
+
+
 
     // 🧭 szukanie najbliższego celu (bez zmian, tylko używane rzadziej)
     public Object getClosestTarget(
@@ -625,7 +690,9 @@ public class SoldierBot {
             tx = qt.getX(); ty = qt.getY();
         }
         else if (target instanceof QubeFactory qf) {
-            tx = qf.getX(); ty = qf.getY();
+            // zamiast iść do środka, idź do najbliższej krawędzi (punktu na obwodzie prostokąta)
+            Point edge = getClosestPointOnRect(qf.getX(), qf.getY(), qf.getWidth(), qf.getHeight());
+            tx = edge.x; ty = edge.y;
         }
 
         if (!patrolArea.contains(tx, ty)) {

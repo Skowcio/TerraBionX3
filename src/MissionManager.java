@@ -29,8 +29,8 @@ public class MissionManager {
 
 //        mission1.qubePositions.add(new Point(1800,1250));
 
-        mission1.qubeFactoryPositions.add(new Point(1850, 800));
-        mission1.qubeTowerPosittions.add(new Point(1600,900));
+//        mission1.qubeFactoryPositions.add(new Point(1850, 800));
+//        mission1.qubeTowerPosittions.add(new Point(1600,900));
 
 
 
@@ -62,10 +62,10 @@ public class MissionManager {
         mission1.powerPlantPositions.add(new Point(450, 410));
         mission1.powerPlantPositions.add(new Point(450, 520));
         mission1.powerPlantPositions.add(new Point(450, 630));
-        mission1.builderPositions.add(new Point(720, 370));
+        mission1.builderPositions.add(new Point(1820, 370));
         mission1.barackPositions.add(new Point(660,  200));
         mission1.factoryPositions.add(new Point(950,  420));
-
+        mission1.factoryPositions.add(new Point(2450,  420));
         mission1.resourcesPositions.add(new Point(700, 450));
         mission1.resourcesPositions.add(new Point(850, 600));
 
@@ -91,7 +91,7 @@ public class MissionManager {
 //        mission1.valkiriaPositions.add(new Point(1250, 1000));
 //        mission1.valkiriaPositions.add(new Point(1250, 1100));
 
-        mission1.hiveSpawnArea = new Rectangle(1800, 1200, 1000, 1000);
+        mission1.hiveSpawnArea = new Rectangle(1800, 2200, 1000, 1000);
         mission1.requiredHivesDestroyed = 5;
         mission1.objectiveType = Mission.ObjectiveType.DESTROY_ALL_HIVES;
 
