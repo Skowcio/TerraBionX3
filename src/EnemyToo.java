@@ -2,12 +2,21 @@ import java.awt.*;
 import java.util.List;
 import java.util.Random;
 
+import javax.imageio.ImageIO;
+import java.awt.Image;
+
+
 public class EnemyToo {
     private int x, y;
     private int width = 35, height = 35;
     private int speed = 4;
     private int health = 20;
     private boolean dead = false;
+    private int currentDirection = 0;
+
+    private static Image dir0, dir1, dir2, dir3, dir4, dir5, dir6, dir7;
+    private static Image dir8, dir9, dir10, dir11, dir12, dir13, dir14, dir15;
+    private static boolean imagesLoaded = false;
 
     // kontrola czasowa (w ms)
     private long lastTargetSearchTime;
@@ -17,8 +26,66 @@ public class EnemyToo {
     public EnemyToo(int x, int y) {
         this.x = x;
         this.y = y;
+        loadImages();
         // losowy offset, żeby nie wszystkie jednostki szukały jednocześnie
         this.lastTargetSearchTime = System.currentTimeMillis() - new Random().nextInt((int) SEARCH_INTERVAL_MS);
+    }
+    private static void loadImages() {
+        if (imagesLoaded) return; // załadowane tylko raz
+
+        try {
+            dir0 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/1.png"));
+            dir1 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/2.png"));
+            dir2 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/3.png"));
+            dir3 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/4.png"));
+            dir4 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/5.png"));
+            dir5 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/6.png"));
+            dir6 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/7.png"));
+            dir7 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/8.png"));
+
+            dir8 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/9.png"));
+            dir9 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/10.png"));
+            dir10 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/11.png"));
+            dir11 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/12.png"));
+            dir12 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/13.png"));
+            dir13 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/14.png"));
+            dir14 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/15.png"));
+            dir15 = ImageIO.read(EnemyToo.class.getResource("/EnemyToo/16.png"));
+
+            imagesLoaded = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void updateDirection(int dx, int dy) {
+        if (dx == 0 && dy == 0) return;
+
+        double angle = Math.atan2(-dy, dx); // odwrotny Y jak w soldierBot
+        angle = Math.toDegrees(angle);
+        if (angle < 0) angle += 360;
+
+        currentDirection = (int)Math.round(angle / 22.5) % 16;
+    }
+    private Image getCurrentImage() {
+        return switch (currentDirection) {
+            case 0 -> dir0;
+            case 1 -> dir1;
+            case 2 -> dir2;
+            case 3 -> dir3;
+            case 4 -> dir4;
+            case 5 -> dir5;
+            case 6 -> dir6;
+            case 7 -> dir7;
+            case 8 -> dir8;
+            case 9 -> dir9;
+            case 10 -> dir10;
+            case 11 -> dir11;
+            case 12 -> dir12;
+            case 13 -> dir13;
+            case 14 -> dir14;
+            case 15 -> dir15;
+            default -> dir0;
+        };
     }
 
     public int getX() { return x; }
@@ -27,16 +94,19 @@ public class EnemyToo {
     public Rectangle getBounds() { return new Rectangle(x, y, width, height); }
 
     public void draw(Graphics g) {
-        g.setColor(Color.GREEN);
-        g.fillRect(x, y, width, height);
-        int maxHealth = 20;
-        int healthBarWidth = 35;
-        int currentHealthWidth = (int) ((health / (double) maxHealth) * healthBarWidth);
+        Graphics2D g2 = (Graphics2D) g;
 
+        Image img = getCurrentImage();
+        if (img != null) {
+            g2.drawImage(img, x, y, width, height, null);
+        }
+
+        // pasek życia jak SoldierBot
         g.setColor(Color.GREEN);
-        g.fillRect(x, y - 5, currentHealthWidth, 3);
-        g.setColor(Color.BLACK);
-        g.drawRect(x, y - 5, healthBarWidth, 3);
+        int maxHealth = 20;
+        int healthBarWidth = width;
+        int currentBar = (int)((health / (double)maxHealth) * healthBarWidth);
+        g.fillRect(x, y - 5, currentBar, 3);
     }
 
     public boolean takeDamage() {
@@ -185,7 +255,7 @@ public class EnemyToo {
         int dx = tx - x;
         int dy = ty - y;
         double distance = Math.sqrt(dx * dx + dy * dy);
-
+        updateDirection(dx, dy);
         if (distance > 0) {
             x += (int) (speed * dx / distance);
             y += (int) (speed * dy / distance);
